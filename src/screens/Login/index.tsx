@@ -106,7 +106,7 @@ function Login({navigation}: any) {
                 </Pressable>
               }
               _focus={{
-                borderColor: '#202020',
+                borderColor: '#0A2117',
               }}
               onChangeText={text => setPassword(text)}
             />

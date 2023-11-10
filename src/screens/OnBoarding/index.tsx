@@ -3,8 +3,7 @@
 import {VStack, StatusBar, HStack, Text} from 'native-base';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
-import {useState} from 'react';
-import {Circle, Polygon, Polyline, Svg} from 'react-native-svg';
+import {Polyline, Svg} from 'react-native-svg';
 const Tooltip = () => {
   return (
     <>
