@@ -1,9 +1,16 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/react-in-jsx-scope */
-import {VStack, StatusBar, HStack, Text} from 'native-base';
+import {VStack, StatusBar, HStack, Text, Pressable} from 'native-base';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import {Polyline, Svg} from 'react-native-svg';
+import {useContext} from 'react';
+import {AuthContext} from '../../contexts/AuthContext';
+
+type Props = {
+  route: any;
+};
+
 const Tooltip = () => {
   return (
     <>
@@ -33,7 +40,10 @@ const Tooltip = () => {
     </>
   );
 };
-function OnBoarding() {
+function OnBoarding({route}: Props) {
+  const {params} = route;
+  const {register} = useContext(AuthContext);
+
   return (
     <VStack backgroundColor={'#0A2117'} flex={1}>
       <StatusBar backgroundColor={'#0A2117'} barStyle="light-content" />
@@ -66,7 +76,10 @@ function OnBoarding() {
             desejar.
           </Text>
         </VStack>
-        <VStack alignItems={'flex-end'} w={'100%'}>
+        <Pressable
+          onPress={() => register(params?.name)}
+          alignItems={'flex-end'}
+          w={'100%'}>
           <Tooltip />
           <VStack
             justifyContent="center"
@@ -77,7 +90,7 @@ function OnBoarding() {
             borderRadius={20}>
             <Feather name={'plus'} color={'#0A2117'} size={25} />
           </VStack>
-        </VStack>
+        </Pressable>
       </SafeAreaView>
     </VStack>
   );

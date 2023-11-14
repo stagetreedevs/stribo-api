@@ -11,7 +11,7 @@ import {
   Divider,
   FlatList,
 } from 'native-base';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 
 import Modal from 'react-native-modal';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -30,7 +30,79 @@ type RequestNotificationsProps = {
   notifications: NotificationsProps[];
 };
 
-const AllNotifications = (notification: RequestNotificationsProps[]) => {
+const BaseAllNotifications = [
+  {
+    date: '03/05/2023',
+    notifications: [
+      {
+        title: 'Tilte',
+        message:
+          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
+        hour: '23h00',
+        read: false,
+      },
+      {
+        title: 'Tilte',
+        message:
+          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
+        hour: '16h00',
+        read: false,
+      },
+      {
+        title: 'Tilte',
+        message:
+          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
+        hour: '13h00',
+        read: true,
+      },
+      {
+        title: 'Tilte',
+        message:
+          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
+        hour: '09h00',
+        read: true,
+      },
+    ],
+  },
+  {
+    date: '02/05/2023',
+    notifications: [
+      {
+        title: 'Tilte',
+        message:
+          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
+        hour: '23h00',
+        read: false,
+      },
+      {
+        title: 'Tilte',
+        message:
+          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
+        hour: '16h00',
+        read: false,
+      },
+      {
+        title: 'Tilte',
+        message:
+          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
+        hour: '13h00',
+        read: true,
+      },
+      {
+        title: 'Tilte',
+        message:
+          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
+        hour: '09h00',
+        read: true,
+      },
+    ],
+  },
+];
+
+const ListNotifications = (
+  notification: RequestNotificationsProps[],
+  all: boolean,
+) => {
   return (
     <FlatList
       data={notification}
@@ -48,91 +120,69 @@ const AllNotifications = (notification: RequestNotificationsProps[]) => {
               </Text>
               <Divider />
             </HStack>
-            {item.notifications.map((notification, index) => (
-              <HStack
-                key={index}
-                w="100%"
-                justifyContent={'space-between'}
-                marginTop={8}>
-                <VStack w="80%">
+            {item.notifications.map((notification, index) => {
+              return all ? (
+                <HStack
+                  key={index}
+                  w="100%"
+                  justifyContent={'space-between'}
+                  marginTop={8}>
+                  <VStack w="80%">
+                    <Text
+                      fontSize={'17px'}
+                      color={!notification.read ? '#0A2117' : '#0A211790'}
+                      fontFamily={'Roboto-Medium'}
+                      fontWeight="medium">
+                      {notification.title}
+                    </Text>
+                    <Text
+                      fontSize={'14px'}
+                      color={'#0A211790'}
+                      fontFamily={'Roboto-Regular'}>
+                      {notification.message}
+                    </Text>
+                  </VStack>
                   <Text
                     fontSize={'17px'}
                     color={!notification.read ? '#0A2117' : '#0A211790'}
                     fontFamily={'Roboto-Medium'}
                     fontWeight="medium">
-                    {notification.title}
+                    {notification.hour}
                   </Text>
-                  <Text
-                    fontSize={'14px'}
-                    color={'#0A211790'}
-                    fontFamily={'Roboto-Regular'}>
-                    {notification.message}
-                  </Text>
-                </VStack>
-                <Text
-                  fontSize={'17px'}
-                  color={!notification.read ? '#0A2117' : '#0A211790'}
-                  fontFamily={'Roboto-Medium'}
-                  fontWeight="medium">
-                  {notification.hour}
-                </Text>
-              </HStack>
-            ))}
-          </VStack>
-        );
-      }}
-      ListFooterComponent={() => <VStack h={100} />}
-    />
-  );
-};
-const NotReadNotifications = (notification: RequestNotificationsProps[]) => {
-  return (
-    <FlatList
-      data={notification}
-      showsVerticalScrollIndicator={false}
-      renderItem={({item, index}) => {
-        return (
-          <VStack key={index} w="100%">
-            <HStack w="100%" space={6} alignItems="center" marginTop={8}>
-              <Text
-                color={'#018749'}
-                fontSize="15px"
-                fontFamily={'IBMPlexSans-SemiBold'}
-                fontWeight="semibold">
-                {item.date}
-              </Text>
-              <Divider />
-            </HStack>
-            {item.notifications.map((notification, index) => (
-              <HStack
-                key={index}
-                w="100%"
-                justifyContent={'space-between'}
-                marginTop={8}>
-                <VStack w="80%">
-                  <Text
-                    fontSize={'17px'}
-                    color={!notification.read ? '#0A2117' : '#0A211790'}
-                    fontFamily={'Roboto-Medium'}
-                    fontWeight="medium">
-                    {notification.title}
-                  </Text>
-                  <Text
-                    fontSize={'14px'}
-                    color={'#0A211790'}
-                    fontFamily={'Roboto-Regular'}>
-                    {notification.message}
-                  </Text>
-                </VStack>
-                <Text
-                  fontSize={'17px'}
-                  color={!notification.read ? '#0A2117' : '#0A211790'}
-                  fontFamily={'Roboto-Medium'}
-                  fontWeight="medium">
-                  {notification.hour}
-                </Text>
-              </HStack>
-            ))}
+                </HStack>
+              ) : (
+                all === notification.read && (
+                  <HStack
+                    key={index}
+                    w="100%"
+                    justifyContent={'space-between'}
+                    marginTop={8}>
+                    <VStack w="80%">
+                      <Text
+                        fontSize={'17px'}
+                        color={!notification.read ? '#0A2117' : '#0A211790'}
+                        fontFamily={'Roboto-Medium'}
+                        fontWeight="medium">
+                        {notification.title}
+                      </Text>
+                      <Text
+                        fontSize={'14px'}
+                        color={'#0A211790'}
+                        fontFamily={'Roboto-Regular'}>
+                        {notification.message}
+                      </Text>
+                    </VStack>
+                    <Text
+                      fontSize={'17px'}
+                      color={!notification.read ? '#0A2117' : '#0A211790'}
+                      fontFamily={'Roboto-Medium'}
+                      fontWeight="medium">
+                      {notification.hour}
+                    </Text>
+                  </HStack>
+                )
+              );
+            })}
           </VStack>
         );
       }}
@@ -144,123 +194,30 @@ const NotReadNotifications = (notification: RequestNotificationsProps[]) => {
 function Notifications({navigation}: any) {
   const [showModal, setShowModal] = useState(false);
   const [selectedTab, setSelectedTab] = useState(true);
-  const AllNotificationsValues: RequestNotificationsProps[] = [
-    {
-      date: '03/05/2023',
-      notifications: [
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '23h00',
-          read: false,
-        },
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '16h00',
-          read: false,
-        },
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '13h00',
-          read: true,
-        },
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '09h00',
-          read: true,
-        },
-      ],
-    },
-    {
-      date: '02/05/2023',
-      notifications: [
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '23h00',
-          read: false,
-        },
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '16h00',
-          read: false,
-        },
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '13h00',
-          read: true,
-        },
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '09h00',
-          read: true,
-        },
-      ],
-    },
-  ];
-  const NotReadNotificationsValues: RequestNotificationsProps[] = [
-    {
-      date: '03/05/2023',
-      notifications: [
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '23h00',
-          read: false,
-        },
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '16h00',
-          read: false,
-        },
-      ],
-    },
-    {
-      date: '02/05/2023',
-      notifications: [
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '23h00',
-          read: false,
-        },
-        {
-          title: 'Tilte',
-          message:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-          hour: '16h00',
-          read: false,
-        },
-      ],
-    },
-  ];
+  const [seach, setSeach] = useState('');
+  const [AllNotificationsValues, setAllNotificationsValues] =
+    useState<RequestNotificationsProps[]>(BaseAllNotifications);
+
+  useEffect(() => {
+    const AllNotificationsFiltered = BaseAllNotifications.filter(
+      value => seach === value.date,
+    );
+    if (AllNotificationsFiltered.length > 0) {
+      setAllNotificationsValues(AllNotificationsFiltered);
+    } else {
+      setAllNotificationsValues(BaseAllNotifications);
+    }
+  }, [seach]);
 
   return (
     <VStack flex={1} bg="#DCF7E3" justifyContent={'flex-start'} paddingX={6}>
       <BasicHeader
         navigation={navigation}
+        name="Notificações"
         notification={true}
         showModal={() => setShowModal(true)}
       />
-      <VStack flex={1} space={4}>
+      <VStack flex={1} space={4} mt={2}>
         <HStack w={'100%'} alignItems="center" justifyContent={'space-between'}>
           <Input
             size={'lg'}
@@ -287,6 +244,8 @@ function Notifications({navigation}: any) {
                 }}
               />
             }
+            value={seach}
+            onChangeText={v => setSeach(v)}
           />
           <MaterialCommunityIcons
             color="#0A2117"
@@ -331,8 +290,8 @@ function Notifications({navigation}: any) {
           </Pressable>
         </HStack>
         {selectedTab
-          ? AllNotifications(AllNotificationsValues)
-          : NotReadNotifications(NotReadNotificationsValues)}
+          ? ListNotifications(AllNotificationsValues, true)
+          : ListNotifications(AllNotificationsValues, false)}
       </VStack>
       <Modal
         isVisible={showModal}

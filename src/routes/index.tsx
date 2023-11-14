@@ -16,6 +16,7 @@ import TabBar from '../components/TabBar';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {View} from 'react-native';
 import Notifications from '../screens/Notifications';
+import Profile from '../screens/Profile';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -80,7 +81,7 @@ function Routes() {
     );
   }
   if (user) {
-    if (user.firstLogin) {
+    if (user.first_login) {
       return (
         <Stack.Navigator
           screenOptions={{
@@ -106,6 +107,10 @@ function Routes() {
           {props => (
             <SafeArea Component={Notifications} theme="light" {...props} />
           )}
+        </Stack.Screen>
+
+        <Stack.Screen name="Profile">
+          {props => <SafeArea Component={Profile} theme="light" {...props} />}
         </Stack.Screen>
       </Stack.Navigator>
     );

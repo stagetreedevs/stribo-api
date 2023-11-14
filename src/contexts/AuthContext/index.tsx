@@ -5,25 +5,36 @@ import axios from 'axios';
 interface Node {
   children: React.ReactNode;
 }
+type UserProps = {
+  name: string | undefined;
+  username: string;
+  type: string;
+  cpf: string;
+  phone: string;
+  photo: string;
+  recieve_notifications: boolean;
+  token: string;
+  first_login: boolean;
+};
 
 type AuthProps = {
-  user: any;
+  user: UserProps | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthProps>({} as AuthProps);
 
 const AuthProvider = ({children}: Node) => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProps | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function getUser() {
       try {
-        const userRegisted = await AsyncStorage.getItem('@StriboApp_UserToken');
+        const userRegisted = await AsyncStorage.getItem('@StriboApp_User');
         console.log(userRegisted);
 
         if (userRegisted) {
@@ -44,10 +55,32 @@ const AuthProvider = ({children}: Node) => {
         'https://api.escuelajs.co/api/v1/auth/login',
         {email, password},
       );
-      setUser(data.access_token);
+      setUser({
+        name: '',
+        username: 'marialmeida@gmail.com',
+        type: 'Administrador',
+        cpf: '987.654.321-00',
+        phone: '(11) 98765 4321',
+        photo:
+          'https://zinnyfactor.com/wp-content/uploads/2020/04/93-938050_png-file-transparent-white-user-icon-png-download.jpg',
+        recieve_notifications: true,
+        token: data.access_token,
+        first_login: true,
+      });
       AsyncStorage.setItem(
-        '@StriboApp_UserToken',
-        JSON.stringify(data.access_token),
+        '@StriboApp_User',
+        JSON.stringify({
+          name: 'Maria',
+          username: 'marialmeida@gmail.com',
+          type: 'Administrador',
+          cpf: '987.654.321-00',
+          phone: '(11) 98765 4321',
+          photo:
+            'https://zinnyfactor.com/wp-content/uploads/2020/04/93-938050_png-file-transparent-white-user-icon-png-download.jpg',
+          recieve_notifications: true,
+          token: data.access_token,
+          first_login: true,
+        }),
       );
 
       console.log(data);
@@ -68,15 +101,27 @@ const AuthProvider = ({children}: Node) => {
     }
   }
 
-  async function register(email: string, password: string) {
+  async function register(name: string) {
     try {
-      // const response = await auth().createUserWithEmailAndPassword(
-      //   email,
-      //   password,
-      // );
-      console.log();
-      AsyncStorage.setItem('@TherapyHubPsy', JSON.stringify(''));
-      setUser('');
+      setUser({
+        ...user,
+        name: name,
+        first_login: false,
+      } as UserProps);
+      AsyncStorage.setItem(
+        '@StriboApp_User',
+        JSON.stringify({
+          name: name,
+          username: user?.username,
+          type: user?.type,
+          cpf: user?.cpf,
+          phone: user?.phone,
+          photo: user?.photo,
+          recieve_notifications: true,
+          token: user?.token,
+          first_login: false,
+        }),
+      );
       Toast.show({
         type: 'success',
         text1: 'Registro',
@@ -95,7 +140,7 @@ const AuthProvider = ({children}: Node) => {
   async function forgotPassword(email: string) {
     try {
       // const response = await auth().sendPasswordResetEmail(email);
-      // console.log(response);
+      console.log(email);
       Toast.show({
         type: 'success',
         text1: 'Email Enviado!',

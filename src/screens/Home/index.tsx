@@ -1,11 +1,12 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/react-in-jsx-scope */
-import {Text, VStack, Pressable, Icon, HStack} from 'native-base';
+import {Text, VStack, Pressable, HStack} from 'native-base';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {useState} from 'react';
+import {useContext, useState} from 'react';
 import Header from '../../components/Header';
 import {ImageBackground} from 'react-native';
 import HorsesBackGound from '../../../assets/horsesBackGround2.jpg';
+import {AuthContext} from '../../contexts/AuthContext';
 
 type Props = {
   navigation: any;
@@ -13,9 +14,12 @@ type Props = {
 
 function Home({navigation}: Props) {
   const [show, setShow] = useState(false);
+  const {user} = useContext(AuthContext);
+  console.log('user', user);
+
   return (
     <VStack flex={1} backgroundColor="#0A2117" justifyContent={'flex-end'}>
-      <Header username="Maria" />
+      <Header navigation={navigation} username={user?.name as string} />
       <VStack
         flex={1}
         backgroundColor="#DCF7E3"

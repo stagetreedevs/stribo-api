@@ -35,7 +35,7 @@ function FirstLogin({navigation}: any) {
       });
     }
     try {
-      navigation.navigate('OnBoarding');
+      navigation.navigate('OnBoarding', {name: name});
     } catch (error) {
       console.log(error);
       Toast.show({

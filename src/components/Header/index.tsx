@@ -1,12 +1,18 @@
 /* eslint-disable react/react-in-jsx-scope */
-import {VStack, HStack, Text} from 'native-base';
+import {VStack, HStack, Text, Pressable} from 'native-base';
 import Feather from 'react-native-vector-icons/Feather';
+type Props = {
+  navigation: any;
+  username: string;
+};
 
-function Header({username}: any) {
+function Header({navigation, username}: Props) {
   return (
     <VStack w={'100%'} h={160} p={4}>
       <HStack w={'100%'} justifyContent="flex-end" paddingRight={2}>
-        <Feather name={'user'} color={'#DCF7E3'} size={25} />
+        <Pressable onPress={() => navigation.navigate('Profile')}>
+          <Feather name={'user'} color={'#DCF7E3'} size={25} />
+        </Pressable>
       </HStack>
       <Text
         marginY={8}
