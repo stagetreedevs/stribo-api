@@ -6,6 +6,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import {Polyline, Svg} from 'react-native-svg';
 import {useContext} from 'react';
 import {AuthContext} from '../../contexts/AuthContext';
+import BasicText from '../../components/BasicText';
 
 type Props = {
   route: any;
@@ -21,13 +22,9 @@ const Tooltip = () => {
         borderRadius={20}
         mb={-5}
         w="100%">
-        <Text
-          fontSize={'18px'}
-          color={'#0A2117'}
-          fontFamily={'Roboto-Regular'}
-          fontWeight={'light'}>
+        <BasicText theme="dark" size={18} fontWeight={'light'}>
           Clique no botão abaixo para adicionar uma propriedade
-        </Text>
+        </BasicText>
       </VStack>
       <Svg width={50} height={50} viewBox="0 0 100 100">
         <Polyline
@@ -85,8 +82,8 @@ function OnBoarding({route}: Props) {
             justifyContent="center"
             alignItems={'center'}
             backgroundColor={'#6AF3B4'}
-            w={20}
-            h={20}
+            w={'72px'}
+            h={'72px'}
             borderRadius={20}>
             <Feather name={'plus'} color={'#0A2117'} size={25} />
           </VStack>

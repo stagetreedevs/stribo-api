@@ -15,6 +15,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Toast from 'react-native-toast-message';
 import Logo from '../../../assets/striboLogo.svg';
+import BasicText from '../../components/BasicText';
 function FirstLogin({navigation}: any) {
   const [show, setShow] = useState(true);
   const [name, setName] = useState('');
@@ -72,11 +73,11 @@ function FirstLogin({navigation}: any) {
                 fontWeight={'medium'}>
                 Bem-vindo(a)!
               </Text>
-              <Text fontSize={'14px'} fontFamily="Roboto-Bold">
+              <BasicText size={14} theme="dark">
                 Estamos quase lá. Agora só falta você informar alguns dados. Se
                 preferir, você pode vincular seu cadastro à sua conta do Google.
                 Nesse caso, não precisa preencher os campos abaixo.
-              </Text>
+              </BasicText>
             </VStack>
             <Input
               size={'lg'}
@@ -133,13 +134,9 @@ function FirstLogin({navigation}: any) {
                     color={'#DCF7E3'}
                     size={6}
                   />
-                  <Text
-                    fontSize={'17px'}
-                    fontWeight={'bold'}
-                    color={'#DCF7E3'}
-                    fontFamily="Roboto-Bold">
+                  <BasicText theme="light" fontWeight={'bold'}>
                     Concluir Cadastro
-                  </Text>
+                  </BasicText>
                 </HStack>
               </Button>
               <Button
@@ -157,13 +154,9 @@ function FirstLogin({navigation}: any) {
                     color={'#0A2117'}
                     size={6}
                   />
-                  <Text
-                    color={'#0A2117'}
-                    fontSize={'17px'}
-                    fontWeight={'semibold'}
-                    fontFamily="Roboto-Bold">
+                  <BasicText theme="dark" fontWeight={'medium'}>
                     Continuar com o Google
-                  </Text>
+                  </BasicText>
                 </HStack>
               </Button>
             </VStack>

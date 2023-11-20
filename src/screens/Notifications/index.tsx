@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/react-in-jsx-scope */
@@ -18,6 +19,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import BasicHeader from '../../components/BasicHeader';
+import BasicText from '../../components/BasicText';
 type NotificationsProps = {
   title: string;
   message: string;
@@ -128,27 +130,22 @@ const ListNotifications = (
                   justifyContent={'space-between'}
                   marginTop={8}>
                   <VStack w="80%">
-                    <Text
-                      fontSize={'17px'}
-                      color={!notification.read ? '#0A2117' : '#0A211790'}
-                      fontFamily={'Roboto-Medium'}
-                      fontWeight="medium">
+                    <BasicText
+                      theme="dark"
+                      fontWeight="medium"
+                      opacity={notification.read ? 0.5 : 1}>
                       {notification.title}
-                    </Text>
-                    <Text
-                      fontSize={'14px'}
-                      color={'#0A211790'}
-                      fontFamily={'Roboto-Regular'}>
+                    </BasicText>
+                    <BasicText theme="dark" size={14} opacity={0.5}>
                       {notification.message}
-                    </Text>
+                    </BasicText>
                   </VStack>
-                  <Text
-                    fontSize={'17px'}
-                    color={!notification.read ? '#0A2117' : '#0A211790'}
-                    fontFamily={'Roboto-Medium'}
-                    fontWeight="medium">
+                  <BasicText
+                    theme="dark"
+                    fontWeight="medium"
+                    opacity={notification.read ? 0.5 : 1}>
                     {notification.hour}
-                  </Text>
+                  </BasicText>
                 </HStack>
               ) : (
                 all === notification.read && (
@@ -158,27 +155,22 @@ const ListNotifications = (
                     justifyContent={'space-between'}
                     marginTop={8}>
                     <VStack w="80%">
-                      <Text
-                        fontSize={'17px'}
-                        color={!notification.read ? '#0A2117' : '#0A211790'}
-                        fontFamily={'Roboto-Medium'}
-                        fontWeight="medium">
+                      <BasicText
+                        theme="dark"
+                        fontWeight="medium"
+                        opacity={notification.read ? 0.5 : 1}>
                         {notification.title}
-                      </Text>
-                      <Text
-                        fontSize={'14px'}
-                        color={'#0A211790'}
-                        fontFamily={'Roboto-Regular'}>
+                      </BasicText>
+                      <BasicText theme="dark" size={14} opacity={0.5}>
                         {notification.message}
-                      </Text>
+                      </BasicText>
                     </VStack>
-                    <Text
-                      fontSize={'17px'}
-                      color={!notification.read ? '#0A2117' : '#0A211790'}
-                      fontFamily={'Roboto-Medium'}
-                      fontWeight="medium">
+                    <BasicText
+                      theme="dark"
+                      fontWeight="medium"
+                      opacity={notification.read ? 0.5 : 1}>
                       {notification.hour}
-                    </Text>
+                    </BasicText>
                   </HStack>
                 )
               );
@@ -194,20 +186,20 @@ const ListNotifications = (
 function Notifications({navigation}: any) {
   const [showModal, setShowModal] = useState(false);
   const [selectedTab, setSelectedTab] = useState(true);
-  const [seach, setSeach] = useState('');
+  const [search, setSearch] = useState('');
   const [AllNotificationsValues, setAllNotificationsValues] =
     useState<RequestNotificationsProps[]>(BaseAllNotifications);
 
   useEffect(() => {
-    const AllNotificationsFiltered = BaseAllNotifications.filter(
-      value => seach === value.date,
+    const AllNotificationsFiltered = BaseAllNotifications.filter(value =>
+      value.date.includes(search),
     );
     if (AllNotificationsFiltered.length > 0) {
       setAllNotificationsValues(AllNotificationsFiltered);
     } else {
       setAllNotificationsValues(BaseAllNotifications);
     }
-  }, [seach]);
+  }, [search]);
 
   return (
     <VStack flex={1} bg="#DCF7E3" justifyContent={'flex-start'} paddingX={6}>
@@ -244,14 +236,16 @@ function Notifications({navigation}: any) {
                 }}
               />
             }
-            value={seach}
-            onChangeText={v => setSeach(v)}
+            value={search}
+            onChangeText={v => setSearch(String(v))}
           />
-          <MaterialCommunityIcons
-            color="#0A2117"
-            name={'tune-variant'}
-            size={28}
-          />
+          <Pressable onPress={() => navigation.navigate('FilterNotifications')}>
+            <MaterialCommunityIcons
+              color="#0A2117"
+              name={'tune-variant'}
+              size={28}
+            />
+          </Pressable>
         </HStack>
         <HStack space={2}>
           <Pressable
@@ -264,12 +258,7 @@ function Notifications({navigation}: any) {
             justifyContent="center"
             bg={!selectedTab ? 'transparent' : '#0A2117'}
             onPress={() => setSelectedTab(true)}>
-            <Text
-              fontSize={'17px'}
-              color={!selectedTab ? '#0A2117' : '#DCF7E3'}
-              fontFamily={'Roboto-Regular'}>
-              Todas
-            </Text>
+            <BasicText theme={!selectedTab ? 'dark' : 'light'}>Todas</BasicText>
           </Pressable>
           <Pressable
             borderWidth={1}
@@ -281,12 +270,9 @@ function Notifications({navigation}: any) {
             justifyContent="center"
             bg={selectedTab ? 'transparent' : '#0A2117'}
             onPress={() => setSelectedTab(false)}>
-            <Text
-              fontSize={'17px'}
-              color={selectedTab ? '#0A2117' : '#DCF7E3'}
-              fontFamily={'Roboto-Regular'}>
+            <BasicText theme={selectedTab ? 'dark' : 'light'}>
               Não lidas
-            </Text>
+            </BasicText>
           </Pressable>
         </HStack>
         {selectedTab
@@ -323,13 +309,9 @@ function Notifications({navigation}: any) {
               Marcar como vistas?
             </Text>
           </VStack>
-          <Text
-            fontSize={'17px'}
-            color={'#0A2117'}
-            fontFamily={'Roboto-Regular'}
-            textAlign="center">
+          <BasicText theme="dark" textAlign="center">
             Deseja marcar todas as notificações como vistas?
-          </Text>
+          </BasicText>
           <Button
             h={'50px'}
             w={'100%'}
@@ -344,13 +326,9 @@ function Notifications({navigation}: any) {
             }}>
             <HStack space={2}>
               <MaterialIcons name={'done'} color={'#DCF7E3'} size={25} />
-              <Text
-                fontSize={'17px'}
-                fontWeight={'medium'}
-                color={'#DCF7E3'}
-                fontFamily="Roboto-Medium">
+              <BasicText theme="light" fontWeight={'medium'}>
                 Sim, marcar
-              </Text>
+              </BasicText>
             </HStack>
           </Button>
 
@@ -367,13 +345,9 @@ function Notifications({navigation}: any) {
             _pressed={{
               bg: '#d0ead7',
             }}>
-            <Text
-              fontSize={'17px'}
-              fontWeight={'bold'}
-              color={'#0A2117'}
-              fontFamily="Roboto-Bold">
+            <BasicText theme="dark" fontWeight={'bold'}>
               Voltar
-            </Text>
+            </BasicText>
           </Button>
         </VStack>
       </Modal>

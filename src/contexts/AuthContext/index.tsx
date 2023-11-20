@@ -5,10 +5,11 @@ import axios from 'axios';
 interface Node {
   children: React.ReactNode;
 }
-type UserProps = {
+export type UserProps = {
   name: string | undefined;
+  last_name: string | undefined;
   username: string;
-  type: string;
+  type: string | undefined;
   cpf: string;
   phone: string;
   photo: string;
@@ -21,7 +22,9 @@ type AuthProps = {
   user: UserProps | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
   register: (email: string) => Promise<void>;
+  updateUser: (form: UserProps) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
 };
 
@@ -57,6 +60,7 @@ const AuthProvider = ({children}: Node) => {
       );
       setUser({
         name: '',
+        last_name: '',
         username: 'marialmeida@gmail.com',
         type: 'Administrador',
         cpf: '987.654.321-00',
@@ -137,6 +141,39 @@ const AuthProvider = ({children}: Node) => {
     }
   }
 
+  async function updateUser(form: UserProps) {
+    try {
+      setUser(form);
+      AsyncStorage.setItem(
+        '@StriboApp_User',
+        JSON.stringify({
+          name: form.name,
+          last_name: form.last_name,
+          username: form.username,
+          type: form.type,
+          cpf: form.cpf,
+          phone: form.phone,
+          photo: form.photo,
+          recieve_notifications: form.recieve_notifications,
+          token: form.token,
+          first_login: form.first_login,
+        }),
+      );
+      Toast.show({
+        type: 'success',
+        text1: 'Editado',
+        text2: 'Atualizado com sucesso!',
+      });
+    } catch (error) {
+      console.log(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Houve um Erro Na Edição...',
+        text2: 'Tente Novamente Mais Tarde!',
+      });
+    }
+  }
+
   async function forgotPassword(email: string) {
     try {
       // const response = await auth().sendPasswordResetEmail(email);
@@ -156,13 +193,36 @@ const AuthProvider = ({children}: Node) => {
     }
   }
 
+  async function signOut() {
+    try {
+      setUser(null);
+      AsyncStorage.removeItem('@StriboApp_User');
+
+      Toast.show({
+        type: 'success',
+        text1: 'Login',
+        text2: 'Efetuado com sucesso!',
+      });
+    } catch (error) {
+      console.log(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Email ou senha incorretos',
+        text2: 'Confira os dados e tente Novamente!',
+      });
+      throw error;
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
         signIn,
+        signOut,
         register,
+        updateUser,
         forgotPassword,
       }}>
       {children}

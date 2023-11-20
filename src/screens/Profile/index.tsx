@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/react-in-jsx-scope */
 import {
   Button,
@@ -8,21 +9,32 @@ import {
   Text,
   VStack,
 } from 'native-base';
-import {useContext, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
+
+import Modal from 'react-native-modal';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Switch} from 'react-native-switch';
 import BasicHeader from '../../components/BasicHeader';
 import {AuthContext} from '../../contexts/AuthContext';
+import BasicText from '../../components/BasicText';
 
 function Profile({navigation}: any) {
-  const {user} = useContext(AuthContext);
-  const [photo, setPhoto] = useState<string>(
-    'https://zinnyfactor.com/wp-content/uploads/2020/04/93-938050_png-file-transparent-white-user-icon-png-download.jpg',
-  );
+  const {user, signOut} = useContext(AuthContext);
+  const [photo, setPhoto] = useState<string | undefined>(user?.photo);
+  const [showModal, setShowModal] = useState<boolean>(false);
   const [notification, setNotification] = useState<boolean>(true);
+  useEffect(() => {
+    setPhoto(user?.photo);
+  }, [user]);
 
   return (
     <VStack flex={1} bg="#DCF7E3" justifyContent={'flex-start'} paddingX={6}>
-      <BasicHeader navigation={navigation} name="Perfil" menu={true} />
+      <BasicHeader
+        navigation={navigation}
+        name="Perfil"
+        menu={true}
+        functionOption={() => setShowModal(true)}
+      />
       <ScrollView flex={1} w="100%" showsVerticalScrollIndicator={false}>
         <VStack flex={1} space={4} alignItems="center">
           <Image
@@ -44,55 +56,28 @@ function Profile({navigation}: any) {
               color={'#0A2117'}>
               {user?.name}
             </Text>
-            <Text
-              fontFamily={'Roboto-Regular'}
-              fontSize={'14px'}
-              color={'#0A211799'}>
+            <BasicText theme="dark" size={14} opacity={0.6}>
               {user?.username}
-            </Text>
+            </BasicText>
           </VStack>
           <VStack w="100%" space={4}>
             <VStack>
-              <Text
-                fontFamily={'Roboto-Regular'}
-                fontSize={'14px'}
-                color={'#0A211799'}>
+              <BasicText theme="dark" size={14} opacity={0.6}>
                 CPF
-              </Text>
-              <Text
-                fontFamily={'Roboto-Regular'}
-                fontSize={'17px'}
-                color={'#0A2117'}>
-                {user?.cpf}
-              </Text>
+              </BasicText>
+              <BasicText theme="dark">{user?.cpf}</BasicText>
             </VStack>
             <VStack>
-              <Text
-                fontFamily={'Roboto-Regular'}
-                fontSize={'14px'}
-                color={'#0A211799'}>
+              <BasicText theme="dark" size={14} opacity={0.6}>
                 Perfil
-              </Text>
-              <Text
-                fontFamily={'Roboto-Regular'}
-                fontSize={'17px'}
-                color={'#0A2117'}>
-                {user?.type}
-              </Text>
+              </BasicText>
+              <BasicText theme="dark">{user?.type}</BasicText>
             </VStack>
             <VStack>
-              <Text
-                fontFamily={'Roboto-Regular'}
-                fontSize={'14px'}
-                color={'#0A211799'}>
+              <BasicText theme="dark" size={14} opacity={0.6}>
                 Telefone
-              </Text>
-              <Text
-                fontFamily={'Roboto-Regular'}
-                fontSize={'17px'}
-                color={'#0A2117'}>
-                {user?.phone}
-              </Text>
+              </BasicText>
+              <BasicText theme="dark">{user?.phone}</BasicText>
             </VStack>
           </VStack>
 
@@ -108,12 +93,7 @@ function Profile({navigation}: any) {
           </HStack>
 
           <HStack w="100%" justifyContent={'space-between'} p={2} pl={0}>
-            <Text
-              fontFamily={'Roboto-Regular'}
-              fontSize={'17px'}
-              color={'#0A2117'}>
-              Notificações
-            </Text>
+            <BasicText theme="dark">Notificações</BasicText>
             <Switch
               circleActiveColor="#0A2117"
               circleInActiveColor="#6AF3B4"
@@ -142,6 +122,7 @@ function Profile({navigation}: any) {
         <VStack p={6}>
           <VStack w="100%" alignItems={'center'}>
             <Button
+              onPress={() => navigation.navigate('Policy')}
               bg="#DCF7E3"
               _pressed={{
                 bg: '#d0ead700',
@@ -152,19 +133,16 @@ function Profile({navigation}: any) {
                 borderRadius={24}
                 borderColor={'#0A2117'}
                 borderWidth={1}>
-                <Text
-                  color={'#0A2117'}
-                  fontSize={'17px'}
-                  fontWeight={'semibold'}
-                  fontFamily="Roboto-Bold">
+                <BasicText theme="dark" fontWeight={'medium'}>
                   Política de Privacidade
-                </Text>
+                </BasicText>
               </VStack>
             </Button>
           </VStack>
 
           <VStack w="100%" alignItems={'center'}>
             <Button
+              onPress={() => navigation.navigate('TermsOfUse')}
               bg="#DCF7E3"
               _pressed={{
                 bg: '#d0ead700',
@@ -175,18 +153,94 @@ function Profile({navigation}: any) {
                 borderRadius={24}
                 borderColor={'#0A2117'}
                 borderWidth={1}>
-                <Text
-                  color={'#0A2117'}
-                  fontSize={'17px'}
-                  fontWeight={'semibold'}
-                  fontFamily="Roboto-Bold">
+                <BasicText theme="dark" fontWeight={'medium'}>
                   Termos de Uso
-                </Text>
+                </BasicText>
               </VStack>
             </Button>
           </VStack>
         </VStack>
       </ScrollView>
+      <Modal
+        isVisible={showModal}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <VStack
+          w={'90%'}
+          h={'62.5%'}
+          bg="#DCF7E3"
+          borderRadius={25}
+          padding={6}
+          space={4}
+          alignItems="center"
+          justifyContent={'center'}>
+          <VStack alignItems="center" justifyContent={'center'} space={2}>
+            <MaterialCommunityIcons
+              name={'alert-outline'}
+              color={'#0A2117'}
+              size={40}
+            />
+            <Text
+              fontSize={'32px'}
+              color={'#0A2117'}
+              fontFamily={'IBMPlexSans-Regular'}
+              textAlign="center">
+              Atenção!
+            </Text>
+          </VStack>
+          <BasicText theme="dark" textAlign="center">
+            Tem certeza que deseja excluir sua conta? Todos os seus dados
+            cadastrados no Stribo, incluindo as propriedades, animais e
+            controles financeiros, entre outros, serão permanentemente excluídos
+            do nosso sistema. Proceda com cautela.
+          </BasicText>
+          <Button
+            h={'50px'}
+            w={'100%'}
+            borderRadius={24}
+            bg="#FFA28D"
+            mt={4}
+            onPress={() => {
+              setShowModal(false);
+              signOut();
+            }}
+            _pressed={{
+              bg: '#E75535',
+            }}>
+            <HStack space={2}>
+              <MaterialCommunityIcons
+                name={'trash-can-outline'}
+                color={'#0A2117'}
+                size={25}
+              />
+              <BasicText theme="dark" fontWeight={'medium'}>
+                Excluir conta
+              </BasicText>
+            </HStack>
+          </Button>
+
+          <Button
+            h={'50px'}
+            w={'100%'}
+            borderRadius={24}
+            bg="transparent"
+            borderColor="#0A2117"
+            borderWidth={1}
+            onPress={() => {
+              setShowModal(false);
+            }}
+            _pressed={{
+              bg: '#d0ead7',
+            }}>
+            <BasicText theme="dark" fontWeight={'bold'}>
+              Voltar
+            </BasicText>
+          </Button>
+        </VStack>
+      </Modal>
     </VStack>
   );
 }

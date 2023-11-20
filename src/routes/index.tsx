@@ -9,14 +9,21 @@ import Register from '../screens/Register';
 import ForgotPassword from '../screens/ForgotPassword';
 import {useContext} from 'react';
 import {AuthContext} from '../contexts/AuthContext';
-import {StatusBar, VStack} from 'native-base';
+import {KeyboardAvoidingView, StatusBar, VStack} from 'native-base';
 import Logo from '../../assets/striboLogo.svg';
 import OnBoarding from '../screens/OnBoarding';
 import TabBar from '../components/TabBar';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
 import Notifications from '../screens/Notifications';
 import Profile from '../screens/Profile';
+import FilterNotifications from '../components/FilterNotifications';
+import Policy from '../screens/Policy';
+import TermsOfUse from '../screens/TermsOfUse';
+import Properts from '../screens/Properts';
+import EditProfile from '../screens/Profile/editProfile';
+import EditPassword from '../screens/Profile/editPassword';
+import NewAdmin from '../screens/Properts/NewAdmin';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -54,7 +61,7 @@ function TabRoutes() {
       }}
       tabBar={props => <TabBar {...props} />}>
       <Tab.Screen name="HomePage" component={Home} />
-      <Tab.Screen name="Tab1" component={Home} />
+      <Tab.Screen name="PropertsPage" component={Properts} />
       <Tab.Screen
         name="Tab2"
         component={Home}
@@ -103,14 +110,48 @@ function Routes() {
         <Stack.Screen name="Animals">
           {props => <SafeArea Component={TabRoutes} theme="dark" {...props} />}
         </Stack.Screen>
+
+        <Stack.Screen name="NewAdmin">
+          {props => <SafeArea Component={NewAdmin} theme="light" {...props} />}
+        </Stack.Screen>
         <Stack.Screen name="Notifications">
           {props => (
             <SafeArea Component={Notifications} theme="light" {...props} />
           )}
         </Stack.Screen>
-
+        <Stack.Screen name="FilterNotifications">
+          {props => (
+            <SafeArea
+              Component={FilterNotifications}
+              theme="light"
+              {...props}
+            />
+          )}
+        </Stack.Screen>
         <Stack.Screen name="Profile">
           {props => <SafeArea Component={Profile} theme="light" {...props} />}
+        </Stack.Screen>
+        <Stack.Screen name="EditProfile">
+          {props => (
+            <KeyboardAvoidingView
+              flex={1}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+              <SafeArea Component={EditProfile} theme="light" {...props} />
+            </KeyboardAvoidingView>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="EditPassword">
+          {props => (
+            <SafeArea Component={EditPassword} theme="light" {...props} />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="Policy">
+          {props => <SafeArea Component={Policy} theme="light" {...props} />}
+        </Stack.Screen>
+        <Stack.Screen name="TermsOfUse">
+          {props => (
+            <SafeArea Component={TermsOfUse} theme="light" {...props} />
+          )}
         </Stack.Screen>
       </Stack.Navigator>
     );

@@ -27,7 +27,7 @@ function TabBar({state, navigation, descriptors, ...props}: any) {
           let iconName: string = '';
           if (route.name === 'HomePage') {
             iconName = 'home-variant-outline';
-          } else if (route.name === 'Tab1') {
+          } else if (route.name === 'PropertsPage') {
             iconName = 'gate';
           } else if (route.name === 'Tab2') {
             iconName = 'horse-variant';

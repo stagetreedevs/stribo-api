@@ -9,7 +9,7 @@ import {
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
-import {Alert} from 'react-native';
+import BasicText from '../BasicText';
 
 type BasicHeaderProps = {
   navigation: any;
@@ -17,9 +17,14 @@ type BasicHeaderProps = {
   notification?: boolean;
   menu?: boolean;
   showModal?: () => void;
+  functionOption?: () => void;
+};
+type MenuProps = {
+  navigation: any;
+  functionOption?: () => void;
 };
 
-const SimpleMenu = () => {
+const SimpleMenu = ({functionOption, navigation}: MenuProps) => {
   return (
     <Menu
       style={{
@@ -42,52 +47,40 @@ const SimpleMenu = () => {
             width: 'auto',
           },
         }}>
-        <MenuOption onSelect={() => Alert.alert('Delete')}>
+        <MenuOption onSelect={() => navigation.navigate('EditProfile')}>
           <HStack space={3} mr={4} alignItems="center">
             <MaterialCommunityIcons
               name={'pencil-outline'}
               color={'#0A2117'}
               size={22}
             />
-            <Text
-              fontSize={'16px'}
-              color={'#0A2117'}
-              fontWeight={340}
-              fontFamily={'Roboto-Regular'}>
+            <BasicText size={16} theme="dark">
               Editar dados
-            </Text>
+            </BasicText>
           </HStack>
         </MenuOption>
-        <MenuOption onSelect={() => Alert.alert('Delete')}>
+        <MenuOption onSelect={() => navigation.navigate('EditPassword')}>
           <HStack space={3} mr={4} alignItems="center">
             <MaterialCommunityIcons
               name={'form-textbox-password'}
               color={'#0A2117'}
               size={22}
             />
-            <Text
-              fontSize={'16px'}
-              color={'#0A2117'}
-              fontWeight={340}
-              fontFamily={'Roboto-Regular'}>
+            <BasicText size={16} theme="dark">
               Alterar senha
-            </Text>
+            </BasicText>
           </HStack>
         </MenuOption>
-        <MenuOption onSelect={() => Alert.alert('Delete')}>
+        <MenuOption onSelect={functionOption}>
           <HStack space={3} mr={4} alignItems="center">
             <MaterialCommunityIcons
               name={'trash-can-outline'}
               color={'#E75535'}
               size={22}
             />
-            <Text
-              fontSize={'16px'}
-              color={'#E75535'}
-              fontWeight={340}
-              fontFamily={'Roboto-Regular'}>
+            <BasicText size={16} theme="#E75535">
               Excluir Conta
-            </Text>
+            </BasicText>
           </HStack>
         </MenuOption>
       </MenuOptions>
@@ -101,6 +94,7 @@ function BasicHeader({
   notification,
   menu,
   showModal,
+  functionOption,
 }: BasicHeaderProps) {
   return (
     <HStack
@@ -129,7 +123,7 @@ function BasicHeader({
         </Pressable>
       ) : menu ? (
         <HStack w={30}>
-          <SimpleMenu />
+          <SimpleMenu navigation={navigation} functionOption={functionOption} />
         </HStack>
       ) : (
         <></>

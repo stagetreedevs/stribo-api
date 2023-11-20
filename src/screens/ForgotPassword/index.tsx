@@ -5,7 +5,6 @@ import {
   VStack,
   Text,
   Input,
-  Pressable,
   ScrollView,
   Button,
   HStack,
@@ -16,6 +15,8 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Send from '../../../assets/send.svg';
 
 import {SafeAreaView} from 'react-native-safe-area-context';
+import BasicText from '../../components/BasicText';
+import BasicHeader from '../../components/BasicHeader';
 function ForgotPassword({navigation}: any) {
   const [showModal, setShowModal] = useState(false);
   return (
@@ -25,29 +26,13 @@ function ForgotPassword({navigation}: any) {
         style={{
           flex: 1,
         }}>
-        <HStack w={'100%'} alignItems={'center'} space={12} mb={8}>
-          <Pressable
-            onPress={() => navigation.navigate('LoginPage')}
-            padding={0}>
-            <MaterialIcons name={'arrow-back'} color={'#0A2117'} size={26} />
-          </Pressable>
-          <Text
-            fontFamily={'IBMPlexSans-Regular'}
-            fontSize={20}
-            color={'#0A2117'}>
-            Recuperar senha
-          </Text>
-        </HStack>
+        <BasicHeader name="Recuperar Senha" navigation={navigation} />
         <ScrollView flex={1}>
           <VStack flex={1}>
-            <Text
-              fontSize={'17px'}
-              color={'#0A2117'}
-              fontFamily={'Roboto-Regular'}
-              marginY={4}>
+            <BasicText theme="dark" marginY={2}>
               Informe abaixo o seu email de cadastro. Se ele estiver em nosso
               banco de dados, enviaremos instruções para você recuperar a senha.
-            </Text>
+            </BasicText>
             <Input
               size={'lg'}
               height={'48px'}
@@ -73,13 +58,9 @@ function ForgotPassword({navigation}: any) {
                 alignItems="center"
                 justifyContent={'center'}>
                 <Send width={25} height={25} />
-                <Text
-                  fontSize={'17px'}
-                  fontWeight={'bold'}
-                  color={'#DCF7E3'}
-                  fontFamily="Roboto-Bold">
+                <BasicText theme="light" fontWeight={'bold'}>
                   Enviar
-                </Text>
+                </BasicText>
               </HStack>
             </Button>
           </VStack>
@@ -117,15 +98,11 @@ function ForgotPassword({navigation}: any) {
                 Solicitação enviada!
               </Text>
             </VStack>
-            <Text
-              fontSize={'17px'}
-              color={'#0A2117'}
-              fontFamily={'Roboto-Regular'}
-              textAlign="center">
+            <BasicText theme="dark" textAlign="center">
               Caso demore a receber o email, verifique sua caixa de entrada ou
               de spams. Certifique-se também de que o email informado está
               correto e que é cadastrado em nosso app.
-            </Text>
+            </BasicText>
             <Button
               h={'50px'}
               w={'100%'}
@@ -136,13 +113,9 @@ function ForgotPassword({navigation}: any) {
                 setShowModal(false);
                 navigation.navigate('LoginPage');
               }}>
-              <Text
-                fontSize={'17px'}
-                fontWeight={'bold'}
-                color={'#DCF7E3'}
-                fontFamily="Roboto-Bold">
+              <BasicText theme="light" fontWeight={'bold'}>
                 Enviar
-              </Text>
+              </BasicText>
             </Button>
           </VStack>
         </Modal>

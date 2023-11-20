@@ -2,7 +2,6 @@
 import {
   StatusBar,
   VStack,
-  Text,
   Input,
   Icon,
   Pressable,
@@ -15,6 +14,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Toast from 'react-native-toast-message';
 import Logo from '../../../assets/striboLogo.svg';
 import {AuthContext} from '../../contexts/AuthContext';
+import BasicText from '../../components/BasicText';
 function Login({navigation}: any) {
   const [show, setShow] = useState(true);
   const [email, setEmail] = useState('');
@@ -116,25 +116,17 @@ function Login({navigation}: any) {
                 borderRadius={24}
                 bg="#0A2117"
                 onPress={handleSignIn}>
-                <Text
-                  fontSize={'17px'}
-                  fontWeight={'bold'}
-                  color={'#DCF7E3'}
-                  fontFamily="Roboto-Bold">
+                <BasicText theme="light" fontWeight={'bold'}>
                   Entrar
-                </Text>
+                </BasicText>
               </Button>
             </VStack>
             <Pressable
               marginY={4}
               onPress={() => navigation.navigate('ForgotPasswordPage')}>
-              <Text
-                color={'#0A2117'}
-                fontSize={'17px'}
-                fontWeight={'semibold'}
-                fontFamily="Roboto-Bold">
+              <BasicText theme="dark" fontWeight={'medium'}>
                 Esqueceu a senha?
-              </Text>
+              </BasicText>
             </Pressable>
             <VStack marginY={8} w="100%">
               <Button
@@ -152,13 +144,9 @@ function Login({navigation}: any) {
                     color={'#0A2117'}
                     size={6}
                   />
-                  <Text
-                    color={'#0A2117'}
-                    fontSize={'17px'}
-                    fontWeight={'semibold'}
-                    fontFamily="Roboto-Bold">
+                  <BasicText theme="dark" fontWeight={'medium'}>
                     Continuar com o Google
-                  </Text>
+                  </BasicText>
                 </HStack>
               </Button>
             </VStack>

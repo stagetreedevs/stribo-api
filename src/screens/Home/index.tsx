@@ -2,24 +2,33 @@
 /* eslint-disable react/react-in-jsx-scope */
 import {Text, VStack, Pressable, HStack} from 'native-base';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {useContext, useState} from 'react';
+import {useContext, useState, useCallback, useMemo, useRef} from 'react';
 import Header from '../../components/Header';
 import {ImageBackground} from 'react-native';
 import HorsesBackGound from '../../../assets/horsesBackGround2.jpg';
 import {AuthContext} from '../../contexts/AuthContext';
+import BottomSheet from '@gorhom/bottom-sheet';
+import BasicText from '../../components/BasicText';
 
 type Props = {
   navigation: any;
 };
 
 function Home({navigation}: Props) {
-  const [show, setShow] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showSheet, setShowSheet] = useState(false);
   const {user} = useContext(AuthContext);
-  console.log('user', user);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ['1%', '40%', '20%', '75%'], []);
+  const handleSheetChanges = useCallback((index: number) => {
+    if (index === 0) {
+      setShowSheet(false);
+    }
+  }, []);
 
   return (
     <VStack flex={1} backgroundColor="#0A2117" justifyContent={'flex-end'}>
-      <Header navigation={navigation} username={user?.name as string} />
+      <Header navigation={navigation} home username={user?.name as string} />
       <VStack
         flex={1}
         backgroundColor="#DCF7E3"
@@ -39,28 +48,23 @@ function Home({navigation}: Props) {
             w={'100%'}
             justifyContent="space-between"
             alignItems={'flex-end'}>
-            <Text
-              fontSize={'17px'}
-              fontWeight={'normal'}
-              color={'#0A2117'}
-              fontFamily="Roboto-Medium"
-              mb={2}>
+            <BasicText theme="dark" mb={2}>
               Balanço Semanal (R$)
-            </Text>
-            <Pressable onPress={() => setShow(!show)}>
+            </BasicText>
+            <Pressable onPress={() => setShowPassword(!showPassword)}>
               <MaterialCommunityIcons
-                name={!show ? 'eye-outline' : 'eye-off-outline'}
+                name={!showPassword ? 'eye-outline' : 'eye-off-outline'}
                 color={'#0A2117'}
                 size={26}
               />
             </Pressable>
           </HStack>
           <Text
-            fontSize={show ? '25px' : '40px'}
+            fontSize={showPassword ? '25px' : '40px'}
             fontWeight={'normal'}
             color={'#0A2117'}
             fontFamily="IBMPlexSans-Regular">
-            {show ? 'R$ 1900,75' : '*****'}
+            {showPassword ? 'R$ 1900,75' : '*****'}
           </Text>
         </VStack>
         <HStack w={'100%'} h={150} justifyContent="space-between">
@@ -84,13 +88,9 @@ function Home({navigation}: Props) {
                 flex={1}
                 borderRadius={16}
                 p={4}>
-                <Text
-                  fontSize={'14px'}
-                  fontWeight={'normal'}
-                  color={'#DCF7E3'}
-                  fontFamily="Roboto-Regular">
+                <BasicText theme="light" size={14} fontWeight={'normal'}>
                   Animais
-                </Text>
+                </BasicText>
                 <Text
                   fontSize={'46px'}
                   lineHeight={60}
@@ -149,20 +149,12 @@ function Home({navigation}: Props) {
           borderRadius={16}
           p={4}>
           <VStack>
-            <Text
-              fontSize={'17px'}
-              fontWeight={'medium'}
-              color={'#0A2117'}
-              fontFamily="Roboto-Medium">
+            <BasicText theme="dark" fontWeight="medium">
               Relatórios
-            </Text>
-            <Text
-              fontSize={'14px'}
-              fontWeight={'normal'}
-              color={'#0A2117'}
-              fontFamily="Roboto-Regular">
+            </BasicText>
+            <BasicText theme="dark" fontWeight="normal" size={14}>
               Lorem Ipsum, Dolor Sit, Consectetur, etc
-            </Text>
+            </BasicText>
           </VStack>
           <MaterialCommunityIcons
             name={'chart-line'}
@@ -170,31 +162,128 @@ function Home({navigation}: Props) {
             size={24}
           />
         </HStack>
-        <HStack
-          w={'100%'}
-          justifyContent="space-between"
-          bg="#BAEDC880"
-          borderRadius={16}
-          p={4}>
-          <VStack>
+        <Pressable onPress={() => setShowSheet(!showSheet)}>
+          <HStack
+            w={'100%'}
+            justifyContent="space-between"
+            bg="#BAEDC880"
+            borderRadius={16}
+            p={4}>
+            <VStack>
+              <BasicText theme="dark" fontWeight="medium">
+                Cadastrar
+              </BasicText>
+              <BasicText theme="dark" fontWeight="normal" size={14}>
+                Animais, Parceiros, Despesas, etc
+              </BasicText>
+            </VStack>
+            <MaterialCommunityIcons name={'plus'} color={'#0A2117'} size={24} />
+          </HStack>
+        </Pressable>
+      </VStack>
+
+      {showSheet && (
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={1}
+          snapPoints={snapPoints}
+          onChange={handleSheetChanges}
+          backgroundStyle={{
+            backgroundColor: '#DCF7E3',
+            borderWidth: 1,
+            borderColor: '#00000030',
+            borderRadius: 25,
+          }}>
+          <VStack flex={1} p={4}>
             <Text
-              fontSize={'17px'}
-              fontWeight={'medium'}
-              color={'#0A2117'}
-              fontFamily="Roboto-Medium">
+              fontFamily={'IBMPlexSans-Regular'}
+              fontSize={23}
+              color={'#0A2117'}>
               Cadastrar
             </Text>
-            <Text
-              fontSize={'14px'}
-              fontWeight={'normal'}
-              color={'#0A2117'}
-              fontFamily="Roboto-Regular">
-              Animais, Parceiros, Despesas, etc
-            </Text>
+            <VStack py={8} space={8}>
+              <Pressable>
+                <HStack alignItems={'center'} space={4}>
+                  <MaterialCommunityIcons
+                    name="horse-variant"
+                    color={'#0A2117'}
+                    size={24}
+                  />
+                  <BasicText theme="dark">Animal</BasicText>
+                </HStack>
+              </Pressable>
+
+              <Pressable>
+                <HStack alignItems={'center'} space={4}>
+                  <MaterialCommunityIcons
+                    name="needle"
+                    color={'#0A2117'}
+                    size={24}
+                  />
+                  <BasicText theme="dark">
+                    Procedimento Clínico/Sanitário
+                  </BasicText>
+                </HStack>
+              </Pressable>
+
+              <Pressable>
+                <HStack alignItems={'center'} space={4}>
+                  <MaterialCommunityIcons
+                    name="gender-male-female"
+                    color={'#0A2117'}
+                    size={24}
+                  />
+                  <BasicText theme="dark">Procedimento Reprodutivo</BasicText>
+                </HStack>
+              </Pressable>
+
+              <Pressable>
+                <HStack alignItems={'center'} space={4}>
+                  <MaterialCommunityIcons
+                    name="package-variant-closed"
+                    color={'#0A2117'}
+                    size={24}
+                  />
+                  <BasicText theme="dark">Movimento de Estoque</BasicText>
+                </HStack>
+              </Pressable>
+
+              <Pressable>
+                <HStack alignItems={'center'} space={4}>
+                  <MaterialCommunityIcons
+                    name="account-multiple-outline"
+                    color={'#0A2117'}
+                    size={24}
+                  />
+                  <BasicText theme="dark">Cliente</BasicText>
+                </HStack>
+              </Pressable>
+
+              <Pressable>
+                <HStack alignItems={'center'} space={4}>
+                  <MaterialCommunityIcons
+                    name="account-multiple-outline"
+                    color={'#0A2117'}
+                    size={24}
+                  />
+                  <BasicText theme="dark">Fornecedor</BasicText>
+                </HStack>
+              </Pressable>
+
+              <Pressable>
+                <HStack alignItems={'center'} space={4}>
+                  <MaterialCommunityIcons
+                    name="chart-line"
+                    color={'#0A2117'}
+                    size={24}
+                  />
+                  <BasicText theme="dark">Despesa ou Receita</BasicText>
+                </HStack>
+              </Pressable>
+            </VStack>
           </VStack>
-          <MaterialCommunityIcons name={'plus'} color={'#0A2117'} size={24} />
-        </HStack>
-      </VStack>
+        </BottomSheet>
+      )}
     </VStack>
   );
 }
