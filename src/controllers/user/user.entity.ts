@@ -6,48 +6,63 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ default: null })
-  picture: string;
-
   @Column()
-  first_name: string;
+  name: string;
 
   @Column()
   last_name: string;
 
-  @Column({ default: null })
-  profile: string;
-
-  @Column({ default: null })
-  cpf: string;
-
-  @Column({ default: null })
-  phone: string;
+  @Column()
+  username: string;
 
   @Column()
-  email: string;
-
-  @Column({ default: null })
   password: string;
 
+  @Column()
+  type: string;
+
+  @Column()
+  cpf: string;
+
+  @Column()
+  phone: string;
+
+  @Column({ default: null })
+  photo: string;
+
+  @Column({ default: false })
+  recieve_notifications: boolean;
+
+  @Column({ default: null })
+  token: string;
+
+  @Column({ default: false })
+  first_login: boolean;
+
   constructor(
-    picture: string,
-    first_name: string,
+    name: string,
     last_name: string,
-    profile: string,
+    username: string,
+    password: string,
+    type: string,
     cpf: string,
     phone: string,
-    email: string,
-    password: string
+    photo: string,
+    recieve_notifications: boolean,
+    token: string,
+    first_login: boolean,
   ) {
     this.id = uuidv4();
-    this.picture = picture;
-    this.first_name = first_name;
+    this.name = name;
     this.last_name = last_name;
-    this.profile = profile;
+    this.username = username;
+    this.password = password;
+    this.type = type;
     this.cpf = cpf;
     this.phone = phone;
-    this.email = email;
-    this.password = password;
+    this.photo = photo;
+    this.recieve_notifications = recieve_notifications;
+    this.token = token;
+    this.first_login = first_login;
   }
 }

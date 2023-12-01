@@ -1,25 +1,19 @@
 /* eslint-disable prettier/prettier */
 import { ApiProperty } from '@nestjs/swagger';
-export class UserDto {
-    @ApiProperty()
+export class UpdateUserDto {
+    @ApiProperty({ required: false })
     name: string;
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
     last_name: string;
 
-    @ApiProperty()
-    username: string;
-
-    @ApiProperty()
-    password: string;
-
-    @ApiProperty()
+    @ApiProperty({ required: false })
     type: string;
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
     cpf: string;
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
     phone: string;
 
     @ApiProperty({ type: 'string', format: 'binary', required: false })

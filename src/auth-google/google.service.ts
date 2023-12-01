@@ -21,16 +21,19 @@ export class GoogleService {
             const googleInfo = req.user;
             if (googleInfo) {
                 const newUser = new User(
-                    googleInfo.picture,
                     googleInfo.firstName,
                     googleInfo.lastName,
-                    '',
-                    '',
-                    '',
                     googleInfo.email,
-                    ''
+                    '',
+                    '',
+                    '',
+                    '',
+                    googleInfo.picture,
+                    false,
+                    '',
+                    false
                 );
-                user = await this.userService.create(newUser);
+                user = await this.userService.createByEmail(newUser);
             }
         }
 

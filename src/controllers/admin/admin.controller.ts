@@ -1,43 +1,62 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile, Patch } from '@nestjs/common';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { AdminDto } from './admin.dto';
 import { Admin } from './admin.entity';
-@ApiTags('Administrador')
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateAdminDto } from './update-admin.dto';
+@ApiTags('ADMIN')
 @Controller('admin')
 export class AdminController {
     constructor(private readonly adminService: AdminService) { }
 
     @Post()
-    @ApiOperation({ summary: 'CRIAR ADMIN', description: 'PASSE O BODY PREENCHIDO E CRIE UM ADMIN.' })
+    @ApiOperation({ summary: 'CRIAR ADMIN' })
     @ApiBody({ type: AdminDto })
-    async create(@Body() admin: Admin): Promise<Admin> {
-        return this.adminService.create(admin);
+    @ApiConsumes('multipart/form-data')
+    @UseInterceptors(FileInterceptor('image'))
+    async create(
+        @UploadedFile() image: Express.Multer.File,
+        @Body() body: Admin,
+    ): Promise<Admin> {
+        return this.adminService.create(body, image);
     }
 
     @Get()
-    @ApiOperation({ summary: 'TODOS ADMINS', description: 'RETORNA TODOS OS ADMINS.' })
+    @ApiOperation({ summary: 'TODOS ADMINS' })
     async findAll(): Promise<Admin[]> {
         return this.adminService.findAll();
     }
 
     @Get(':id')
-    @ApiOperation({ summary: 'BUSCAR ADMIN', description: 'PASSE COMO PARAMETRO O ID E RETORNE UM ADMIN.' })
+    @ApiOperation({ summary: 'BUSCAR ADMIN' })
     async findOne(@Param('id') id: string): Promise<Admin> {
         return this.adminService.findOne(id);
     }
 
     @Put(':id')
-    @ApiOperation({ summary: 'EDITAR ADMIN', description: 'PASSE COMO PARAMETRO O ID E UM BODY CONTENDO INFORMAÇÕES PARA ATAULIZAR O.' })
-    async update(@Param('id') id: string, @Body() admin: Admin): Promise<Admin> {
-        return this.adminService.update(id, admin);
+    @ApiOperation({ summary: 'EDITAR ADMIN' })
+    @ApiBody({ type: UpdateAdminDto })
+    @ApiConsumes('multipart/form-data')
+    @UseInterceptors(FileInterceptor('image'))
+    async update(
+        @Param('id') id: string,
+        @UploadedFile() image: Express.Multer.File,
+        @Body() body: UpdateAdminDto,
+    ): Promise<Admin> {
+        return this.adminService.update(id, body, image);
+    }
+
+    @Patch(':id/password')
+    @ApiOperation({ summary: 'ATUALIZAR SENHA DO ADMIN' })
+    async updatePassword(@Param('id') id: string, @Body('newPassword') newPassword: string): Promise<Admin> {
+        return this.adminService.updatePassword(id, newPassword);
     }
 
     @Delete(':id')
-    @ApiOperation({ summary: 'DELETAR ADMIN', description: 'PASSE COMO PARAMETRO O ID E DELETE UM ADMIN.' })
+    @ApiOperation({ summary: 'DELETAR ADMIN' })
     async remove(@Param('id') id: string): Promise<void> {
         return this.adminService.remove(id);
     }
-
 }

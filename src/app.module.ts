@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
-import { AdminModule } from './controllers/admin/admin.module';
 import { UserModule } from './controllers/user/user.module';
+import { AdminModule } from './controllers/admin/admin.module';
+import { NotificationModule } from './controllers/notification/notification.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
@@ -14,21 +15,25 @@ import { AuthService } from './auth/auth.service';
 import { SwaggerModule } from '@nestjs/swagger';
 import { Admin } from './controllers/admin/admin.entity';
 import { User } from './controllers/user/user.entity';
-import { environment } from './environment';
+import { Notification } from './controllers/notification/notification.entity';
+import { S3Module } from './controllers/s3/s3.module';
+import * as dotenv from 'dotenv';
+dotenv.config();
 @Module({
   imports: [
-    AdminModule,
-    UserModule,
+    S3Module,
+    NotificationModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: environment.PG_HOST,
-      port: environment.PG_PORT,
-      username: environment.PG_USER,
-      password: environment.PG_PASSWORD,
-      database: environment.PG_DATABASE,
+      host: process.env.PG_HOST,
+      port: Number(process.env.PG_PORT),
+      username: process.env.PG_USER,
+      password: process.env.PG_PASSWORD,
+      database: process.env.PG_DATABASE,
       entities: [
         Admin,
-        User
+        User,
+        Notification
       ],
       autoLoadEntities: true,
       synchronize: true,
@@ -43,7 +48,9 @@ import { environment } from './environment';
     }),
     SwaggerModule,
     GoogleModule,
-    AuthModule
+    AuthModule,
+    UserModule,
+    AdminModule
   ],
   controllers: [AppController],
   providers: [

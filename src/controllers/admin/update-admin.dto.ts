@@ -1,26 +1,20 @@
 /* eslint-disable prettier/prettier */
 import { ApiProperty } from '@nestjs/swagger';
-export class UserDto {
-    @ApiProperty()
+export class UpdateAdminDto {
+    @ApiProperty({ required: false })
     name: string;
 
-    @ApiProperty()
-    last_name: string;
-
-    @ApiProperty()
+    @ApiProperty({ required: false })
     username: string;
 
-    @ApiProperty()
-    password: string;
-
-    @ApiProperty()
-    type: string;
-
-    @ApiProperty()
+    @ApiProperty({ required: false })
     cpf: string;
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
     phone: string;
+
+    @ApiProperty({ required: false })
+    role: string;
 
     @ApiProperty({ type: 'string', format: 'binary', required: false })
     image?: Express.Multer.File;

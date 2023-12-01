@@ -17,7 +17,7 @@ export class AppController {
 
   @UseGuards(AuthGuard('local'))
   @Post('login')
-  @ApiOperation({ summary: 'LOGIN PADRÃO', description: 'PASSE O BODY PREENCHIDO(USERNAME-> EMAIL; PASSWORD-> SENHA). E OBTENHA COMO RESPOSTA UM TOKEN JWT CONTENDO INFORMAÇÕES SOBRE O USUÁRIO. O TOKEN TEM VALIDADE DE 1 DIA.' })
+  @ApiOperation({ summary: 'LOGIN PADRÃO', description: 'PASSE O BODY PREENCHIDO E OBTENHA COMO RESPOSTA UM TOKEN JWT CONTENDO INFORMAÇÕES SOBRE O USUÁRIO. O TOKEN TEM VALIDADE DE 1 DIA.' })
   @ApiBody({ type: LoginDto })
   async login(@Request() req) {
     return req.user;

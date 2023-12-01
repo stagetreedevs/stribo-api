@@ -2,14 +2,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { environment } from './environment';
+import { config } from 'dotenv';
+config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
     .setTitle('STRIBO API')
     .setDescription('Stribo API - Todos os endpoints da aplicação')
-    .setVersion('1.0')
-    .addTag('app')
+    .setVersion('0.2')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document, {
@@ -29,6 +29,6 @@ async function bootstrap() {
     origin: 'http//localhost:3000',
     credentials: true
   });
-  await app.listen(environment.PORT);
+  await app.listen(process.env.PORT);
 }
 bootstrap();
