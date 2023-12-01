@@ -17,7 +17,7 @@ export class AdminService {
         let imageUrl: string | null = null;
 
         if (!!photo) {
-            const url = await this.s3Service.upload(photo, 'usuarios');
+            const url = await this.s3Service.upload(photo, 'admin');
             imageUrl = url;
         }
 
@@ -56,7 +56,7 @@ export class AdminService {
         let imageUrl: string | null = verify.photo;
 
         if (!!photo) {
-            const url = await this.s3Service.upload(photo, 'usuarios');
+            const url = await this.s3Service.upload(photo, 'admin');
             imageUrl = url;
 
             if (verify.photo) {
@@ -104,18 +104,5 @@ export class AdminService {
 
         await this.adminRepos.delete(id);
     }
-
-    // async update(id: string, admin: Admin): Promise<Admin> {
-    //     await this.adminRepos.update(id, admin);
-    //     return this.adminRepos.findOne({
-    //         where: {
-    //             id: id,
-    //         }
-    //     });
-    // }
-
-    // async remove(id: string): Promise<void> {
-    //     await this.adminRepos.delete(id);
-    // }
 
 }
