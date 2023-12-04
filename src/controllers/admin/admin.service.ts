@@ -1,19 +1,24 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Admin } from './admin.entity';
 import { S3Service } from '../s3/s3.service';
+import { PropertyService } from '../property/property.service';
 @Injectable()
 export class AdminService {
     constructor(
-        @InjectRepository(Admin)
-        private readonly adminRepos: Repository<Admin>,
+        @InjectRepository(Admin) private readonly adminRepos: Repository<Admin>,
+        @Inject(forwardRef(() => PropertyService)) private readonly propertyService: PropertyService,
         private readonly s3Service: S3Service
     ) { }
 
-    async create(admin: Admin, photo: Express.Multer.File): Promise<Admin> {
+    async create(body: Admin, photo: Express.Multer.File, property: string): Promise<Admin> {
+        const propriedade = await this.propertyService.findOne(property);
+        if (!propriedade) {
+            throw new HttpException('Propriedade nao encontrada', HttpStatus.BAD_REQUEST);
+        }
+
         let imageUrl: string | null = null;
 
         if (!!photo) {
@@ -21,9 +26,12 @@ export class AdminService {
             imageUrl = url;
         }
 
-        admin.photo = imageUrl;
+        body.photo = imageUrl;
 
-        return await this.adminRepos.save(admin);
+        const created = await this.adminRepos.save(body);
+        await this.propertyService.addAdmins(property, created.id);
+
+        return created;
     }
 
     async findAll(): Promise<Admin[]> {
@@ -95,14 +103,28 @@ export class AdminService {
 
     async remove(id: string): Promise<void> {
         const verify = await this.findOne(id);
-
-        await this.s3Service.deleteFileS3(verify.photo);
-
         if (!verify) {
             throw new HttpException('Administrador nao encontrado', HttpStatus.BAD_REQUEST);
         }
-
+    
+        // Remove a imagem da AWS
+        if (verify.photo) {
+            await this.s3Service.deleteFileS3(verify.photo);
+        }
+    
+        // Busca as propriedades associadas ao administrador
+        const associatedProperties = await this.propertyService.findByAdmin(id);
+    
+        // Remove o administrador de todas as propriedades associadas
+        await Promise.all(
+            associatedProperties.map(async property => {
+                await this.propertyService.removeAdmin(property.id, id);
+            })
+        );
+    
+        // Remove o administrador do banco de dados
         await this.adminRepos.delete(id);
     }
+    
 
 }

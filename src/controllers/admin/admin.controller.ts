@@ -11,16 +11,17 @@ import { UpdateAdminDto } from './update-admin.dto';
 export class AdminController {
     constructor(private readonly adminService: AdminService) { }
 
-    @Post()
+    @Post(':propertyId')
     @ApiOperation({ summary: 'CRIAR ADMIN' })
     @ApiBody({ type: AdminDto })
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('image'))
     async create(
-        @UploadedFile() image: Express.Multer.File,
-        @Body() body: Admin,
+      @UploadedFile() image: Express.Multer.File,
+      @Body() body: Admin,
+      @Param('propertyId') propertyId: string,
     ): Promise<Admin> {
-        return this.adminService.create(body, image);
+      return this.adminService.create(body, image, propertyId);
     }
 
     @Get()

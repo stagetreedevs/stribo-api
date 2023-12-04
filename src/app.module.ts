@@ -2,6 +2,7 @@
 import { UserModule } from './controllers/user/user.module';
 import { AdminModule } from './controllers/admin/admin.module';
 import { NotificationModule } from './controllers/notification/notification.module';
+import { PropertyModule } from './controllers/property/property.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
@@ -21,6 +22,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 @Module({
   imports: [
+        PropertyModule, 
     S3Module,
     NotificationModule,
     TypeOrmModule.forRoot({
