@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { UserModule } from './controllers/user/user.module';
 import { AdminModule } from './controllers/admin/admin.module';
+import { AnimalModule } from './controllers/animal/animal.module';
 import { NotificationModule } from './controllers/notification/notification.module';
 import { PropertyModule } from './controllers/property/property.module';
 import { AppController } from './app.controller';
@@ -22,6 +23,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 @Module({
   imports: [
+        AnimalModule, 
         PropertyModule, 
     S3Module,
     NotificationModule,
