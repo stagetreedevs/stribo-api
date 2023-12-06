@@ -36,7 +36,7 @@ export class User {
   @Column({ default: null })
   token: string;
 
-  @Column({ default: false })
+  @Column({ default: true })
   first_login: boolean;
 
   constructor(

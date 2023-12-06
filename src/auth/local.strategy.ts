@@ -20,7 +20,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
     const json = {
-      accessToken: this.jwtService.sign(user)
+      accessToken: this.jwtService.sign(user),
+      user: user
     }
     return json;
   }

@@ -97,7 +97,6 @@ export class UserService {
     return this.findOne(id);
   }
 
-
   async updatePassword(id: string, newPassword: string): Promise<User> {
     const verifyUser = await this.findOne(id);
 
@@ -109,6 +108,23 @@ export class UserService {
       .createQueryBuilder()
       .update(User)
       .set({ password: newPassword })
+      .where("id = :id", { id })
+      .execute();
+
+    return this.findOne(id);
+  }
+
+  async fistLogin(id: string, newPassword: string, newName: string): Promise<User> {
+    const verifyUser = await this.findOne(id);
+
+    if (!verifyUser) {
+      throw new HttpException('Usuario nao encontrado', HttpStatus.BAD_REQUEST);
+    }
+
+    await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ first_login: false, password: newPassword, name: newName })
       .where("id = :id", { id })
       .execute();
 

@@ -5,7 +5,7 @@ import { UserService } from './user.service';
 import { UserDto } from './user.dto';
 import { User } from './user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UpdateUserDto } from './update-user.dto';
+import { UpdateUserDto, UpdateUserFirstLoginDto } from './update-user.dto';
 @ApiTags('USUÁRIOS')
 @Controller('user')
 export class UserController {
@@ -52,6 +52,13 @@ export class UserController {
   @ApiOperation({ summary: 'ATUALIZAR SENHA DO USUÁRIO' })
   async updatePassword(@Param('id') id: string, @Body('newPassword') newPassword: string): Promise<User> {
     return this.userService.updatePassword(id, newPassword);
+  }
+
+  @Patch(':id/firstLogin')
+  @ApiBody({ type: UpdateUserFirstLoginDto })
+  @ApiOperation({ summary: 'ATUALIZAR SENHA E NOME DO USUÁRIO NO PROMEIRO LOGIN' })
+  async firstLogin(@Param('id') id: string, @Body() body: UpdateUserFirstLoginDto): Promise<User> {
+    return this.userService.fistLogin(id, body.newPassword, body.name);
   }
 
   @Delete(':id')
