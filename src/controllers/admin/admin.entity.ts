@@ -24,11 +24,14 @@ export class Admin {
   @Column({ default: null })
   role: string;
 
-  @Column({ default: null })
-  status: string;
+  @Column({ default: () => "'Pendente'", nullable: true, })
+  status: string;  
 
   @Column({ default: null })
   photo: string;
+
+  @Column({ default: true })
+  first_login: boolean;
 
   constructor(
     name: string,
@@ -38,7 +41,9 @@ export class Admin {
     phone: string,
     role: string,
     status: string,
-    photo: string
+    photo: string,
+    first_login: boolean,
+    
   ) {
     this.id = uuidv4();
     this.name = name;
@@ -49,5 +54,6 @@ export class Admin {
     this.role = role;
     this.status = status;
     this.photo = photo;
+    this.first_login = first_login;
   }
 }

@@ -80,6 +80,20 @@ export class AdminService {
         return this.findOne(id);
     }
 
+    async firstLogin(id: string, newPassword: string, newName: string): Promise<Admin> {
+        // Verifica se o administrador existe
+        await this.findOne(id);
+
+        await this.adminRepos
+            .createQueryBuilder()
+            .update(Admin)
+            .set({ first_login: false, status: () => "'Ativo'", password: newPassword, name: newName })
+            .where("id = :id", { id })
+            .execute();
+
+        return this.findOne(id);
+    }
+
     async updatePassword(id: string, newPassword: string): Promise<Admin> {
         await this.findOne(id);
 

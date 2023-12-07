@@ -5,7 +5,7 @@ import { AdminService } from './admin.service';
 import { AdminDto } from './admin.dto';
 import { Admin } from './admin.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UpdateAdminDto } from './update-admin.dto';
+import { UpdateAdminDto, UpdateAdminFirstLoginDto } from './update-admin.dto';
 @ApiTags('ADMIN')
 @Controller('admin')
 export class AdminController {
@@ -17,11 +17,11 @@ export class AdminController {
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('image'))
     async create(
-      @UploadedFile() image: Express.Multer.File,
-      @Body() body: Admin,
-      @Param('propertyId') propertyId: string,
+        @UploadedFile() image: Express.Multer.File,
+        @Body() body: Admin,
+        @Param('propertyId') propertyId: string,
     ): Promise<Admin> {
-      return this.adminService.create(body, image, propertyId);
+        return this.adminService.create(body, image, propertyId);
     }
 
     @Get()
@@ -47,6 +47,13 @@ export class AdminController {
         @Body() body: UpdateAdminDto,
     ): Promise<Admin> {
         return this.adminService.update(id, body, image);
+    }
+
+    @Patch(':id/firstLogin')
+    @ApiBody({ type: UpdateAdminFirstLoginDto })
+    @ApiOperation({ summary: 'ATUALIZAR SENHA E NOME DO ADMIN NO PROMEIRO LOGIN' })
+    async firstLogin(@Param('id') id: string, @Body() body: UpdateAdminFirstLoginDto): Promise<Admin> {
+        return this.adminService.firstLogin(id, body.newPassword, body.name);
     }
 
     @Patch(':id/password')

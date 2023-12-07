@@ -19,3 +19,12 @@ export class UpdateAdminDto {
     @ApiProperty({ type: 'string', format: 'binary', required: false })
     image?: Express.Multer.File;
 }
+
+export class UpdateAdminFirstLoginDto {
+    @ApiProperty({ required: false })
+    name: string;
+
+    @ApiProperty({ required: false })
+    newPassword: string;
+
+}
