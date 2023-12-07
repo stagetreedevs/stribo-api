@@ -24,8 +24,8 @@ export class Admin {
   @Column({ default: null })
   role: string;
 
-  @Column({ default: true })
-  status: boolean;
+  @Column({ default: null })
+  status: string;
 
   @Column({ default: null })
   photo: string;
@@ -37,7 +37,7 @@ export class Admin {
     cpf: string,
     phone: string,
     role: string,
-    status: boolean,
+    status: string,
     photo: string
   ) {
     this.id = uuidv4();
