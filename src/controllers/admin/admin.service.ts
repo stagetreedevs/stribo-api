@@ -39,11 +39,11 @@ export class AdminService {
     }
 
     async findOne(id: string): Promise<Admin> {
-        return this.adminRepos.findOne({
-            where: {
-                id: id,
-            }
-        });
+        const verify = await this.adminRepos.findOne({ where: { id } });
+        if (!verify) {
+            throw new HttpException('Administrador não encontrado', HttpStatus.BAD_REQUEST);
+        }
+        return verify;
     }
 
     async findEmail(email: string): Promise<Admin> {
@@ -56,10 +56,6 @@ export class AdminService {
 
     async update(id: string, admin: any, photo: Express.Multer.File): Promise<Admin> {
         const verify = await this.findOne(id);
-
-        if (!verify) {
-            throw new HttpException('Usuario nao encontrado', HttpStatus.BAD_REQUEST);
-        }
 
         let imageUrl: string | null = verify.photo;
 
@@ -85,11 +81,7 @@ export class AdminService {
     }
 
     async updatePassword(id: string, newPassword: string): Promise<Admin> {
-        const verify = await this.findOne(id);
-
-        if (!verify) {
-            throw new HttpException('Administrador nao encontrado', HttpStatus.BAD_REQUEST);
-        }
+        await this.findOne(id);
 
         await this.adminRepos
             .createQueryBuilder()
@@ -103,28 +95,25 @@ export class AdminService {
 
     async remove(id: string): Promise<void> {
         const verify = await this.findOne(id);
-        if (!verify) {
-            throw new HttpException('Administrador nao encontrado', HttpStatus.BAD_REQUEST);
-        }
-    
+
         // Remove a imagem da AWS
         if (verify.photo) {
             await this.s3Service.deleteFileS3(verify.photo);
         }
-    
+
         // Busca as propriedades associadas ao administrador
         const associatedProperties = await this.propertyService.findByAdmin(id);
-    
+
         // Remove o administrador de todas as propriedades associadas
         await Promise.all(
             associatedProperties.map(async property => {
                 await this.propertyService.removeAdmin(property.id, id);
             })
         );
-    
+
         // Remove o administrador do banco de dados
         await this.adminRepos.delete(id);
     }
-    
+
 
 }

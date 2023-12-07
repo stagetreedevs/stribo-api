@@ -29,7 +29,11 @@ export class AnimalService {
     }
 
     async findOne(id: string): Promise<Animal> {
-        return this.animal.findOne({ where: { id } });
+        const verify = await this.animal.findOne({ where: { id } });
+        if (!verify) {
+            throw new HttpException('Animal não encontrado', HttpStatus.BAD_REQUEST);
+        }
+        return verify;
     }
 
     async findByOwner(id: string): Promise<Animal> {
@@ -38,10 +42,6 @@ export class AnimalService {
 
     async update(id: string, body: any, photo: Express.Multer.File): Promise<Animal> {
         const verify = await this.findOne(id);
-
-        if (!verify) {
-            throw new HttpException('Animal nao encontrado', HttpStatus.BAD_REQUEST);
-        }
 
         let imageUrl: string | null = verify.photo;
 
@@ -77,9 +77,6 @@ export class AnimalService {
 
     async remove(id: string): Promise<void> {
         const verify = await this.findOne(id);
-        if (!verify) {
-            throw new HttpException('Animal nao encontrado', HttpStatus.BAD_REQUEST);
-        }
 
         // Remove a imagem da AWS
         if (verify.photo) {

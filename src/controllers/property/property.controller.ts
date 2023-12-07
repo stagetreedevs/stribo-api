@@ -44,6 +44,12 @@ export class PropertyController {
         return this.propertyService.findOne(id);
     }
 
+    @Get(':id/admins')
+    @ApiOperation({ summary: 'RETORNA ADMINS DE UMA PROPRIEDADE' })
+    async findAdminsForProperty(@Param('id') id: string): Promise<any[]> {
+        return this.propertyService.findAdminsForProperty(id);
+    }
+
     @Patch(':id/admins/add')
     @ApiOperation({ summary: 'ADICIONAR ADMIN A UMA PROPRIEDADE' })
     @ApiBody({ type: AdminPropertyDto })

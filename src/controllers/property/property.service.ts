@@ -36,7 +36,25 @@ export class PropertyService {
     }
 
     async findOne(id: string): Promise<Property> {
-        return this.propertyRep.findOne({ where: { id } });
+        const verify = await this.propertyRep.findOne({ where: { id } });
+        if (!verify) {
+            throw new HttpException('Propriedade não encontrada', HttpStatus.BAD_REQUEST);
+        }
+        return verify;
+    }
+
+    async findAdminsForProperty(propertyId: string): Promise<any[]> {
+        const property: Property = await this.findOne(propertyId);
+
+        const adminIds: string[] = property.admins;
+        const adminResults: any[] = [];
+
+        for (const adminId of adminIds) {
+            const adminResult = await this.adminService.findOne(adminId);
+            adminResults.push(adminResult);
+        }
+
+        return adminResults;
     }
 
     async updateInputs(id: string, body: any): Promise<Property> {
@@ -55,10 +73,6 @@ export class PropertyService {
 
     async addAdmins(id: string, adminId: string): Promise<Property> {
         const property = await this.findOne(id);
-
-        if (!property) {
-            throw new HttpException('Propriedade não encontrada', HttpStatus.BAD_REQUEST);
-        }
 
         if (!adminId) {
             throw new HttpException('ID do administrador não fornecido', HttpStatus.BAD_REQUEST);
@@ -80,10 +94,6 @@ export class PropertyService {
     async removeAdmin(id: string, adminId: string): Promise<Property> {
         const property = await this.findOne(id);
 
-        if (!property) {
-            throw new HttpException('Propriedade não encontrada', HttpStatus.BAD_REQUEST);
-        }
-
         if (!adminId) {
             throw new HttpException('ID do administrador não fornecido', HttpStatus.BAD_REQUEST);
         }
@@ -102,10 +112,7 @@ export class PropertyService {
     }
 
     async remove(id: string): Promise<void> {
-        const verify = await this.findOne(id);
-        if (!verify) {
-            throw new HttpException('Propriedade nao encontrada', HttpStatus.BAD_REQUEST);
-        }
+        await this.findOne(id);
         await this.propertyRep.delete(id);
     }
 
