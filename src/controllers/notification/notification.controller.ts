@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { NotificationService } from './notification.service';
-import { NotificationDto } from './notification.dto';
+import { FilterNotificationDto, NotificationDto } from './notification.dto';
 import { Notification } from './notification.entity';
 @ApiTags('NOTIFICAÇÕES')
 @Controller('notification')
@@ -17,10 +17,37 @@ export class NotificationController {
         return this.notificationService.create(content);
     }
 
+    @Post('filter')
+    @ApiOperation({ summary: 'FILTRO PARA NOTIFICAÇÕES' })
+    @ApiBody({ type: FilterNotificationDto })
+    async findFiltered(
+        @Body() body: FilterNotificationDto,
+    ): Promise<Notification[]> {
+        return this.notificationService.findFiltered(body);
+    }
+
     @Get()
     @ApiOperation({ summary: 'TODAS NOTIFICAÇÕES' })
     async findAll(): Promise<Notification[]> {
         return this.notificationService.findAll();
+    }
+
+    @Get('animals')
+    @ApiOperation({ summary: 'TODAS OS ANIMAIS' })
+    async findAllAnimals(): Promise<string[]> {
+        return this.notificationService.findAllAnimals();
+    }
+
+    @Get('categories')
+    @ApiOperation({ summary: 'TODAS AS CATEGORIAS' })
+    async findAllCategories(): Promise<string[]> {
+        return this.notificationService.findAllCategories();
+    }
+
+    @Get('subCategories')
+    @ApiOperation({ summary: 'TODAS AS SUBCATEGORIAS' })
+    async findAllSubCategories(): Promise<string[]> {
+        return this.notificationService.findAllSubCategories();
     }
 
     @Get(':notificationId')
@@ -57,6 +84,12 @@ export class NotificationController {
     @ApiOperation({ summary: 'MARCAR COMO LIDAS' })
     async markAllRead(@Param('userId') userId: string): Promise<void> {
         await this.notificationService.markAllRead(userId);
+    }
+
+    @Delete(':id')
+    @ApiOperation({ summary: 'DELETAR NOTIFICAÇÃO' })
+    async remove(@Param('id') id: string): Promise<void> {
+        return this.notificationService.remove(id);
     }
 
 }

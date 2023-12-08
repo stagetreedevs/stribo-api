@@ -21,6 +21,18 @@ export class Notification {
     @Column({ default: false })
     read: boolean;
 
+    @Column({ default: '' })
+    animal: string;
+
+    @Column({ default: '' })
+    operator: string;
+
+    @Column({ default: '' })
+    category: string;
+
+    @Column({ default: '' })
+    subCategory: string;
+
     @Column({ type: 'date', default: () => 'now()' })
     date: Date;
 
@@ -30,6 +42,10 @@ export class Notification {
         message: string,
         hour: string,
         read: boolean,
+        animal: string,
+        operator: string,
+        category: string,
+        subCategory: string,
         date: Date
     ) {
         this.id = uuidv4();

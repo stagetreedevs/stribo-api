@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { S3Service } from '../s3/s3.service';
 import { Animal } from './animal.entity';
+import { FilterAnimalDto } from './animal.dto';
 @Injectable()
 export class AnimalService {
     constructor(
@@ -86,5 +87,94 @@ export class AnimalService {
         await this.animal.delete(id);
     }
 
+    async findAllNames(): Promise<string[]> {
+        const animals = await this.animal.find();
+        const uniqueNames = new Set<string>();
+
+        animals.forEach((animal) => {
+            uniqueNames.add(animal.name);
+        });
+
+        return Array.from(uniqueNames);
+    }
+
+    async findAllBreeds(): Promise<string[]> {
+        const animals = await this.animal.find();
+        const uniqueRaces = new Set<string>();
+
+        animals.forEach((animal) => {
+            uniqueRaces.add(animal.race);
+        });
+
+        return Array.from(uniqueRaces);
+    }
+
+    async findAllCoats(): Promise<string[]> {
+        const animals = await this.animal.find();
+        const uniqueCoats = new Set<string>();
+
+        animals.forEach((animal) => {
+            uniqueCoats.add(animal.coat);
+        });
+
+        return Array.from(uniqueCoats);
+    }
+
+    async findAllSexes(): Promise<string[]> {
+        const animals = await this.animal.find();
+        const uniqueSexes = new Set<string>();
+
+        animals.forEach((animal) => {
+            uniqueSexes.add(animal.sex);
+        });
+
+        return Array.from(uniqueSexes);
+    }
+
+    async findAllOccupations(): Promise<string[]> {
+        const animals = await this.animal.find();
+        const uniqueOccupations = new Set<string>();
+
+        animals.forEach((animal) => {
+            uniqueOccupations.add(animal.occupation);
+        });
+
+        return Array.from(uniqueOccupations);
+    }
+
+    async findFiltered(filterDto: FilterAnimalDto): Promise<Animal[]> {
+        const queryBuilder = this.animal.createQueryBuilder('animal');
+
+        if (filterDto.initialDate) {
+            queryBuilder.andWhere('animal.birthDate >= :initialDate', {
+                initialDate: filterDto.initialDate,
+            });
+        }
+
+        if (filterDto.lastDate) {
+            queryBuilder.andWhere('animal.birthDate <= :lastDate', {
+                lastDate: filterDto.lastDate,
+            });
+        }
+
+        if (filterDto.race) {
+            queryBuilder.andWhere('animal.race = :race', { race: filterDto.race });
+        }
+
+        if (filterDto.coat) {
+            queryBuilder.andWhere('animal.coat = :coat', { coat: filterDto.coat });
+        }
+
+        if (filterDto.sex) {
+            queryBuilder.andWhere('animal.sex = :sex', { sex: filterDto.sex });
+        }
+
+        // Adiciona a ordenação com base no campo 'registerDate'
+        if (filterDto.order && (filterDto.order.toUpperCase() === 'ASC' || filterDto.order.toUpperCase() === 'DESC')) {
+            queryBuilder.addOrderBy('animal.registerDate', filterDto.order as 'ASC' | 'DESC');
+        }
+
+        return queryBuilder.getMany();
+    }
 
 }
