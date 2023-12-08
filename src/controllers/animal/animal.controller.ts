@@ -78,7 +78,7 @@ export class AnimalController {
 
     @Get(':ownerId/owner')
     @ApiOperation({ summary: 'BUSCAR ANIMAL VIA DONO' })
-    async findByOwner(@Param('ownerId') ownerId: string): Promise<Animal> {
+    async findByOwner(@Param('ownerId') ownerId: string): Promise<Animal[]> {
         return this.animalService.findByOwner(ownerId);
     }
 

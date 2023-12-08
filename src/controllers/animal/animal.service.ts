@@ -37,8 +37,8 @@ export class AnimalService {
         return verify;
     }
 
-    async findByOwner(id: string): Promise<Animal> {
-        return this.animal.findOne({ where: { owner: id } });
+    async findByOwner(id: string): Promise<Animal[]> {
+        return this.animal.find({ where: { owner: id } });
     }
 
     async update(id: string, body: any, photo: Express.Multer.File): Promise<Animal> {
