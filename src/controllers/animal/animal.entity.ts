@@ -34,7 +34,7 @@ export class Animal {
     occupation: string;
 
     @Column()
-    register: boolean;
+    castrated: boolean;
 
     @Column({ default: '' })
     sale: string;
@@ -67,7 +67,7 @@ export class Animal {
         sex: string,
         photo: string,
         occupation: string,
-        register: boolean,
+        castrated: boolean,
         sale: string,
         value: string,
         registerDate: Date,
@@ -86,7 +86,7 @@ export class Animal {
         this.sex = sex;
         this.photo = photo;
         this.occupation = occupation;
-        this.register = register;
+        this.castrated = castrated;
         this.sale = sale;
         this.value = value;
         this.registerDate = registerDate;

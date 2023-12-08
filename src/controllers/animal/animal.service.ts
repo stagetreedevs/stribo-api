@@ -64,7 +64,7 @@ export class AnimalService {
         verify.property = body.property || verify.property;
         verify.sex = body.sex || verify.sex;
         verify.occupation = body.occupation || verify.occupation;
-        verify.register = body.register || verify.register;
+        verify.castrated = body.castrated || verify.castrated;
         verify.sale = body.sale || verify.sale;
         verify.value = body.value || verify.value;
         verify.birthDate = body.birthDate || verify.birthDate;

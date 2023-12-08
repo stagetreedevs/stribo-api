@@ -29,7 +29,7 @@ export class AnimalDto {
     occupation: string;
 
     @ApiProperty()
-    register: boolean;
+    castrated: boolean;
 
     @ApiProperty({ required: false })
     sale: string;
@@ -76,7 +76,7 @@ export class UpdateAnimalDto {
     occupation: string;
 
     @ApiProperty({ required: false })
-    register: boolean;
+    castrated: boolean;
 
     @ApiProperty({ required: false })
     sale: string;
