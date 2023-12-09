@@ -10,7 +10,7 @@ export class PropertyService {
     constructor(
         @InjectRepository(Property) private readonly propertyRep: Repository<Property>,
         @Inject(forwardRef(() => AdminService)) private readonly adminService: AdminService,
-        private readonly userService: UserService,
+        @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
     ) { }
 
     async create(body: Property): Promise<Property> {

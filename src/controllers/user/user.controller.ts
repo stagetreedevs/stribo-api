@@ -2,7 +2,7 @@
 import { Controller, Get, Post, Body, Put, Param, Delete, Patch, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { UserDto } from './user.dto';
+import { UserDto, UserGoogleDto } from './user.dto';
 import { User } from './user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateUserDto, UpdateUserFirstLoginDto } from './update-user.dto';
@@ -23,6 +23,15 @@ export class UserController {
     return this.userService.create(body, image);
   }
 
+  @Post('auth-db')
+  @ApiOperation({ summary: 'VERIFICA DADOS RETORNADOS DA API DE LOGIN GOOGLE' })
+  @ApiBody({ type: UserGoogleDto })
+  async authDatabase(
+    @Body() body: UserGoogleDto,
+  ) {
+    return this.userService.authDatabase(body);
+  }
+
   @Get()
   @ApiOperation({ summary: 'TODOS USUÁRIOS' })
   async findAll(): Promise<User[]> {
@@ -33,6 +42,12 @@ export class UserController {
   @ApiOperation({ summary: 'BUSCAR USUÁRIO VIA ID' })
   async findOne(@Param('id') id: string): Promise<User> {
     return this.userService.findOne(id);
+  }
+
+  @Get(':id/password')
+  @ApiOperation({ summary: 'REDEFINIR SENHA DE UM USUÁRIO' })
+  async passwordRecover(@Param('id') id: string): Promise<User> {
+    return this.userService.passwordRecover(id);
   }
 
   @Put(':id')

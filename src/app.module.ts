@@ -20,11 +20,14 @@ import { User } from './controllers/user/user.entity';
 import { Notification } from './controllers/notification/notification.entity';
 import { S3Module } from './controllers/s3/s3.module';
 import * as dotenv from 'dotenv';
+import { Property } from './controllers/property/property.entity';
+import { Animal } from './controllers/animal/animal.entity';
+import { MailerModule } from '@nestjs-modules/mailer';
 dotenv.config();
 @Module({
   imports: [
-        AnimalModule, 
-        PropertyModule, 
+    AnimalModule,
+    PropertyModule,
     S3Module,
     NotificationModule,
     TypeOrmModule.forRoot({
@@ -37,10 +40,21 @@ dotenv.config();
       entities: [
         Admin,
         User,
-        Notification
+        Notification,
+        Property,
+        Animal
       ],
       autoLoadEntities: true,
       synchronize: true,
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.sendgrid.net',
+        auth: {
+          user: 'apikey',
+          pass: process.env.SENDGRID_SECRET_KEY
+        }
+      }
     }),
     ConfigModule.forRoot({
       isGlobal: true,

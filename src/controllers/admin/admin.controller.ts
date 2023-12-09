@@ -14,14 +14,12 @@ export class AdminController {
     @Post(':propertyId')
     @ApiOperation({ summary: 'CRIAR ADMIN' })
     @ApiBody({ type: AdminDto })
-    @ApiConsumes('multipart/form-data')
-    @UseInterceptors(FileInterceptor('image'))
+    // @ApiConsumes('multipart/form-data')
     async create(
-        @UploadedFile() image: Express.Multer.File,
-        @Body() body: Admin,
+        @Body() body: AdminDto,
         @Param('propertyId') propertyId: string,
     ): Promise<Admin> {
-        return this.adminService.create(body, image, propertyId);
+        return this.adminService.create(body, propertyId);
     }
 
     @Get()
@@ -34,6 +32,12 @@ export class AdminController {
     @ApiOperation({ summary: 'BUSCAR ADMIN' })
     async findOne(@Param('id') id: string): Promise<Admin> {
         return this.adminService.findOne(id);
+    }
+
+    @Get(':id/password')
+    @ApiOperation({ summary: 'REDEFINIR SENHA DE UM ADMIN' })
+    async passwordRecover(@Param('id') id: string): Promise<Admin> {
+        return this.adminService.passwordRecover(id);
     }
 
     @Put(':id')

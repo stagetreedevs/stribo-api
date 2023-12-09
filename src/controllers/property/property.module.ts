@@ -9,8 +9,8 @@ import { AdminModule } from '../admin/admin.module';
 @Module({
     imports: [
         TypeOrmModule.forFeature([Property]),
-        UserModule,
-        forwardRef(() => AdminModule)
+        forwardRef(() => AdminModule),
+        forwardRef(() => UserModule),
     ],
     controllers: [PropertyController],
     providers: [PropertyService],

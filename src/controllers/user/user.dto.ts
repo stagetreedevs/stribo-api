@@ -25,3 +25,16 @@ export class UserDto {
     @ApiProperty({ type: 'string', format: 'binary', required: false })
     image?: Express.Multer.File;
 }
+export class UserGoogleDto {
+    @ApiProperty()
+    firstName: string;
+
+    @ApiProperty()
+    lastName: string;
+
+    @ApiProperty()
+    email: string;
+
+    @ApiProperty()
+    picture: string;
+}

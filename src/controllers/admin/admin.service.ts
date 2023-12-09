@@ -5,33 +5,114 @@ import { Repository } from 'typeorm';
 import { Admin } from './admin.entity';
 import { S3Service } from '../s3/s3.service';
 import { PropertyService } from '../property/property.service';
+import { AdminDto } from './admin.dto';
+import { MailerService } from '@nestjs-modules/mailer';
+import { UserService } from '../user/user.service';
 @Injectable()
 export class AdminService {
     constructor(
         @InjectRepository(Admin) private readonly adminRepos: Repository<Admin>,
         @Inject(forwardRef(() => PropertyService)) private readonly propertyService: PropertyService,
-        private readonly s3Service: S3Service
+        @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
+        private readonly s3Service: S3Service,
+        private readonly mailService: MailerService
     ) { }
 
-    async create(body: Admin, photo: Express.Multer.File, property: string): Promise<Admin> {
+    generateStrongPassword(): string {
+        const length = 8;
+        const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let password = "";
+
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * charset.length);
+            password += charset.charAt(randomIndex);
+        }
+
+        return password;
+    }
+
+    async create(body: AdminDto, property: string): Promise<Admin> {
+        //Verifica se a propriedade passada é válida
         const propriedade = await this.propertyService.findOne(property);
         if (!propriedade) {
             throw new HttpException('Propriedade nao encontrada', HttpStatus.BAD_REQUEST);
         }
 
-        let imageUrl: string | null = null;
-
-        if (!!photo) {
-            const url = await this.s3Service.upload(photo, 'admin');
-            imageUrl = url;
+        //Verifica se o cara é um usuário
+        const isUser = await this.userService.findEmail(body.username);
+        if (isUser) {
+            throw new HttpException('Ele já é um usuário não admin!', HttpStatus.BAD_REQUEST);
         }
 
-        body.photo = imageUrl;
+        //Verifica se o usuário já existe
+        const verifyAdm: any = await this.findEmail(body.username);
+        if (verifyAdm) {
+            //Caso exista o admin é adicionado na propriedade passada
+            await this.propertyService.addAdmins(property, verifyAdm.id);
+            return verifyAdm;
+        }
+        //Se o admin não existe cria ele
+        const newAdmin = new Admin(
+            '',
+            body.username,
+            this.generateStrongPassword(),
+            body.cpf,
+            body.phone,
+            body.role,
+            'Pendente',
+            null,
+            true
+        );
 
-        const created = await this.adminRepos.save(body);
+        const created = await this.adminRepos.save(newAdmin);
         await this.propertyService.addAdmins(property, created.id);
 
+        //Manda um email com sua nova senha
+        const titleContent = `Sua Senha Temporária Stribo`;
+        const htmlContent = `
+            <p>Utilize a senha abaixo para acessar o sistema:</p><br>
+            <b>${created.password}</b>
+            <p>Por favor, faça login imediatamente usando essas credenciais. Recomendamos que você altere sua senha assim que possível por razões de segurança.</p>
+            <p>Se precisar de assistência adicional ou tiver alguma dúvida, não hesite em nos contatar respondendo a este e-mail.</p><br>
+            <p>Atenciosamente</p>
+            <p>Equipe Stribo</p>`;
+        await this.mailService.sendMail({
+            to: created.username,
+            from: 'apistagetree@gmail.com',
+            subject: titleContent,
+            html: htmlContent
+        });
+
         return created;
+
+    }
+
+    async passwordRecover(id: string): Promise<Admin> {
+        const admin = await this.findOne(id);
+
+        if (admin) {
+            const newPass = this.generateStrongPassword();
+            await this.updatePassword(id, newPass);
+
+            //Manda um email com sua nova senha
+            const titleContent = `Redefinição de Senha Stribo`;
+            const htmlContent = `
+                        <p>Sua senha foi redefinida com sucesso:</p><br>
+                        <b>${newPass}</b><br>
+                        <p>Caso você tenha realizado essa redefinição, ignore esta mensagem. Caso contrário, recomendamos que você altere sua senha imediatamente para garantir a segurança da sua conta.</p>
+                        <p>Se precisar de assistência adicional ou tiver alguma dúvida, não hesite em nos contatar respondendo a este e-mail.</p><br>
+                        <p>Atenciosamente</p>
+                        <p>Equipe Stribo</p>`;
+            await this.mailService.sendMail({
+                to: admin.username,
+                from: 'apistagetree@gmail.com',
+                subject: titleContent,
+                html: htmlContent
+            });
+
+            return await this.findOne(id);
+
+        }
     }
 
     async findAll(): Promise<Admin[]> {

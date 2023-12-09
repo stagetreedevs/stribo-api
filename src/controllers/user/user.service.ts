@@ -1,16 +1,88 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { S3Service } from '../s3/s3.service';
+import { MailerService } from '@nestjs-modules/mailer';
+import { AdminService } from '../admin/admin.service';
+import { UserGoogleDto } from './user.dto';
+import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    private readonly s3Service: S3Service
+    @Inject(forwardRef(() => AdminService)) private readonly adminService: AdminService,
+    private readonly s3Service: S3Service,
+    private readonly jwtService: JwtService,
+    private readonly mailService: MailerService
   ) { }
+
+  async authDatabase(body: UserGoogleDto) {
+    //Verifica se esse cara já é um admin
+    const verifyAdm = await this.adminService.findEmail(body.email)
+    if (verifyAdm) {
+      throw new HttpException('O Usuario é um Administrador', HttpStatus.BAD_REQUEST);
+    }
+
+    //Verifica se ele já está cadastrado no sistema
+    const user = await this.findEmail(body.email)
+
+    //Se estiver cadastro ele loga
+    if (user) {
+      const { password, ...userWithoutPassword } = user;
+      const userWithType = { type: 'user', ...userWithoutPassword };
+      const json = {
+        accessToken: this.jwtService.sign(userWithType),
+        user: user
+      }
+      return json;
+    }
+
+    //Caso o contrário é automaticamente adicionado ao sistema com uma senha temporaria
+    else {
+      const newGoogleUser = new User(
+        body.firstName,
+        body.lastName,
+        body.email,
+        this.generateStrongPassword(),
+        '',
+        '',
+        '',
+        body.picture,
+        false,
+        null,
+        true,
+      );
+      // Cria o usuário
+      const created = await this.userRepository.save(newGoogleUser);
+      //Manda um email com sua nova senha
+      const titleContent = `Sua Senha Temporária Stribo`;
+      const htmlContent = `
+                  <p>Utilize a senha abaixo para acessar o sistema:</p><br>
+                  <b>${created.password}</b>
+                  <p>Por favor, faça login imediatamente usando essas credenciais. Recomendamos que você altere sua senha assim que possível por razões de segurança.</p>
+                  <p>Se precisar de assistência adicional ou tiver alguma dúvida, não hesite em nos contatar respondendo a este e-mail.</p><br>
+                  <p>Atenciosamente</p>
+                  <p>Equipe Stribo</p>`;
+      await this.mailService.sendMail({
+        to: created.username,
+        from: 'apistagetree@gmail.com',
+        subject: titleContent,
+        html: htmlContent
+      });
+
+      // Gera o token de acesso
+      const { password, ...userWithoutPassword } = created;
+      const userWithType = { type: 'user', ...userWithoutPassword };
+      const json = {
+        accessToken: this.jwtService.sign(userWithType),
+        user: created
+      }
+      return json;
+    }
+  }
 
   async create(user: User, photo: Express.Multer.File): Promise<User> {
     const verifyUser = await this.findEmail(user.username);
@@ -65,6 +137,47 @@ export class UserService {
         username: email,
       }
     });
+  }
+
+  generateStrongPassword(): string {
+    const length = 8;
+    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let password = "";
+
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset.charAt(randomIndex);
+    }
+
+    return password;
+  }
+
+  async passwordRecover(id: string): Promise<User> {
+    const user = await this.findOne(id);
+
+    if (user) {
+      const newPass = this.generateStrongPassword();
+      await this.updatePassword(id, newPass);
+
+      //Manda um email com sua nova senha
+      const titleContent = `Redefinição de Senha Stribo`;
+      const htmlContent = `
+                    <p>Sua senha foi redefinida com sucesso:</p><br>
+                    <b>${newPass}</b><br>
+                    <p>Caso você tenha realizado essa redefinição, ignore esta mensagem. Caso contrário, recomendamos que você altere sua senha imediatamente para garantir a segurança da sua conta.</p>
+                    <p>Se precisar de assistência adicional ou tiver alguma dúvida, não hesite em nos contatar respondendo a este e-mail.</p><br>
+                    <p>Atenciosamente</p>
+                    <p>Equipe Stribo</p>`;
+      await this.mailService.sendMail({
+        to: user.username,
+        from: 'apistagetree@gmail.com',
+        subject: titleContent,
+        html: htmlContent
+      });
+
+      return await this.findOne(id);
+
+    }
   }
 
   async update(id: string, user: any, photo: Express.Multer.File): Promise<User> {
