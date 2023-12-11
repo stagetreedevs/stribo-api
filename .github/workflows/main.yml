@@ -7,11 +7,8 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
 
@@ -22,8 +19,8 @@ jobs:
         aws-region: us-east-1
     
     - name: Login to ECR
-       id: login-ecr
-       uses: aws-actions/amazon-ecr-login@v4
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v4
 
     - name: Build and push image
       run: |
