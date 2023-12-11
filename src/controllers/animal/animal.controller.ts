@@ -1,15 +1,18 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AnimalService } from './animal.service';
 import { AnimalDto, FilterAnimalDto, UpdateAnimalDto } from './animal.dto';
 import { Animal } from './animal.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @ApiTags('ANIMAL')
+@ApiBearerAuth()
 @Controller('animal')
 export class AnimalController {
     constructor(private readonly animalService: AnimalService) { }
 
+    @UseGuards(JwtAuthGuard)
     @Post()
     @ApiOperation({ summary: 'CRIAR ANIMAL' })
     @ApiBody({ type: AnimalDto })
@@ -28,6 +31,7 @@ export class AnimalController {
         return this.animalService.create(body, photo);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Post('filter')
     @ApiOperation({ summary: 'FILTRO PARA ANIMAIS' })
     @ApiBody({ type: FilterAnimalDto })
@@ -37,51 +41,63 @@ export class AnimalController {
         return this.animalService.findFiltered(body);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get()
     @ApiOperation({ summary: 'TODOS ANIMAIS' })
     async findAll(): Promise<Animal[]> {
         return this.animalService.findAll();
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get('names')
     @ApiOperation({ summary: 'TODAS OS NOMES' })
     async findAllNames(): Promise<string[]> {
         return this.animalService.findAllNames();
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get('breeds')
     @ApiOperation({ summary: 'TODAS AS RAÇAS' })
     async findAllBreeds(): Promise<string[]> {
         return this.animalService.findAllBreeds();
     }
+
+    @UseGuards(JwtAuthGuard)
     @Get('coats')
     @ApiOperation({ summary: 'TODAS AS PELAGENS' })
     async findAllCoats(): Promise<string[]> {
         return this.animalService.findAllCoats();
     }
+
+    @UseGuards(JwtAuthGuard)
     @Get('sexes')
     @ApiOperation({ summary: 'TODAS OS SEXOS' })
     async findAllSexes(): Promise<string[]> {
         return this.animalService.findAllSexes();
     }
+
+    @UseGuards(JwtAuthGuard)
     @Get('functions')
     @ApiOperation({ summary: 'TODAS AS FUNÇÕES' })
     async findAllOccupations(): Promise<string[]> {
         return this.animalService.findAllOccupations();
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get(':id')
     @ApiOperation({ summary: 'BUSCAR ANIMAL' })
     async findOne(@Param('id') id: string): Promise<Animal> {
         return this.animalService.findOne(id);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get(':ownerId/owner')
     @ApiOperation({ summary: 'BUSCAR ANIMAL VIA DONO' })
     async findByOwner(@Param('ownerId') ownerId: string): Promise<Animal[]> {
         return this.animalService.findByOwner(ownerId);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Put(':id')
     @ApiOperation({ summary: 'EDITAR ANIMAL' })
     @ApiBody({ type: UpdateAnimalDto })
@@ -95,9 +111,12 @@ export class AnimalController {
         return this.animalService.update(id, body, photo);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Delete(':id')
     @ApiOperation({ summary: 'DELETAR ANIMAL' })
     async remove(@Param('id') id: string): Promise<void> {
         return this.animalService.remove(id);
     }
+
+
 }

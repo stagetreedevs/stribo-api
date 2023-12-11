@@ -15,12 +15,10 @@ export class AuthService {
     const user = await this.userService.findEmail(email);
 
     if (admin && pass === admin.password) {
-      const { password, ...result } = admin;
-      return { type: 'admin', ...result };
+      return { type: 'admin', ...admin };
     }
     else if (user && pass === user.password) {
-      const { password, ...result } = user;
-      return { type: 'user', ...result };
+      return { type: 'user', ...user };
     }
 
     return null;

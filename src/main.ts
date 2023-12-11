@@ -9,7 +9,8 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('STRIBO API')
     .setDescription('Stribo API - Todos os endpoints da aplicação')
-    .setVersion('0.2')
+    .setVersion('0.3')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document, {

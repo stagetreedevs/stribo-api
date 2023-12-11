@@ -15,28 +15,28 @@ export class AppController {
     private readonly googleService: GoogleService,
   ) { }
 
-  @UseGuards(AuthGuard('local'))
-  @Post('login')
-  @ApiOperation({ summary: 'LOGIN PADRÃO', description: 'PASSE O BODY PREENCHIDO E OBTENHA COMO RESPOSTA UM TOKEN JWT CONTENDO INFORMAÇÕES SOBRE O USUÁRIO. O TOKEN TEM VALIDADE DE 1 DIA.' })
-  @ApiBody({ type: LoginDto })
-  async login(@Request() req) {
-    return req.user;
-  }
-
   @Get()
   getHello(): string {
     return this.appService.getHello();
   }
 
-  @Get('login-google')
-  @ApiOperation({ summary: 'LOGIN/CADASTRO GOOGLE', description: 'ABRE UMA TELA DE REDIRECIONAMENTO GOOGLE' })
-  @UseGuards(AuthGuard('google'))
-  async googleAuth(@Request() req) { }
+  // @Get('login-google')
+  // @ApiOperation({ summary: 'LOGIN/CADASTRO GOOGLE WEB' })
+  // @UseGuards(AuthGuard('google'))
+  // async googleAuth(@Request() req) { }
 
-  @Get('auth/google/redirect')
-  @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Request() req) {
-    return this.googleService.googleLogin(req)
+  // @Get('auth/google/redirect')
+  // @UseGuards(AuthGuard('google'))
+  // googleAuthRedirect(@Request() req) {
+  //   return this.googleService.googleLogin(req)
+  // }
+
+  @UseGuards(AuthGuard('local'))
+  @Post('login')
+  @ApiOperation({ summary: 'LOGIN PADRÃO' })
+  @ApiBody({ type: LoginDto })
+  async login(@Request() req) {
+    return req.user;
   }
 
 }
