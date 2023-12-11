@@ -1,0 +1,31 @@
+name: CI - stribo-app
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::274385392627:role/ecr-git
+        aws-region: us-east-1
+    
+    - name: Login to ECR
+       id: login-ecr
+       uses: aws-actions/amazon-ecr-login@v4
+
+    - name: Build and push image
+      run: |
+        docker build -t 274385392627.dkr.ecr.us-east-1.amazonaws.com/stribo:${{github.sha}} .
+        docker push 274385392627.dkr.ecr.us-east-1.amazonaws.com/stribo:${{github.sha}}
