@@ -26,5 +26,8 @@ export class UpdateAdminFirstLoginDto {
 
     @ApiProperty({ required: false })
     newPassword: string;
+}
 
+export class UpdatePasswordDto {
+    @ApiProperty() newPassword: string;
 }

@@ -8,6 +8,7 @@ import { S3Module } from '../s3/s3.module';
 import { AdminModule } from '../admin/admin.module';
 import { PropertyModule } from '../property/property.module';
 import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from 'src/auth/constants';
 @Module({
     imports: [
         TypeOrmModule.forFeature([User]),
@@ -15,7 +16,7 @@ import { JwtModule } from '@nestjs/jwt';
         forwardRef(() => PropertyModule),
         S3Module,
         JwtModule.register({
-            secret: 'mySecretKey',
+            secret: jwtConstants.secret,
             signOptions: { expiresIn: '24h' },
         }),
     ],

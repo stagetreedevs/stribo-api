@@ -74,12 +74,14 @@ export class UserService {
       });
 
       // Gera o token de acesso
-      const { password, ...userWithoutPassword } = created;
-      const userWithType = { type: 'user', ...userWithoutPassword };
       const json = {
-        accessToken: this.jwtService.sign(userWithType),
-        user: created
-      }
+        accessToken: this.jwtService.sign({
+          type: 'user',
+          ...created,
+        }),
+        user: created,
+      };
+
       return json;
     }
   }
@@ -131,12 +133,13 @@ export class UserService {
     return verifyUser;
   }
 
-  async findEmail(email: string): Promise<User> {
-    return this.userRepository.findOne({
-      where: {
-        username: email,
-      }
-    });
+  async findEmail(username: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { username } });
+    if (!user) {
+      throw new HttpException('Usuario não encontrado', HttpStatus.BAD_REQUEST);
+    }
+
+    return user;
   }
 
   generateStrongPassword(): string {
@@ -152,12 +155,13 @@ export class UserService {
     return password;
   }
 
-  async passwordRecover(id: string): Promise<User> {
-    const user = await this.findOne(id);
+  async passwordRecover(email: string): Promise<User> {
+    // const user = await this.findOne(id);
+    const user = await this.findEmail(email);
 
     if (user) {
       const newPass = this.generateStrongPassword();
-      await this.updatePassword(id, newPass);
+      await this.updatePassword(user.id, newPass);
 
       //Manda um email com sua nova senha
       const titleContent = `Redefinição de Senha Stribo`;
@@ -175,7 +179,7 @@ export class UserService {
         html: htmlContent
       });
 
-      return await this.findOne(id);
+      return await this.findOne(user.id);
 
     }
   }

@@ -87,12 +87,12 @@ export class AdminService {
 
     }
 
-    async passwordRecover(id: string): Promise<Admin> {
-        const admin = await this.findOne(id);
+    async passwordRecover(email: string): Promise<Admin> {
+        const admin = await this.findEmail(email);
 
         if (admin) {
             const newPass = this.generateStrongPassword();
-            await this.updatePassword(id, newPass);
+            await this.updatePassword(admin.id, newPass);
 
             //Manda um email com sua nova senha
             const titleContent = `Redefinição de Senha Stribo`;
@@ -110,7 +110,7 @@ export class AdminService {
                 html: htmlContent
             });
 
-            return await this.findOne(id);
+            return await this.findOne(admin.id);
 
         }
     }
@@ -127,12 +127,13 @@ export class AdminService {
         return verify;
     }
 
-    async findEmail(email: string): Promise<Admin> {
-        return this.adminRepos.findOne({
-            where: {
-                username: email,
-            }
-        });
+    async findEmail(username: string): Promise<Admin> {
+        const admin = await this.adminRepos.findOne({ where: { username } });
+        if (!admin) {
+            throw new HttpException('Administrador não encontrado', HttpStatus.BAD_REQUEST);
+        }
+
+        return admin;
     }
 
     async update(id: string, admin: any, photo: Express.Multer.File): Promise<Admin> {

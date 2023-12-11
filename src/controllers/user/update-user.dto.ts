@@ -26,5 +26,8 @@ export class UpdateUserFirstLoginDto {
 
     @ApiProperty({ required: false })
     newPassword: string;
+}
 
+export class UpdatePasswordDto {
+    @ApiProperty() newPassword: string;
 }

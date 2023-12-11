@@ -5,7 +5,7 @@ import { AdminService } from './admin.service';
 import { AdminDto } from './admin.dto';
 import { Admin } from './admin.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UpdateAdminDto, UpdateAdminFirstLoginDto } from './update-admin.dto';
+import { UpdateAdminDto, UpdateAdminFirstLoginDto, UpdatePasswordDto } from './update-admin.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @ApiTags('ADMINISTRADORES')
 @ApiBearerAuth()
@@ -39,10 +39,10 @@ export class AdminController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Get(':id/password')
+    @Get(':email/password')
     @ApiOperation({ summary: 'REDEFINIR SENHA DE UM ADMIN' })
-    async passwordRecover(@Param('id') id: string): Promise<Admin> {
-        return this.adminService.passwordRecover(id);
+    async passwordRecover(@Param('email') email: string): Promise<Admin> {
+        return this.adminService.passwordRecover(email);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -70,6 +70,7 @@ export class AdminController {
     @UseGuards(JwtAuthGuard)
     @Patch(':id/password')
     @ApiOperation({ summary: 'ATUALIZAR SENHA DO ADMIN' })
+    @ApiBody({ type: UpdatePasswordDto })
     async updatePassword(@Param('id') id: string, @Body('newPassword') newPassword: string): Promise<Admin> {
         return this.adminService.updatePassword(id, newPassword);
     }

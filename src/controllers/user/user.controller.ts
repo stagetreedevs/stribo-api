@@ -5,7 +5,7 @@ import { UserService } from './user.service';
 import { UserDto, UserGoogleDto } from './user.dto';
 import { User } from './user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UpdateUserDto, UpdateUserFirstLoginDto } from './update-user.dto';
+import { UpdatePasswordDto, UpdateUserDto, UpdateUserFirstLoginDto } from './update-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @ApiTags('USUÁRIOS')
 @ApiBearerAuth()
@@ -50,10 +50,10 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get(':id/password')
+  @Get(':email/password')
   @ApiOperation({ summary: 'REDEFINIR SENHA DE UM USUÁRIO' })
-  async passwordRecover(@Param('id') id: string): Promise<User> {
-    return this.userService.passwordRecover(id);
+  async passwordRecover(@Param('email') email: string): Promise<User> {
+    return this.userService.passwordRecover(email);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -73,6 +73,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id/password')
   @ApiOperation({ summary: 'ATUALIZAR SENHA DO USUÁRIO' })
+  @ApiBody({ type: UpdatePasswordDto })
   async updatePassword(@Param('id') id: string, @Body('newPassword') newPassword: string): Promise<User> {
     return this.userService.updatePassword(id, newPassword);
   }
