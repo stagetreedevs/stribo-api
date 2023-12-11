@@ -31,12 +31,14 @@ export class UserService {
 
     //Se estiver cadastro ele loga
     if (user) {
-      const { password, ...userWithoutPassword } = user;
-      const userWithType = { type: 'user', ...userWithoutPassword };
+      // Gera o token de acesso
       const json = {
-        accessToken: this.jwtService.sign(userWithType),
-        user: user
-      }
+        accessToken: this.jwtService.sign({
+          type: 'user',
+          ...user,
+        }),
+        user: user,
+      };
       return json;
     }
 
@@ -135,10 +137,6 @@ export class UserService {
 
   async findEmail(username: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { username } });
-    if (!user) {
-      throw new HttpException('Usuario não encontrado', HttpStatus.BAD_REQUEST);
-    }
-
     return user;
   }
 

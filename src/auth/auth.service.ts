@@ -17,6 +17,7 @@ export class AuthService {
     if (admin && pass === admin.password) {
       return { type: 'admin', ...admin };
     }
+    
     else if (user && pass === user.password) {
       return { type: 'user', ...user };
     }

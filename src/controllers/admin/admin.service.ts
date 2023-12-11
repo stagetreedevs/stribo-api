@@ -129,10 +129,6 @@ export class AdminService {
 
     async findEmail(username: string): Promise<Admin> {
         const admin = await this.adminRepos.findOne({ where: { username } });
-        if (!admin) {
-            throw new HttpException('Administrador não encontrado', HttpStatus.BAD_REQUEST);
-        }
-
         return admin;
     }
 
