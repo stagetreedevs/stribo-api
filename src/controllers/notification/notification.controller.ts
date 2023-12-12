@@ -26,7 +26,7 @@ export class NotificationController {
     @ApiBody({ type: FilterNotificationDto })
     async findFiltered(
         @Body() body: FilterNotificationDto,
-    ): Promise<Notification[]> {
+    ): Promise<any[]> {
         return this.notificationService.findFiltered(body);
     }
 

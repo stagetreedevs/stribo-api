@@ -152,7 +152,7 @@ export class NotificationService {
         return Array.from(unique);
     }
 
-    async findFiltered(filterDto: FilterNotificationDto): Promise<Notification[]> {
+    async findFiltered(filterDto: FilterNotificationDto): Promise<any[]> {
         const queryBuilder = this.notification.createQueryBuilder('notification');
 
         if (filterDto.initialDate) {
@@ -187,7 +187,36 @@ export class NotificationService {
             queryBuilder.addOrderBy('notification.date', filterDto.order as 'ASC' | 'DESC');
         }
 
-        return queryBuilder.getMany();
+        const notifications = await queryBuilder.getMany();
+
+        const groupedNotifications: { [key: string]: any[] } = notifications.reduce((acc, notification) => {
+            const date = notification.date.toString();
+            if (!acc[date]) {
+                acc[date] = [];
+            }
+
+            acc[date].push({
+                title: notification.title,
+                message: notification.message,
+                hour: notification.hour,
+                read: notification.read,
+                animal: notification.animal,
+                operator: notification.operator,
+                category: notification.category,
+                subCategory: notification.subCategory
+            });
+
+            return acc;
+        }, {});
+
+        const result = Object.entries(groupedNotifications).map(([date, notifications]) => {
+            return {
+                date,
+                notifications,
+            };
+        });
+
+        return result;
     }
 
 
