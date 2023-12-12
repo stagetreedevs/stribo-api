@@ -59,22 +59,6 @@ export class UserService {
       );
       // Cria o usuário
       const created = await this.userRepository.save(newGoogleUser);
-      //Manda um email com sua nova senha
-      const titleContent = `Sua Senha Temporária Stribo`;
-      const htmlContent = `
-                  <p>Utilize a senha abaixo para acessar o sistema:</p><br>
-                  <b>${created.password}</b>
-                  <p>Por favor, faça login imediatamente usando essas credenciais. Recomendamos que você altere sua senha assim que possível por razões de segurança.</p>
-                  <p>Se precisar de assistência adicional ou tiver alguma dúvida, não hesite em nos contatar respondendo a este e-mail.</p><br>
-                  <p>Atenciosamente</p>
-                  <p>Equipe Stribo</p>`;
-      await this.mailService.sendMail({
-        to: created.username,
-        from: 'apistagetree@gmail.com',
-        subject: titleContent,
-        html: htmlContent
-      });
-
       // Gera o token de acesso
       const json = {
         accessToken: this.jwtService.sign({
@@ -153,13 +137,13 @@ export class UserService {
     return password;
   }
 
-  async passwordRecover(email: string): Promise<User> {
+  async passwordRecover(email: string): Promise<any> {
     // const user = await this.findOne(id);
     const user = await this.findEmail(email);
 
     if (user) {
       const newPass = this.generateStrongPassword();
-      await this.updatePassword(user.id, newPass);
+      const upUser = await this.updatePassword(user.id, newPass);
 
       //Manda um email com sua nova senha
       const titleContent = `Redefinição de Senha Stribo`;
@@ -177,8 +161,16 @@ export class UserService {
         html: htmlContent
       });
 
-      return await this.findOne(user.id);
+      // Gera o token de acesso
+      const json = {
+        accessToken: this.jwtService.sign({
+          type: 'user',
+          ...upUser,
+        }),
+        user: upUser,
+      };
 
+      return json;
     }
   }
 
@@ -212,7 +204,7 @@ export class UserService {
     return this.findOne(id);
   }
 
-  async updatePassword(id: string, newPassword: string): Promise<User> {
+  async updatePassword(id: string, newPassword: string): Promise<any> {
     const verifyUser = await this.findOne(id);
 
     if (!verifyUser) {
@@ -226,10 +218,21 @@ export class UserService {
       .where("id = :id", { id })
       .execute();
 
-    return this.findOne(id);
+    const upUser = await this.findOne(id);
+
+    // Gera o token de acesso
+    const json = {
+      accessToken: this.jwtService.sign({
+        type: 'user',
+        ...upUser,
+      }),
+      user: upUser,
+    };
+
+    return json;
   }
 
-  async fistLogin(id: string, newPassword: string, newName: string): Promise<User> {
+  async fistLogin(id: string, newPassword: string, newName: string): Promise<any> {
     const verifyUser = await this.findOne(id);
 
     if (!verifyUser) {
@@ -243,16 +246,29 @@ export class UserService {
       .where("id = :id", { id })
       .execute();
 
-    return this.findOne(id);
+    const upUser = await this.findOne(id);
+
+    // Gera o token de acesso
+    const json = {
+      accessToken: this.jwtService.sign({
+        type: 'user',
+        ...upUser,
+      }),
+      user: upUser,
+    };
+
+    return json;
   }
 
   async remove(id: string): Promise<void> {
     const verifyUser = await this.findOne(id);
 
-    await this.s3Service.deleteFileS3(verifyUser.photo);
-
     if (!verifyUser) {
-      throw new HttpException('Usuario nao encontrado', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Usuário não encontrado', HttpStatus.BAD_REQUEST);
+    }
+
+    if (verifyUser.photo && verifyUser.photo.includes('s3://stribo-storage')) {
+      await this.s3Service.deleteFileS3(verifyUser.photo);
     }
 
     await this.userRepository.delete(id);

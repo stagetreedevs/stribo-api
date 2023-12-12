@@ -41,7 +41,7 @@ export class AdminController {
     @UseGuards(JwtAuthGuard)
     @Get(':email/password')
     @ApiOperation({ summary: 'REDEFINIR SENHA DE UM ADMIN' })
-    async passwordRecover(@Param('email') email: string): Promise<Admin> {
+    async passwordRecover(@Param('email') email: string): Promise<any> {
         return this.adminService.passwordRecover(email);
     }
 
@@ -63,7 +63,7 @@ export class AdminController {
     @Patch(':id/firstLogin')
     @ApiBody({ type: UpdateAdminFirstLoginDto })
     @ApiOperation({ summary: 'ATUALIZAR SENHA E NOME DO ADMIN NO PROMEIRO LOGIN' })
-    async firstLogin(@Param('id') id: string, @Body() body: UpdateAdminFirstLoginDto): Promise<Admin> {
+    async firstLogin(@Param('id') id: string, @Body() body: UpdateAdminFirstLoginDto): Promise<any> {
         return this.adminService.firstLogin(id, body.newPassword, body.name);
     }
 

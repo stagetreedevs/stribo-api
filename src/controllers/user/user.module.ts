@@ -17,7 +17,7 @@ import { jwtConstants } from 'src/auth/constants';
         S3Module,
         JwtModule.register({
             secret: jwtConstants.secret,
-            signOptions: { expiresIn: '24h' },
+            signOptions: { expiresIn: '360h' },
         }),
     ],
     controllers: [UserController],

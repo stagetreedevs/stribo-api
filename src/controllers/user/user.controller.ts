@@ -66,7 +66,7 @@ export class UserController {
     @Param('id') id: string,
     @UploadedFile() image: Express.Multer.File,
     @Body() body: UpdateUserDto,
-  ): Promise<User> {
+  ): Promise<any> {
     return this.userService.update(id, body, image);
   }
 
@@ -74,7 +74,7 @@ export class UserController {
   @Patch(':id/password')
   @ApiOperation({ summary: 'ATUALIZAR SENHA DO USUÁRIO' })
   @ApiBody({ type: UpdatePasswordDto })
-  async updatePassword(@Param('id') id: string, @Body('newPassword') newPassword: string): Promise<User> {
+  async updatePassword(@Param('id') id: string, @Body('newPassword') newPassword: string): Promise<any> {
     return this.userService.updatePassword(id, newPassword);
   }
 
@@ -82,7 +82,7 @@ export class UserController {
   @Patch(':id/firstLogin')
   @ApiBody({ type: UpdateUserFirstLoginDto })
   @ApiOperation({ summary: 'ATUALIZAR SENHA E NOME DO USUÁRIO NO PROMEIRO LOGIN' })
-  async firstLogin(@Param('id') id: string, @Body() body: UpdateUserFirstLoginDto): Promise<User> {
+  async firstLogin(@Param('id') id: string, @Body() body: UpdateUserFirstLoginDto): Promise<any> {
     return this.userService.fistLogin(id, body.newPassword, body.name);
   }
 

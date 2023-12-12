@@ -8,6 +8,7 @@ import { PropertyService } from '../property/property.service';
 import { AdminDto } from './admin.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { UserService } from '../user/user.service';
+import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AdminService {
     constructor(
@@ -15,7 +16,8 @@ export class AdminService {
         @Inject(forwardRef(() => PropertyService)) private readonly propertyService: PropertyService,
         @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
         private readonly s3Service: S3Service,
-        private readonly mailService: MailerService
+        private readonly jwtService: JwtService,
+        private readonly mailService: MailerService,
     ) { }
 
     generateStrongPassword(): string {
@@ -87,7 +89,7 @@ export class AdminService {
 
     }
 
-    async passwordRecover(email: string): Promise<Admin> {
+    async passwordRecover(email: string): Promise<any> {
         const admin = await this.findEmail(email);
 
         if (admin) {
@@ -109,9 +111,17 @@ export class AdminService {
                 subject: titleContent,
                 html: htmlContent
             });
+            const upAdmin = await this.findOne(admin.id);
+            // Gera o token de acesso
+            const json = {
+                accessToken: this.jwtService.sign({
+                    type: 'user',
+                    ...upAdmin,
+                }),
+                user: upAdmin,
+            };
 
-            return await this.findOne(admin.id);
-
+            return json;
         }
     }
 
@@ -172,7 +182,7 @@ export class AdminService {
         return this.findOne(id);
     }
 
-    async updatePassword(id: string, newPassword: string): Promise<Admin> {
+    async updatePassword(id: string, newPassword: string): Promise<any> {
         await this.findOne(id);
 
         await this.adminRepos
@@ -182,14 +192,24 @@ export class AdminService {
             .where("id = :id", { id })
             .execute();
 
-        return this.findOne(id);
+        const upAdmin = await this.findOne(id);
+        // Gera o token de acesso
+        const json = {
+            accessToken: this.jwtService.sign({
+                type: 'user',
+                ...upAdmin,
+            }),
+            user: upAdmin,
+        };
+
+        return json;
     }
 
     async remove(id: string): Promise<void> {
         const verify = await this.findOne(id);
 
         // Remove a imagem da AWS
-        if (verify.photo) {
+        if (verify.photo && verify.photo.includes('s3://stribo-storage')) {
             await this.s3Service.deleteFileS3(verify.photo);
         }
 
