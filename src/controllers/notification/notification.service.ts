@@ -156,13 +156,13 @@ export class NotificationService {
         const queryBuilder = this.notification.createQueryBuilder('notification');
 
         if (filterDto.initialDate) {
-            queryBuilder.andWhere('notification.birthDate >= :initialDate', {
+            queryBuilder.andWhere('notification.date >= :initialDate', {
                 initialDate: filterDto.initialDate,
             });
         }
 
         if (filterDto.lastDate) {
-            queryBuilder.andWhere('notification.birthDate <= :lastDate', {
+            queryBuilder.andWhere('notification.date <= :lastDate', {
                 lastDate: filterDto.lastDate,
             });
         }

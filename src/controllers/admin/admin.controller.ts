@@ -24,7 +24,7 @@ export class AdminController {
         return this.adminService.create(body, propertyId);
     }
 
-    // @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Get()
     @ApiOperation({ summary: 'TODOS ADMINS' })
     async findAll(): Promise<Admin[]> {
