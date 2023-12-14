@@ -24,6 +24,12 @@ import Properts from '../screens/Properts';
 import EditProfile from '../screens/Profile/editProfile';
 import EditPassword from '../screens/Profile/editPassword';
 import NewAdmin from '../screens/Properts/NewAdmin';
+import EditAdmin from '../screens/Properts/EditAdmin';
+import Animals from '../screens/Animals';
+import FilterAnimals from '../components/FilterAnimals';
+import NewAnimal from '../screens/Animals/newAnimal';
+import AddProperty from '../screens/AddProperty';
+import EditAnimal from '../screens/Animals/editAnimal';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -63,8 +69,8 @@ function TabRoutes() {
       <Tab.Screen name="HomePage" component={Home} />
       <Tab.Screen name="PropertsPage" component={Properts} />
       <Tab.Screen
-        name="Tab2"
-        component={Home}
+        name="Animals"
+        component={Animals}
         initialParams={{notification: true}}
       />
       <Tab.Screen name="Tab3" component={Home} />
@@ -73,7 +79,7 @@ function TabRoutes() {
   );
 }
 function Routes() {
-  const {user, loading} = useContext(AuthContext);
+  const {user, loading, property} = useContext(AuthContext);
 
   if (loading) {
     return (
@@ -95,24 +101,33 @@ function Routes() {
             headerShown: false,
           }}>
           <Stack.Screen name="FirstLoginPage" component={FirstLogin} />
-          <Stack.Screen name="OnBoarding" component={OnBoarding} />
         </Stack.Navigator>
       );
     }
+
     return (
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
         }}>
+        {!property && (
+          <>
+            <Stack.Screen name="OnBoarding" component={OnBoarding} />
+            <Stack.Screen name="AddProperty">
+              {props => (
+                <SafeArea Component={AddProperty} theme="dark" {...props} />
+              )}
+            </Stack.Screen>
+          </>
+        )}
         <Stack.Screen name="Tab">
           {props => <SafeArea Component={TabRoutes} theme="dark" {...props} />}
         </Stack.Screen>
-        <Stack.Screen name="Animals">
-          {props => <SafeArea Component={TabRoutes} theme="dark" {...props} />}
-        </Stack.Screen>
-
         <Stack.Screen name="NewAdmin">
           {props => <SafeArea Component={NewAdmin} theme="light" {...props} />}
+        </Stack.Screen>
+        <Stack.Screen name="EditAdmin">
+          {props => <SafeArea Component={EditAdmin} theme="light" {...props} />}
         </Stack.Screen>
         <Stack.Screen name="Notifications">
           {props => (
@@ -126,6 +141,33 @@ function Routes() {
               theme="light"
               {...props}
             />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="FilterAnimals">
+          {props => (
+            <KeyboardAvoidingView
+              flex={1}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+              <SafeArea Component={FilterAnimals} theme="light" {...props} />
+            </KeyboardAvoidingView>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="NewAnimal">
+          {props => (
+            <KeyboardAvoidingView
+              flex={1}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+              <SafeArea Component={NewAnimal} theme="light" {...props} />
+            </KeyboardAvoidingView>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="EditAnimal">
+          {props => (
+            <KeyboardAvoidingView
+              flex={1}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+              <SafeArea Component={EditAnimal} theme="light" {...props} />
+            </KeyboardAvoidingView>
           )}
         </Stack.Screen>
         <Stack.Screen name="Profile">

@@ -1,7 +1,7 @@
-/* eslint-disable react/react-in-jsx-scope */
 import {ITextProps, Text} from 'native-base';
+import React from 'react';
 interface BasicTextProps extends ITextProps {
-  children: string | undefined;
+  children: string | undefined | React.ReactNode;
   theme: string;
   fontWeight?: string;
   size?: number;

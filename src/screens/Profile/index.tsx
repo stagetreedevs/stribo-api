@@ -17,6 +17,7 @@ import {Switch} from 'react-native-switch';
 import BasicHeader from '../../components/BasicHeader';
 import {AuthContext} from '../../contexts/AuthContext';
 import BasicText from '../../components/BasicText';
+import {api} from '../../service/api';
 
 function Profile({navigation}: any) {
   const {user, signOut} = useContext(AuthContext);
@@ -170,7 +171,7 @@ function Profile({navigation}: any) {
         }}>
         <VStack
           w={'90%'}
-          h={'62.5%'}
+          h={'65%'}
           bg="#DCF7E3"
           borderRadius={25}
           padding={6}
@@ -205,6 +206,7 @@ function Profile({navigation}: any) {
             mt={4}
             onPress={() => {
               setShowModal(false);
+              api.delete(`user/${user?.id}`);
               signOut();
             }}
             _pressed={{

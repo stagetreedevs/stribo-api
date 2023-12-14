@@ -32,7 +32,6 @@ target 'stribo' do
   flags = get_default_flags()
 
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
-
   use_react_native!(
     :path => config[:reactNativePath],
     # Hermes is now enabled by default. Disable by setting this flag to false.

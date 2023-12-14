@@ -1,13 +1,11 @@
 /* eslint-disable react/react-in-jsx-scope */
 import {
-  CheckIcon,
   Divider,
   HStack,
   Image,
-  Input,
   Pressable,
   ScrollView,
-  Select,
+  Spinner,
   VStack,
 } from 'native-base';
 import {useContext, useState} from 'react';
@@ -19,20 +17,29 @@ import BasicHeader from '../../components/BasicHeader';
 import {AuthContext, UserProps} from '../../contexts/AuthContext';
 import BasicText from '../../components/BasicText';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import BasicInput from '../../components/BasicInput';
+import BasicSelect from '../../components/BasicSelect';
 
 function EditProfile({navigation}: any) {
   const {user, updateUser} = useContext(AuthContext);
   const [form, setForm] = useState<UserProps>(user as UserProps);
-  const [language, setLanguage] = useState(user?.type);
-  const [photo, setPhoto] = useState<string | undefined>(user?.photo);
+  const [type, setType] = useState(user?.type);
+  const [loading, setLoading] = useState(false);
+  const selectValues = [
+    {label: 'Administrador', value: 'Administrador'},
+    {label: 'Personalizado', value: 'Personalizado'},
+    {label: 'Acesso completo', value: 'Acesso completo'},
+    {label: 'Cuidador(a)', value: 'Cuidador(a)'},
+  ];
+  const [photo, setPhoto] = useState<any>();
+  const [photoUri, setPhotoUri] = useState<string | undefined>(user?.photo);
   const handleOpenLibrary = () =>
     launchImageLibrary({} as ImageLibraryOptions, handleChageImage);
   const handleChageImage = ({assets}: any) => {
     if (assets) {
-      console.log('assets => ', assets[0].uri);
-
-      setPhoto(assets[0].uri);
-      setForm({...form, photo: assets[0].uri});
+      console.log(assets[0]);
+      setPhoto(assets[0]);
+      setPhotoUri(assets[0].uri);
     }
   };
 
@@ -42,7 +49,7 @@ function EditProfile({navigation}: any) {
       <ScrollView flex={1} showsVerticalScrollIndicator={false}>
         <VStack mb={4} mt={2} alignItems="center">
           <Image
-            source={{uri: photo}}
+            source={{uri: photoUri}}
             alt="profile image"
             w={140}
             h={140}
@@ -69,118 +76,40 @@ function EditProfile({navigation}: any) {
           </Pressable>
         </VStack>
         <VStack flex={1} space={4} mb={16}>
-          <VStack>
-            <BasicText theme="dark" size={14} opacity={0.6}>
-              Primeiro Nome
-            </BasicText>
-            <Input
-              size={'lg'}
-              height={'40px'}
-              mt={-3}
-              variant={'underlined'}
-              placeholderTextColor={'#0A2117'}
-              borderColor={'#0A2117'}
-              type={'text'}
-              placeholder={'Digite seu primeiro nome'}
-              value={form.name}
-              onChangeText={v => setForm({...form, name: v})}
-              _focus={{
-                borderColor: '#0A2117',
-              }}
-            />
-          </VStack>
-          <VStack>
-            <BasicText theme="dark" size={14} opacity={0.6}>
-              Último Nome
-            </BasicText>
-            <Input
-              size={'lg'}
-              height={'40px'}
-              mt={-3}
-              variant={'underlined'}
-              placeholderTextColor={'#0A2117'}
-              borderColor={'#0A2117'}
-              type={'text'}
-              placeholder={'Digite seu último nome'}
-              value={form.last_name}
-              onChangeText={v => setForm({...form, last_name: v})}
-              _focus={{
-                borderColor: '#0A2117',
-              }}
-            />
-          </VStack>
-          <VStack>
-            <BasicText theme="dark" size={14} opacity={0.6}>
-              CPF
-            </BasicText>
-            <Input
-              size={'lg'}
-              height={'40px'}
-              mt={-3}
-              variant={'underlined'}
-              placeholderTextColor={'#0A2117'}
-              borderColor={'#0A2117'}
-              type={'text'}
-              placeholder={'Digite seu CPF'}
-              value={form.cpf}
-              onChangeText={v => setForm({...form, cpf: v})}
-              _focus={{
-                borderColor: '#0A2117',
-              }}
-            />
-          </VStack>
-          <VStack>
-            <BasicText theme="dark" size={14} opacity={0.6}>
-              Perfil
-            </BasicText>
-            <Select
-              height={'40px'}
-              mt={-3}
-              selectedValue={language}
-              accessibilityLabel="Subcategoria"
-              placeholder="Selecione sua Categoria"
-              borderColor="#0A2117"
-              dropdownIcon={
-                <MaterialCommunityIcons
-                  name={'chevron-down'}
-                  color={'#0A2117'}
-                  size={24}
-                />
-              }
-              variant="underlined"
-              placeholderTextColor={'#0A2117'}
-              h={12}
-              fontSize={17}
-              onValueChange={itemValue => setLanguage(itemValue)}
-              _selectedItem={{
-                endIcon: <CheckIcon size={4} />,
-              }}>
-              <Select.Item label="Administrador" value="Administrador" />
-              <Select.Item label="Personalizado" value="Personalizado" />
-              <Select.Item label="Acesso completo" value="Acesso completo" />
-              <Select.Item label="Cuidador(a)" value="Cuidador(a)" />
-            </Select>
-          </VStack>
-          <VStack>
-            <BasicText theme="dark" size={14} opacity={0.6}>
-              Telefone
-            </BasicText>
-            <Input
-              size={'lg'}
-              height={'40px'}
-              mt={-3}
-              variant={'underlined'}
-              placeholderTextColor={'#0A2117'}
-              borderColor={'#0A2117'}
-              type={'text'}
-              placeholder={'Digite seu telefone'}
-              value={form.phone}
-              onChangeText={v => setForm({...form, phone: v})}
-              _focus={{
-                borderColor: '#0A2117',
-              }}
-            />
-          </VStack>
+          <BasicInput
+            text={form.name}
+            label="Primeiro nome"
+            onChangeText={v => {
+              setForm({...form, name: v});
+            }}
+          />
+          <BasicInput
+            text={form.last_name}
+            label="Último nome"
+            onChangeText={v => {
+              setForm({...form, last_name: v});
+            }}
+          />
+          <BasicInput
+            text={form.cpf}
+            label="CPF"
+            onChangeText={v => {
+              setForm({...form, cpf: v});
+            }}
+          />
+          <BasicSelect
+            itens={selectValues}
+            itemSelected={type}
+            label="Perfil"
+            onChange={t => setType(t)}
+          />
+          <BasicInput
+            text={form.phone}
+            label="Telefone"
+            onChangeText={v => {
+              setForm({...form, phone: v});
+            }}
+          />
         </VStack>
       </ScrollView>
 
@@ -194,14 +123,35 @@ function EditProfile({navigation}: any) {
           borderWidth={1}
           borderColor="#0A2117"
           borderRadius={50}
+          disabled={loading}
           px={6}
           width="100%"
           h={'50px'}
           alignItems="center"
           justifyContent="center"
-          bg={'#0A2117'}
-          onPress={() => {
-            updateUser({...form, type: language});
+          bg={loading ? '#0A2117A5' : '#0A2117'}
+          onPress={async () => {
+            const formData = new FormData();
+
+            Object.entries(form).forEach(entry => {
+              const [key, value] = entry;
+              if (key === 'type') {
+                return;
+              }
+
+              formData.append(key, String(value));
+            });
+            formData.append('type', type);
+
+            if (photo) {
+              formData.append('image', {
+                uri: photo.uri,
+                name: photo.fileName,
+                type: photo.type,
+              });
+            }
+            setLoading(true);
+            await updateUser(formData);
             navigation.goBack();
           }}>
           <HStack space={2}>
@@ -213,6 +163,7 @@ function EditProfile({navigation}: any) {
             <BasicText theme="light" fontWeight="medium">
               Salvar
             </BasicText>
+            {loading && <Spinner />}
           </HStack>
         </Pressable>
       </HStack>

@@ -12,7 +12,7 @@ import {
   Divider,
   FlatList,
 } from 'native-base';
-import {useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 
 import Modal from 'react-native-modal';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -20,87 +20,26 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 import BasicHeader from '../../components/BasicHeader';
 import BasicText from '../../components/BasicText';
-type NotificationsProps = {
-  title: string;
-  message: string;
-  hour: string;
-  read: boolean;
-};
+import {
+  NotificationContext,
+  RequestNotificationsProps,
+} from '../../contexts/NotificationContext';
 
-type RequestNotificationsProps = {
-  date: string;
-  notifications: NotificationsProps[];
-};
-
-const BaseAllNotifications = [
-  {
-    date: '03/05/2023',
-    notifications: [
-      {
-        title: 'Tilte',
-        message:
-          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-        hour: '23h00',
-        read: false,
-      },
-      {
-        title: 'Tilte',
-        message:
-          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-        hour: '16h00',
-        read: false,
-      },
-      {
-        title: 'Tilte',
-        message:
-          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-        hour: '13h00',
-        read: true,
-      },
-      {
-        title: 'Tilte',
-        message:
-          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-        hour: '09h00',
-        read: true,
-      },
-    ],
-  },
-  {
-    date: '02/05/2023',
-    notifications: [
-      {
-        title: 'Tilte',
-        message:
-          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-        hour: '23h00',
-        read: false,
-      },
-      {
-        title: 'Tilte',
-        message:
-          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-        hour: '16h00',
-        read: false,
-      },
-      {
-        title: 'Tilte',
-        message:
-          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-        hour: '13h00',
-        read: true,
-      },
-      {
-        title: 'Tilte',
-        message:
-          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quisquam corporis illo autem similique rerum odit eveniet, neque quae ipsa nesciunt hic explicabo cum magnam iusto porro doloribus placeat eaque eligendi!',
-        hour: '09h00',
-        read: true,
-      },
-    ],
-  },
-];
-
+const EmptyState = (
+  <VStack flex={1} justifyContent="center" alignItems="center">
+    <MaterialCommunityIcons
+      color="#0A2117"
+      name={'mailbox-open-up-outline'}
+      size={64}
+      style={{
+        marginBottom: 16,
+      }}
+    />
+    <BasicText theme="dark" marginBottom={'20%'}>
+      Sua Caixa de Notificações está vazia
+    </BasicText>
+  </VStack>
+);
 const ListNotifications = (
   notification: RequestNotificationsProps[],
   all: boolean,
@@ -110,6 +49,7 @@ const ListNotifications = (
       data={notification}
       showsVerticalScrollIndicator={false}
       renderItem={({item, index}) => {
+        const date = new Date(item.date).toLocaleDateString('pt-BR');
         return (
           <VStack key={index} w="100%">
             <HStack w="100%" space={6} alignItems="center" marginTop={8}>
@@ -118,7 +58,7 @@ const ListNotifications = (
                 fontSize="15px"
                 fontFamily={'IBMPlexSans-SemiBold'}
                 fontWeight="semibold">
-                {item.date}
+                {date}
               </Text>
               <Divider />
             </HStack>
@@ -187,19 +127,15 @@ function Notifications({navigation}: any) {
   const [showModal, setShowModal] = useState(false);
   const [selectedTab, setSelectedTab] = useState(true);
   const [search, setSearch] = useState('');
-  const [AllNotificationsValues, setAllNotificationsValues] =
-    useState<RequestNotificationsProps[]>(BaseAllNotifications);
+  const {notifications, allNotificationsReads} =
+    useContext(NotificationContext);
+  const [AllNotificationsValues, setAllNotificationsValues] = useState<
+    RequestNotificationsProps[] | null
+  >();
 
   useEffect(() => {
-    const AllNotificationsFiltered = BaseAllNotifications.filter(value =>
-      value.date.includes(search),
-    );
-    if (AllNotificationsFiltered.length > 0) {
-      setAllNotificationsValues(AllNotificationsFiltered);
-    } else {
-      setAllNotificationsValues(BaseAllNotifications);
-    }
-  }, [search]);
+    setAllNotificationsValues(notifications);
+  }, [notifications]);
 
   return (
     <VStack flex={1} bg="#DCF7E3" justifyContent={'flex-start'} paddingX={6}>
@@ -275,9 +211,11 @@ function Notifications({navigation}: any) {
             </BasicText>
           </Pressable>
         </HStack>
-        {selectedTab
-          ? ListNotifications(AllNotificationsValues, true)
-          : ListNotifications(AllNotificationsValues, false)}
+        {AllNotificationsValues && AllNotificationsValues?.length > 0
+          ? selectedTab
+            ? ListNotifications(AllNotificationsValues, true)
+            : ListNotifications(AllNotificationsValues, false)
+          : EmptyState}
       </VStack>
       <Modal
         isVisible={showModal}
@@ -319,6 +257,7 @@ function Notifications({navigation}: any) {
             bg="#0A2117"
             mt={4}
             onPress={() => {
+              allNotificationsReads();
               setShowModal(false);
             }}
             _pressed={{

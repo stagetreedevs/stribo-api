@@ -4,13 +4,7 @@ import {VStack, StatusBar, HStack, Text, Pressable} from 'native-base';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import {Polyline, Svg} from 'react-native-svg';
-import {useContext} from 'react';
-import {AuthContext} from '../../contexts/AuthContext';
 import BasicText from '../../components/BasicText';
-
-type Props = {
-  route: any;
-};
 
 const Tooltip = () => {
   return (
@@ -37,10 +31,7 @@ const Tooltip = () => {
     </>
   );
 };
-function OnBoarding({route}: Props) {
-  const {params} = route;
-  const {register} = useContext(AuthContext);
-
+function OnBoarding({navigation}: any) {
   return (
     <VStack backgroundColor={'#0A2117'} flex={1}>
       <StatusBar backgroundColor={'#0A2117'} barStyle="light-content" />
@@ -74,7 +65,7 @@ function OnBoarding({route}: Props) {
           </Text>
         </VStack>
         <Pressable
-          onPress={() => register(params?.name)}
+          onPress={() => navigation.navigate('AddProperty')}
           alignItems={'flex-end'}
           w={'100%'}>
           <Tooltip />

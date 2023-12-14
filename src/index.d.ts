@@ -7,3 +7,4 @@ declare module '*.svg' {
   export default content;
 }
 declare module 'react-native-animated-input';
+declare module 'react-native-simple-radio-button';

@@ -5,7 +5,7 @@ import {useState} from 'react';
 import {SafeAreaView} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-function TabBar({state, navigation, descriptors, ...props}: any) {
+function TabBar({state, navigation, descriptors}: any) {
   const [notification, setNotification] = useState<boolean>(true);
 
   return (
@@ -29,7 +29,7 @@ function TabBar({state, navigation, descriptors, ...props}: any) {
             iconName = 'home-variant-outline';
           } else if (route.name === 'PropertsPage') {
             iconName = 'gate';
-          } else if (route.name === 'Tab2') {
+          } else if (route.name === 'Animals') {
             iconName = 'horse-variant';
           } else if (route.name === 'Tab3') {
             iconName = 'handshake-outline';
@@ -47,7 +47,7 @@ function TabBar({state, navigation, descriptors, ...props}: any) {
             if (!isFocused && !event.defaultPrevented) {
               console.log('Rota => ', name);
               navigation.navigate(name);
-              if (name === 'Tab2') {
+              if (name === 'Animals') {
                 setNotification(false);
               } else {
                 setNotification(true);
@@ -66,7 +66,7 @@ function TabBar({state, navigation, descriptors, ...props}: any) {
               onPress={() => onPress(route.name)}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               testID={options.tabBarTestID}>
-              {notification && route.name === 'Tab2' && (
+              {notification && route.name === 'Animals' && (
                 <MaterialCommunityIcons
                   name={'checkbox-blank-circle'}
                   size={6}

@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/react-in-jsx-scope */
 import {
   StatusBar,
@@ -8,7 +9,9 @@ import {
   ScrollView,
   Button,
   HStack,
+  Spinner,
 } from 'native-base';
+import Modal from 'react-native-modal';
 import {useContext, useState} from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Toast from 'react-native-toast-message';
@@ -17,9 +20,10 @@ import {AuthContext} from '../../contexts/AuthContext';
 import BasicText from '../../components/BasicText';
 function Login({navigation}: any) {
   const [show, setShow] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const {signIn} = useContext(AuthContext);
+  const {signIn, signInGoogle} = useContext(AuthContext);
 
   async function handleSignIn() {
     if (email === '') {
@@ -37,7 +41,7 @@ function Login({navigation}: any) {
       });
     }
     try {
-      await signIn(email, password);
+      await signIn(email.toLowerCase(), password);
     } catch (error) {
       console.log(error);
       Toast.show({
@@ -137,6 +141,11 @@ function Login({navigation}: any) {
                 borderWidth={1}
                 _pressed={{
                   bg: '#d0ead7',
+                }}
+                onPress={async () => {
+                  setLoading(true);
+                  await signInGoogle();
+                  setLoading(false);
                 }}>
                 <HStack flex={1} space={4}>
                   <Icon
@@ -153,6 +162,17 @@ function Login({navigation}: any) {
           </VStack>
         </ScrollView>
       </VStack>
+      <Modal
+        isVisible={loading}
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <Spinner />
+      </Modal>
     </VStack>
   );
 }

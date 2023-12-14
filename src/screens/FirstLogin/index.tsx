@@ -10,17 +10,27 @@ import {
   Button,
   HStack,
 } from 'native-base';
-import {useState} from 'react';
+import {useContext, useState} from 'react';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Toast from 'react-native-toast-message';
 import Logo from '../../../assets/striboLogo.svg';
 import BasicText from '../../components/BasicText';
-function FirstLogin({navigation}: any) {
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import {AuthContext} from '../../contexts/AuthContext';
+function FirstLogin() {
+  const {register} = useContext(AuthContext);
+
   const [show, setShow] = useState(true);
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  async function handleSignIn() {
+  async function handleSignIn(google: boolean) {
+    if (google) {
+      await GoogleSignin.hasPlayServices();
+      const {user} = await GoogleSignin.signIn();
+      console.log(user);
+      return register(user.givenName as string, user.id);
+    }
     if (name === '') {
       return Toast.show({
         type: 'error',
@@ -36,7 +46,7 @@ function FirstLogin({navigation}: any) {
       });
     }
     try {
-      navigation.navigate('OnBoarding', {name: name});
+      register(name, password);
     } catch (error) {
       console.log(error);
       Toast.show({
@@ -127,7 +137,7 @@ function FirstLogin({navigation}: any) {
                 h={'50px'}
                 borderRadius={24}
                 bg="#0A2117"
-                onPress={handleSignIn}>
+                onPress={() => handleSignIn(false)}>
                 <HStack flex={1} space={4}>
                   <Icon
                     as={<MaterialIcons name={'done'} />}
@@ -145,6 +155,7 @@ function FirstLogin({navigation}: any) {
                 bg="#DCF7E3"
                 borderColor={'#0A2117'}
                 borderWidth={1}
+                onPress={() => handleSignIn(true)}
                 _pressed={{
                   bg: '#d0ead7',
                 }}>

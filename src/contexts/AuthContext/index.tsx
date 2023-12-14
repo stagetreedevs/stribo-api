@@ -1,11 +1,14 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import React, {createContext, useEffect, useState} from 'react';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import {api} from '../../service/api';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 interface Node {
   children: React.ReactNode;
 }
 export type UserProps = {
+  id: string;
   name: string | undefined;
   last_name: string | undefined;
   username: string;
@@ -17,77 +20,166 @@ export type UserProps = {
   token: string;
   first_login: boolean;
 };
+export type Property = {
+  admins: string[];
+  id: string;
+  name: string;
+  code: string;
+  owner: string;
+};
 
 type AuthProps = {
   user: UserProps | null;
+  property: Property | null;
   loading: boolean;
+  refresh: boolean;
+  setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
-  register: (email: string) => Promise<void>;
-  updateUser: (form: UserProps) => Promise<void>;
+  register: (name: string, newPassword: string) => Promise<void>;
+  addProperty: (name: string, code?: string) => Promise<void>;
+  updateUser: (form: any) => Promise<void>;
+  editPassword: (password: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
 };
-
+GoogleSignin.configure({
+  webClientId:
+    '537488061151-knbo4dhmekrisck2lm2hbl6qlceomsnl.apps.googleusercontent.com',
+});
 export const AuthContext = createContext<AuthProps>({} as AuthProps);
 
 const AuthProvider = ({children}: Node) => {
   const [user, setUser] = useState<UserProps | null>(null);
+  const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refresh, setRefresh] = useState<boolean>(true);
 
+  async function getProperty() {
+    try {
+      const userRegisted = await AsyncStorage.getItem('@StriboApp_User');
+      if (userRegisted) {
+        const {data} = await api.get(
+          `property/user/${JSON.parse(userRegisted)}/properties`,
+        );
+        setProperty(data[0]);
+      }
+    } catch (error) {
+      setProperty(null);
+      console.log(error);
+    }
+  }
   useEffect(() => {
     async function getUser() {
       try {
         const userRegisted = await AsyncStorage.getItem('@StriboApp_User');
-        console.log(userRegisted);
+        const Token = await AsyncStorage.getItem('@StriboApp_Token');
 
-        if (userRegisted) {
-          setUser(JSON.parse(userRegisted));
+        if (Token) {
+          api.defaults.headers.Authorization = `Bearer ${JSON.parse(Token)}`;
+        }
+
+        if (userRegisted && Token) {
+          const getUserData = async () => {
+            const {data} = await api.get<UserProps>(
+              `user/${JSON.parse(userRegisted)}`,
+            );
+            return data;
+          };
+
+          Promise.all([getUserData(), getProperty()])
+            .then(responses => {
+              setUser(responses[0]);
+            })
+            .finally(() => setLoading(false));
+        } else {
+          setLoading(false);
         }
       } catch (error) {
         console.log(error);
-      } finally {
         setLoading(false);
       }
     }
     getUser();
   }, []);
 
+  async function addProperty(name: string, code?: string) {
+    console.log(api.defaults.headers, {
+      name: name,
+      code: code ? code : '',
+      owner: user?.id,
+    });
+
+    try {
+      const {data} = await api.post('property', {
+        name: name,
+        code: code ? code : '',
+        owner: user?.id,
+      });
+      setProperty(data);
+      Toast.show({
+        type: 'success',
+        text1: 'Propriedade',
+        text2: 'Cadastrada com sucesso!',
+      });
+    } catch (error) {
+      console.log(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Não foi possível cadastrar sua propriedade',
+        text2: 'Confira os dados e tente Novamente!',
+      });
+      throw error;
+    }
+  }
+
   async function signIn(email: string, password: string) {
     try {
-      const {data} = await axios.post(
-        'https://api.escuelajs.co/api/v1/auth/login',
-        {email, password},
-      );
-      setUser({
-        name: '',
-        last_name: '',
-        username: 'marialmeida@gmail.com',
-        type: 'Administrador',
-        cpf: '987.654.321-00',
-        phone: '(11) 98765 4321',
-        photo:
-          'https://zinnyfactor.com/wp-content/uploads/2020/04/93-938050_png-file-transparent-white-user-icon-png-download.jpg',
-        recieve_notifications: true,
-        token: data.access_token,
-        first_login: true,
-      });
+      const {data} = await api.post('login', {username: email, password});
+      setUser(data.user);
+      api.defaults.headers.Authorization = `Bearer ${data.accessToken}`;
       AsyncStorage.setItem(
-        '@StriboApp_User',
-        JSON.stringify({
-          name: 'Maria',
-          username: 'marialmeida@gmail.com',
-          type: 'Administrador',
-          cpf: '987.654.321-00',
-          phone: '(11) 98765 4321',
-          photo:
-            'https://zinnyfactor.com/wp-content/uploads/2020/04/93-938050_png-file-transparent-white-user-icon-png-download.jpg',
-          recieve_notifications: true,
-          token: data.access_token,
-          first_login: true,
-        }),
+        '@StriboApp_Token',
+        JSON.stringify(data.accessToken),
       );
+      AsyncStorage.setItem('@StriboApp_User', JSON.stringify(data.user.id));
 
-      console.log(data);
+      getProperty();
+
+      Toast.show({
+        type: 'success',
+        text1: 'Login',
+        text2: 'Efetuado com sucesso!',
+      });
+    } catch (error) {
+      console.log(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Email ou senha incorretos',
+        text2: 'Confira os dados e tente Novamente!',
+      });
+      throw error;
+    }
+  }
+  async function signInGoogle() {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const {user} = await GoogleSignin.signIn();
+      const {data} = await api.post('user/auth-db', {
+        email: user.email,
+        firstName: user.givenName,
+        lastName: user.familyName,
+        picture: user.photo,
+      });
+      setUser(data.user);
+      api.defaults.headers.Authorization = `Bearer ${data.accessToken}`;
+      AsyncStorage.setItem(
+        '@StriboApp_Token',
+        JSON.stringify(data.accessToken),
+      );
+      AsyncStorage.setItem('@StriboApp_User', JSON.stringify(data.user.id));
+
+      getProperty();
 
       Toast.show({
         type: 'success',
@@ -105,34 +197,43 @@ const AuthProvider = ({children}: Node) => {
     }
   }
 
-  async function register(name: string) {
+  async function register(name: string, newPassword: string) {
     try {
-      setUser({
-        ...user,
-        name: name,
-        first_login: false,
-      } as UserProps);
-      AsyncStorage.setItem(
-        '@StriboApp_User',
-        JSON.stringify({
+      if (user) {
+        if (user.type === 'admin') {
+          const {data} = await api.patch(`admin/${user.id}/firstLogin`, {
+            name,
+            newPassword,
+          });
+          AsyncStorage.setItem(
+            '@StriboApp_Token',
+            JSON.stringify(data.accessToken),
+          );
+          api.defaults.headers.Authorization = `Bearer ${data.accessToken}`;
+        } else {
+          const {data} = await api.patch(`user/${user.id}/firstLogin`, {
+            name,
+            newPassword,
+          });
+          AsyncStorage.setItem(
+            '@StriboApp_Token',
+            JSON.stringify(data.accessToken),
+          );
+          api.defaults.headers.Authorization = `Bearer ${data.accessToken}`;
+        }
+
+        setUser({
+          ...user,
           name: name,
-          username: user?.username,
-          type: user?.type,
-          cpf: user?.cpf,
-          phone: user?.phone,
-          photo: user?.photo,
-          recieve_notifications: true,
-          token: user?.token,
           first_login: false,
-        }),
-      );
+        } as UserProps);
+      }
       Toast.show({
         type: 'success',
         text1: 'Registro',
         text2: 'Efetuado com sucesso!',
       });
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
       Toast.show({
         type: 'error',
         text1: 'Houve um Erro No Registro...',
@@ -141,24 +242,13 @@ const AuthProvider = ({children}: Node) => {
     }
   }
 
-  async function updateUser(form: UserProps) {
+  async function updateUser(form: any) {
     try {
-      setUser(form);
-      AsyncStorage.setItem(
-        '@StriboApp_User',
-        JSON.stringify({
-          name: form.name,
-          last_name: form.last_name,
-          username: form.username,
-          type: form.type,
-          cpf: form.cpf,
-          phone: form.phone,
-          photo: form.photo,
-          recieve_notifications: form.recieve_notifications,
-          token: form.token,
-          first_login: form.first_login,
-        }),
-      );
+      const {data} = await api.put(`user/${user?.id}`, form, {
+        headers: {'Content-Type': ' multipart/form-data'},
+      });
+      console.log(form);
+      setUser(data);
       Toast.show({
         type: 'success',
         text1: 'Editado',
@@ -192,17 +282,32 @@ const AuthProvider = ({children}: Node) => {
       });
     }
   }
+  async function editPassword(password: string) {
+    try {
+      console.log(user?.id, password);
+
+      await api.patch(`user/${user?.id}/password`, {newPassword: password});
+
+      Toast.show({
+        type: 'success',
+        text1: 'Senha redefinida!',
+        text2: 'Confira o Link Para a Redefinição da Sua Senha!',
+      });
+    } catch (error) {
+      console.log(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Houve um Erro Na redefinição de senha...',
+        text2: 'Tente Novamente Mais Tarde!',
+      });
+    }
+  }
 
   async function signOut() {
     try {
       setUser(null);
       AsyncStorage.removeItem('@StriboApp_User');
-
-      Toast.show({
-        type: 'success',
-        text1: 'Login',
-        text2: 'Efetuado com sucesso!',
-      });
+      AsyncStorage.removeItem('@StriboApp_Token');
     } catch (error) {
       console.log(error);
       Toast.show({
@@ -218,12 +323,18 @@ const AuthProvider = ({children}: Node) => {
     <AuthContext.Provider
       value={{
         user,
+        property,
         loading,
+        refresh,
+        setRefresh,
         signIn,
+        signInGoogle,
         signOut,
         register,
+        addProperty,
         updateUser,
         forgotPassword,
+        editPassword,
       }}>
       {children}
     </AuthContext.Provider>

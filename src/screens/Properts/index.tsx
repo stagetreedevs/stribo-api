@@ -10,21 +10,86 @@ import {
   Image,
   Tag,
 } from 'native-base';
-import {useState} from 'react';
+import {useCallback, useContext, useEffect, useState} from 'react';
 import Header from '../../components/Header';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {AdminData} from './Data';
 import BasicText from '../../components/BasicText';
 import Feather from 'react-native-vector-icons/Feather';
+import {AuthContext} from '../../contexts/AuthContext';
+import {api} from '../../service/api';
+import userShape from '../../../assets/usershape.jpg';
+import Toast from 'react-native-toast-message';
+import {RefreshControl} from 'react-native-gesture-handler';
+//import {AdminData} from './Data';
 
 type Props = {
   navigation: any;
 };
-
+type AdminDataProps = {
+  name: string;
+  username: string;
+  cpf: string;
+  phone: string;
+  role: string;
+  status: string;
+  photo: string;
+};
 function Properts({navigation}: Props) {
   const [focus, setFocus] = useState(0);
   const [selectedTab, setSelectedTab] = useState<number>(1);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [AdminData, setAdminData] = useState<AdminDataProps[]>(
+    [] as AdminDataProps[],
+  );
   const [search, setSearch] = useState<string>('');
+  const {property, refresh} = useContext(AuthContext);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const searchAdmins = async () => {
+        const {data} = await api.get(`property/${property?.id}/admins`);
+        setAdminData(data);
+        console.log('refreshing');
+      };
+      searchAdmins();
+    } catch (error) {
+      console.log(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Não foi possivel atualizar a página',
+        text2: 'Tente Novamente mais tarde!',
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  }, [property?.id]);
+  useEffect(() => {
+    const searchAdmins = async () => {
+      const {data} = await api.get(`property/${property?.id}/admins`);
+      setAdminData(data);
+    };
+    searchAdmins();
+  }, [property?.id, refresh]);
+
+  const EmptyState = (
+    <VStack
+      width={'100%'}
+      height={400}
+      justifyContent="center"
+      alignItems="center">
+      <MaterialCommunityIcons
+        color="#0A2117"
+        name={'border-none-variant'}
+        size={64}
+        style={{
+          marginBottom: 16,
+        }}
+      />
+      <BasicText theme="dark" marginBottom={'20%'}>
+        Você não possui administradores cadastrados
+      </BasicText>
+    </VStack>
+  );
 
   const StockPage = (
     <>
@@ -172,40 +237,49 @@ function Properts({navigation}: Props) {
   const Admin = (
     <FlatList
       data={AdminData}
+      flex={1}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
       renderItem={({item, index}) => (
-        <HStack key={index} justifyContent="space-between" marginY={2}>
-          <HStack space={2}>
-            <Image
-              source={{uri: item.photo}}
-              alt="userImage"
-              h="50px"
-              w="50px"
-              borderRadius={25}
-            />
-            <VStack>
-              <BasicText theme={'dark'}>{item.name}</BasicText>
-              <BasicText theme={'dark'} size={14} opacity={0.5}>
-                {item.role}
+        <Pressable onPress={() => navigation.navigate('EditAdmin', {item})}>
+          <HStack key={index} justifyContent="space-between" marginY={2}>
+            <HStack space={2}>
+              <Image
+                source={item.photo ? {uri: item.photo} : userShape}
+                alt="userImage"
+                h="50px"
+                w="50px"
+                borderRadius={25}
+              />
+              <VStack>
+                <BasicText theme={'dark'}>
+                  {item.status === 'Pendente' ? item.username : item.name}
+                </BasicText>
+                <BasicText theme={'dark'} size={14} opacity={0.5}>
+                  {item.role}
+                </BasicText>
+              </VStack>
+            </HStack>
+            <Tag
+              h={'25%'}
+              p={0}
+              borderRadius={4}
+              bg={
+                item.status === 'Ativo'
+                  ? '#A9E8BA'
+                  : item.status === 'Inativo'
+                  ? '#0A211720'
+                  : '#FFD78A'
+              }>
+              <BasicText theme="dark" size={14} marginX={0.5}>
+                {item.status}
               </BasicText>
-            </VStack>
+            </Tag>
           </HStack>
-          <Tag
-            h={'25%'}
-            p={0}
-            borderRadius={4}
-            bg={
-              item.status === 'Ativo'
-                ? '#A9E8BA'
-                : item.status === 'Inativo'
-                ? '#0A211720'
-                : '#FFD78A'
-            }>
-            <BasicText theme="dark" size={14} marginX={0.5}>
-              {item.status}
-            </BasicText>
-          </Tag>
-        </HStack>
+        </Pressable>
       )}
+      ListEmptyComponent={EmptyState}
     />
   );
 
@@ -216,6 +290,7 @@ function Properts({navigation}: Props) {
         data={['Estoque', 'Movimentações', 'Administradores']}
         horizontal
         maxHeight={12}
+        showsHorizontalScrollIndicator={false}
         renderItem={({item, index}) => (
           <Pressable onPress={() => setFocus(index)}>
             <Text

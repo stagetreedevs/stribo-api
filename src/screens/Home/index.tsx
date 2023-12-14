@@ -9,6 +9,7 @@ import HorsesBackGound from '../../../assets/horsesBackGround2.jpg';
 import {AuthContext} from '../../contexts/AuthContext';
 import BottomSheet from '@gorhom/bottom-sheet';
 import BasicText from '../../components/BasicText';
+import {AnimalsContext} from '../../contexts/AnimalsContext';
 
 type Props = {
   navigation: any;
@@ -17,7 +18,8 @@ type Props = {
 function Home({navigation}: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [showSheet, setShowSheet] = useState(false);
-  const {user} = useContext(AuthContext);
+  const {user, signOut} = useContext(AuthContext);
+  const {animals} = useContext(AnimalsContext);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['1%', '40%', '20%', '75%'], []);
   const handleSheetChanges = useCallback((index: number) => {
@@ -97,7 +99,7 @@ function Home({navigation}: Props) {
                   fontWeight={'medium'}
                   color={'#DCF7E3'}
                   fontFamily="IBMPlexSans-Regular">
-                  21
+                  {animals ? animals.length : ''}
                 </Text>
               </VStack>
             </ImageBackground>
@@ -202,7 +204,7 @@ function Home({navigation}: Props) {
               Cadastrar
             </Text>
             <VStack py={8} space={8}>
-              <Pressable>
+              <Pressable onPress={() => navigation.navigate('NewAnimal')}>
                 <HStack alignItems={'center'} space={4}>
                   <MaterialCommunityIcons
                     name="horse-variant"
@@ -226,7 +228,7 @@ function Home({navigation}: Props) {
                 </HStack>
               </Pressable>
 
-              <Pressable>
+              <Pressable onPress={signOut}>
                 <HStack alignItems={'center'} space={4}>
                   <MaterialCommunityIcons
                     name="gender-male-female"

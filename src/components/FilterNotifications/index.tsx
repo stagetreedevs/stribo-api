@@ -8,18 +8,27 @@ import {
   Select,
   VStack,
 } from 'native-base';
-import {useState} from 'react';
+import {useContext, useState} from 'react';
 import DatePicker from 'react-native-date-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {NotificationContext} from '../../contexts/NotificationContext';
 import BasicHeader from '../BasicHeader';
+import BasicInput from '../BasicInput';
 import BasicText from '../BasicText';
 
 function FilterNotification({navigation}: any) {
   const [date, setDate] = useState(new Date());
   const [toDate, setToDate] = useState(new Date());
   const [open, setOpen] = useState(false);
-  const [language, setLanguage] = useState('');
+  const [operator, setOperator] = useState('');
+  const [animal, setAnimal] = useState('');
+  const [category, setCategory] = useState('');
+  const [order, setOrder] = useState('');
+  const [subCategory, setSubCategory] = useState('');
   const [selectDate, setSelectDate] = useState(false);
+
+  const {FilterNotifications, refresh, setRefresh} =
+    useContext(NotificationContext);
   return (
     <VStack flex={1} bg="#DCF7E3" justifyContent={'flex-start'} paddingX={6}>
       <BasicHeader navigation={navigation} name="Filtro" />
@@ -91,58 +100,21 @@ function FilterNotification({navigation}: any) {
               />
             </VStack>
           </HStack>
-          <Input
-            size={'lg'}
-            height={'48px'}
-            variant={'underlined'}
-            placeholderTextColor={'#0A211799'}
-            borderColor={'#0A211799'}
-            type={'text'}
-            placeholder={'Operador'}
-            InputRightElement={
-              <Pressable
-                onPress={() => {
-                  setSelectDate(false);
-                  setOpen(!open);
-                }}>
-                <MaterialCommunityIcons
-                  color="#0A2117"
-                  name={'magnify'}
-                  size={24}
-                />
-              </Pressable>
-            }
-            _focus={{
-              borderColor: '#0A2117',
-            }}
+          <BasicInput
+            label="Operador"
+            text={operator}
+            search
+            onChangeText={v => setOperator(v)}
           />
-          <Input
-            size={'lg'}
-            height={'48px'}
-            variant={'underlined'}
-            placeholderTextColor={'#0A211799'}
-            borderColor={'#0A211799'}
-            type={'text'}
-            placeholder={'Animal'}
-            InputRightElement={
-              <Pressable
-                onPress={() => {
-                  setSelectDate(false);
-                  setOpen(!open);
-                }}>
-                <MaterialCommunityIcons
-                  color="#0A2117"
-                  name={'magnify'}
-                  size={24}
-                />
-              </Pressable>
-            }
-            _focus={{
-              borderColor: '#0A2117',
-            }}
+          <BasicInput
+            label="Animal"
+            text={animal}
+            search
+            onChangeText={v => setAnimal(v)}
           />
+
           <Select
-            selectedValue={language}
+            selectedValue={category}
             accessibilityLabel="Categoria"
             borderColor="#0A211799"
             dropdownIcon={
@@ -157,14 +129,15 @@ function FilterNotification({navigation}: any) {
             placeholderTextColor={'#0A211799'}
             h={12}
             fontSize={17}
-            onValueChange={itemValue => setLanguage(itemValue)}
+            onValueChange={itemValue => setCategory(itemValue)}
             _selectedItem={{
               endIcon: <CheckIcon size={4} />,
             }}>
-            <Select.Item label="JavaScript" value="js" />
+            <Select.Item label="Financeiro" value="Financeiro" />
+            <Select.Item label="Geral" value="Geral" />
           </Select>
           <Select
-            selectedValue={language}
+            selectedValue={subCategory}
             accessibilityLabel="Subcategoria"
             placeholder="Subcategoria"
             borderColor="#0A211799"
@@ -179,15 +152,17 @@ function FilterNotification({navigation}: any) {
             placeholderTextColor={'#0A211799'}
             h={12}
             fontSize={17}
-            onValueChange={itemValue => setLanguage(itemValue)}
+            onValueChange={itemValue => setSubCategory(itemValue)}
             _selectedItem={{
               endIcon: <CheckIcon size={4} />,
             }}>
-            <Select.Item label="JavaScript" value="js" />
+            <Select.Item label="Transferencia" value="Transferencia" />
+            <Select.Item label="Atualização" value="Atualização" />
+            <Select.Item label="Aviso" value="Aviso" />
           </Select>
 
           <Select
-            selectedValue={language}
+            selectedValue={order}
             accessibilityLabel="Ordenar por"
             placeholder="Ordenar por"
             borderColor="#0A211799"
@@ -202,11 +177,12 @@ function FilterNotification({navigation}: any) {
             placeholderTextColor={'#0A211799'}
             h={12}
             fontSize={17}
-            onValueChange={itemValue => setLanguage(itemValue)}
+            onValueChange={itemValue => setOrder(itemValue)}
             _selectedItem={{
               endIcon: <CheckIcon size={4} />,
             }}>
-            <Select.Item label="JavaScript" value="js" />
+            <Select.Item label="Crescente" value="ASC" />
+            <Select.Item label="Decrescente" value="DESC" />
           </Select>
         </VStack>
       </VStack>
@@ -223,7 +199,10 @@ function FilterNotification({navigation}: any) {
           alignItems="center"
           justifyContent="center"
           bg={'transparent'}
-          onPress={() => navigation.goBack()}>
+          onPress={() => {
+            setRefresh(!refresh);
+            navigation.goBack();
+          }}>
           <HStack space={2}>
             <MaterialCommunityIcons
               name={'eraser'}
@@ -245,7 +224,18 @@ function FilterNotification({navigation}: any) {
           alignItems="center"
           justifyContent="center"
           bg={'#0A2117'}
-          onPress={() => navigation.goBack()}>
+          onPress={() => {
+            FilterNotifications({
+              order: order,
+              initialDate: date,
+              lastDate: toDate,
+              animal: animal,
+              operator: operator,
+              category: category,
+              subCategory: subCategory,
+            });
+            navigation.goBack();
+          }}>
           <HStack space={2}>
             <MaterialCommunityIcons
               name={'check'}

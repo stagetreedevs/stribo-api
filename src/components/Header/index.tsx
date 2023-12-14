@@ -13,7 +13,7 @@ type Props = {
 
 function Header({navigation, username, home, screen}: Props) {
   return (
-    <VStack w={'100%'} h={160} p={4}>
+    <VStack w={'100%'} p={4}>
       {home ? (
         <HStack w={'100%'} justifyContent="flex-end" paddingRight={2}>
           <Pressable onPress={() => navigation.navigate('Profile')}>
@@ -56,25 +56,30 @@ function Header({navigation, username, home, screen}: Props) {
           </HStack>
         </HStack>
       )}
-      {home ? (
-        <Text
-          marginY={8}
-          fontSize={'40px'}
-          color={'#DCF7E3'}
-          fontFamily={'IBMPlexSans-Regular'}
-          fontWeight={'normal'}>
-          Olá, {username}!
-        </Text>
-      ) : (
-        <Text
-          marginY={8}
-          fontSize={'40px'}
-          color={'#DCF7E3'}
-          fontFamily={'IBMPlexSans-Regular'}
-          fontWeight={'normal'}>
-          {screen}
-        </Text>
-      )}
+      <HStack>
+        {home ? (
+          <Text
+            marginY={8}
+            fontSize={'40px'}
+            color={'#DCF7E3'}
+            fontFamily={'IBMPlexSans-Regular'}
+            fontWeight={'normal'}>
+            Olá, {username}!
+          </Text>
+        ) : (
+          <Text
+            marginLeft={2}
+            flex={1}
+            flexWrap="wrap"
+            fontSize={'40px'}
+            color={'#DCF7E3'}
+            fontFamily={'IBMPlexSans-Regular'}
+            fontWeight={'normal'}
+            marginY={screen === 'Adicionar propriedade' ? 2 : 0}>
+            {screen}
+          </Text>
+        )}
+      </HStack>
     </VStack>
   );
 }
