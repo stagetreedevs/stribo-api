@@ -21,7 +21,7 @@ export class Animal {
     @Column()
     registerNumber: string;
 
-    @Column({ default: '' })
+    @Column({ default: '', nullable: true })
     property: string;
 
     @Column()
@@ -30,13 +30,13 @@ export class Animal {
     @Column({ default: null })
     photo: string;
 
-    @Column({ default: '' })
+    @Column({ default: '', nullable: true })
     occupation: string;
 
-    @Column()
+    @Column({ nullable: true })
     castrated: boolean;
 
-    @Column({ default: '' })
+    @Column({ default: '', nullable: true })
     sale: string;
 
     @Column({ default: null })
@@ -47,14 +47,14 @@ export class Animal {
 
     @Column({ type: 'date', nullable: true, default: null })
     birthDate: Date;
-    
-    @Column({ type: 'date', nullable: true, default: null })
-    castrationDate: Date;    
 
-    @Column({ default: '' })
+    @Column({ type: 'date', nullable: true, default: null })
+    castrationDate: Date;
+
+    @Column({ default: '', nullable: true })
     father: string;
 
-    @Column({ default: '' })
+    @Column({ default: '', nullable: true })
     mother: string;
 
     constructor(

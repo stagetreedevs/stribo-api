@@ -55,27 +55,32 @@ export class AnimalService {
             }
         }
 
-        // Atualiza os campos do usuário apenas se eles não forem nulos
-        verify.photo = imageUrl;
-        verify.name = body.name || verify.name;
-        verify.race = body.race || verify.race;
-        verify.coat = body.coat || verify.coat;
-        verify.registerNumber = body.registerNumber || verify.registerNumber;
-        verify.property = body.property || verify.property;
-        verify.sex = body.sex || verify.sex;
-        verify.occupation = body.occupation || verify.occupation;
-        
-        //Converte para booleano
-        verify.castrated = body.castrated === 'true';
+        // Atualiza os campos que não podem ser nulos
+        body.photo = imageUrl;
+        body.name = body.name || verify.name;
+        body.race = body.race || verify.race;
+        body.coat = body.coat || verify.coat;
+        body.sex = body.sex || verify.sex;
+        body.birthDate = body.birthDate || verify.birthDate;
 
-        verify.sale = body.sale || verify.sale;
-        verify.value = body.value || verify.value;
-        verify.birthDate = body.birthDate || verify.birthDate;
-        verify.castrationDate = body.castrationDate || verify.castrationDate;
-        verify.father = body.father || verify.father;
-        verify.mother = body.mother || verify.mother;
+        // Seta nulo quando vier vazio
+        if (body.castrationDate === '') {
+            body.castrationDate = null;
+        }
+        else {
+            body.castrationDate = body.castrationDate || verify.castrationDate;
+        }
 
-        await this.animal.update(id, verify);
+        // Seta nulo quando vier vazio
+        if (body.castrated === '') {
+            body.castrated = null;
+        }
+        else {
+            // Converte para booleano
+            body.castrated = body.castrated === 'true';
+        }
+
+        await this.animal.update(id, body);
         return this.findOne(id);
     }
 
