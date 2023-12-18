@@ -102,6 +102,9 @@ export class FilterAnimalDto {
     order?: string;
 
     @ApiProperty({ required: false })
+    owner?: string;
+
+    @ApiProperty({ required: false })
     initialDate?: Date;
 
     @ApiProperty({ required: false })

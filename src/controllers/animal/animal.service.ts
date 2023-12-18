@@ -5,11 +5,13 @@ import { Repository } from 'typeorm';
 import { S3Service } from '../s3/s3.service';
 import { Animal } from './animal.entity';
 import { FilterAnimalDto } from './animal.dto';
+import { UserService } from '../user/user.service';
 @Injectable()
 export class AnimalService {
     constructor(
         @InjectRepository(Animal) private readonly animal: Repository<Animal>,
-        private readonly s3Service: S3Service
+        private readonly s3Service: S3Service,
+        private readonly userService: UserService
     ) { }
 
     async create(body: Animal, photo: Express.Multer.File): Promise<Animal> {
@@ -20,6 +22,9 @@ export class AnimalService {
             imageUrl = url;
         }
 
+        const dono = await this.userService.findOne(body.owner)
+        
+        body.owner_name = dono.name;
         body.photo = imageUrl;
 
         return await this.animal.save(body);
@@ -163,6 +168,10 @@ export class AnimalService {
             queryBuilder.andWhere('animal.birthDate <= :lastDate', {
                 lastDate: filterDto.lastDate,
             });
+        }
+
+        if (filterDto.owner) {
+            queryBuilder.andWhere('animal.owner_name ILIKE :owner_name', { owner_name: `%${filterDto.owner}%` });
         }
 
         if (filterDto.race) {

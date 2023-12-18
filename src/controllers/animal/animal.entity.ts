@@ -8,6 +8,9 @@ export class Animal {
 
     @Column()
     owner: string;
+    
+    @Column({ default: '', nullable: true})
+    owner_name: string;
 
     @Column()
     name: string;
@@ -59,6 +62,7 @@ export class Animal {
 
     constructor(
         owner: string,
+        owner_name: string,
         name: string,
         race: string,
         coat: string,
@@ -78,6 +82,7 @@ export class Animal {
     ) {
         this.id = uuidv4();
         this.owner = owner;
+        this.owner_name = owner_name;
         this.name = name;
         this.race = race;
         this.coat = coat;
