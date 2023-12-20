@@ -30,6 +30,7 @@ function EditProfile({navigation}: any) {
     {label: 'Personalizado', value: 'Personalizado'},
     {label: 'Acesso completo', value: 'Acesso completo'},
     {label: 'Cuidador(a)', value: 'Cuidador(a)'},
+    {label: 'Super Admin', value: 'Super Admin'},
   ];
   const [photo, setPhoto] = useState<any>();
   const [photoUri, setPhotoUri] = useState<string | undefined>(user?.photo);
@@ -101,6 +102,7 @@ function EditProfile({navigation}: any) {
             itens={selectValues}
             itemSelected={type}
             label="Perfil"
+            disable
             onChange={t => setType(t)}
           />
           <BasicInput

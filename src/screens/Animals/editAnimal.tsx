@@ -27,7 +27,6 @@ import Toast from 'react-native-toast-message';
 import {AuthContext} from '../../contexts/AuthContext';
 import {AnimalsContext} from '../../contexts/AnimalsContext';
 import {api} from '../../service/api';
-import {Platform} from 'react-native';
 
 function EditAnimal({navigation, route}: any) {
   const [disable, setDisable] = useState(true);
@@ -41,7 +40,7 @@ function EditAnimal({navigation, route}: any) {
     registerNumber: '',
     castrated: false,
     property: '',
-    owner: '',
+    owner_name: '',
     sex: '',
     function: '',
     sale: '',
@@ -106,15 +105,16 @@ function EditAnimal({navigation, route}: any) {
         });
         if (photo) {
           formData.append('photo', {
-            uri: Platform.OS === 'android' ? `file:///${photo.uri}` : photo.uri,
+            uri: photo.uri,
             name: photo.fileName,
             type: photo.type,
           });
         }
 
-        await api.put(`animal/${state.id}`, formData, {
+        const {data} = await api.put(`animal/${state.id}`, formData, {
           headers: {'Content-Type': 'multipart/form-data'},
         });
+        console.log('edit => ', data);
 
         setDisable(false);
         Toast.show({
@@ -145,13 +145,12 @@ function EditAnimal({navigation, route}: any) {
       form.father !== '' &&
       form.function !== '' &&
       form.mother !== '' &&
-      form.photo !== '' &&
       form.property !== '' &&
       form.race !== '' &&
       form.sex !== ''
     ) {
       if (form.property === 'Terceiros') {
-        if (form.owner !== '') {
+        if (form.owner_name !== '') {
           setDisable(false);
         } else {
           return setDisable(true);
@@ -177,7 +176,9 @@ function EditAnimal({navigation, route}: any) {
         property: state.property,
         race: state.race,
         sex: state.sex,
+        value: state.value,
         castrated: state.castrated,
+        owner_name: state.owner_name,
         birthDate: new Date(state.birthDate),
         castrationDate: new Date(state.castrationDate),
         registerNumber: state.registerNumber,
@@ -291,7 +292,7 @@ function EditAnimal({navigation, route}: any) {
                           setForm({
                             ...form,
                             property: 'Propriedade',
-                            owner: user?.id,
+                            owner_name: user?.id,
                           });
                         }
                       }}>
@@ -316,7 +317,11 @@ function EditAnimal({navigation, route}: any) {
                           : 'transparent'
                       }
                       onPress={() =>
-                        setForm({...form, property: 'Terceiros', owner: ''})
+                        setForm({
+                          ...form,
+                          property: 'Terceiros',
+                          owner_name: '',
+                        })
                       }>
                       <BasicText
                         theme={
@@ -328,9 +333,9 @@ function EditAnimal({navigation, route}: any) {
                   </HStack>
                   {form.property === 'Terceiros' && (
                     <BasicInput
-                      text={form.owner}
+                      text={form.owner_name}
                       label="Proprietário"
-                      onChangeText={v => setForm({...form, owner: v})}
+                      onChangeText={v => setForm({...form, owner_name: v})}
                       search
                     />
                   )}

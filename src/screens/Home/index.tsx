@@ -2,7 +2,14 @@
 /* eslint-disable react/react-in-jsx-scope */
 import {Text, VStack, Pressable, HStack} from 'native-base';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {useContext, useState, useCallback, useMemo, useRef} from 'react';
+import {
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from 'react';
 import Header from '../../components/Header';
 import {ImageBackground} from 'react-native';
 import HorsesBackGound from '../../../assets/horsesBackGround2.jpg';
@@ -19,13 +26,17 @@ function Home({navigation}: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [showSheet, setShowSheet] = useState(false);
   const {user, signOut} = useContext(AuthContext);
-  const {animals} = useContext(AnimalsContext);
+  const {animals, getAnimals} = useContext(AnimalsContext);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['1%', '40%', '20%', '75%'], []);
   const handleSheetChanges = useCallback((index: number) => {
     if (index === 0) {
       setShowSheet(false);
     }
+  }, []);
+  useEffect(() => {
+    getAnimals();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

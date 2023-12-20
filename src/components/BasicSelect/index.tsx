@@ -5,6 +5,7 @@ import {Animated, Easing, StyleSheet} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 type Props = {
   label: string;
+  disable?: boolean;
   titleActiveSize?: number;
   titleInActiveSize?: number;
   titleActiveColor?: string;
@@ -19,6 +20,7 @@ type Props = {
 
 const BasicSelect = ({
   label,
+  disable = false,
   titleActiveSize = 14,
   titleInActiveSize = 16,
   titleActiveColor = '#0A2117',
@@ -95,6 +97,10 @@ const BasicSelect = ({
         mb={2}
         p={0}
         px={0.25}
+        isDisabled={disable}
+        _disabled={{
+          backgroundColor: '#DCF7E3',
+        }}
         dropdownIcon={
           <MaterialCommunityIcons
             name={'chevron-down'}

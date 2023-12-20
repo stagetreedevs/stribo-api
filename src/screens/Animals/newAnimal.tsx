@@ -39,7 +39,7 @@ function NewAnimal({navigation}: any) {
     registerNumber: '',
     castrated: false,
     property: '',
-    owner: '',
+    owner_name: '',
     sex: '',
     function: '',
     sale: '',
@@ -98,6 +98,7 @@ function NewAnimal({navigation}: any) {
           type: photo.type,
         });
       }
+      formData.append('owner', String(user?.id));
 
       await api.post('animal', formData, {
         headers: {'Content-Type': 'multipart/form-data'},
@@ -130,13 +131,12 @@ function NewAnimal({navigation}: any) {
       form.father !== '' &&
       form.function !== '' &&
       form.mother !== '' &&
-      form.photo !== '' &&
       form.property !== '' &&
       form.race !== '' &&
       form.sex !== ''
     ) {
       if (form.property === 'Terceiros') {
-        if (form.owner !== '') {
+        if (form.owner_name !== '') {
           setDisable(false);
         } else {
           return setDisable(true);
@@ -252,7 +252,7 @@ function NewAnimal({navigation}: any) {
                           setForm({
                             ...form,
                             property: 'Propriedade',
-                            owner: user?.id,
+                            owner_name: user?.id,
                           });
                         }
                       }}>
@@ -277,7 +277,11 @@ function NewAnimal({navigation}: any) {
                           : 'transparent'
                       }
                       onPress={() =>
-                        setForm({...form, property: 'Terceiros', owner: ''})
+                        setForm({
+                          ...form,
+                          property: 'Terceiros',
+                          owner_name: '',
+                        })
                       }>
                       <BasicText
                         theme={
@@ -289,9 +293,9 @@ function NewAnimal({navigation}: any) {
                   </HStack>
                   {form.property === 'Terceiros' && (
                     <BasicInput
-                      text={form.owner}
+                      text={form.owner_name}
                       label="Proprietário"
-                      onChangeText={v => setForm({...form, owner: v})}
+                      onChangeText={v => setForm({...form, owner_name: v})}
                       search
                     />
                   )}
@@ -474,8 +478,8 @@ function NewAnimal({navigation}: any) {
           onConfirm={dateValue => {
             setOpen(false);
 
+            console.log(dateValue);
             if (selectDate) {
-              console.log(dateValue);
               setForm({...form, castrationDate: dateValue});
             } else {
               setForm({...form, birthDate: dateValue});

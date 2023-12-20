@@ -26,6 +26,7 @@ function Login({navigation}: any) {
   const {signIn, signInGoogle} = useContext(AuthContext);
 
   async function handleSignIn() {
+    setLoading(true);
     if (email === '') {
       return Toast.show({
         type: 'error',
@@ -50,6 +51,7 @@ function Login({navigation}: any) {
         text2: 'Confira os dados e tente Novamente!',
       });
     } finally {
+      setLoading(false);
       setShow(true);
     }
   }
@@ -143,9 +145,14 @@ function Login({navigation}: any) {
                   bg: '#d0ead7',
                 }}
                 onPress={async () => {
-                  setLoading(true);
-                  await signInGoogle();
-                  setLoading(false);
+                  try {
+                    setLoading(true);
+                    await signInGoogle();
+                  } catch (error) {
+                    console.log(error);
+                  } finally {
+                    setLoading(false);
+                  }
                 }}>
                 <HStack flex={1} space={4}>
                   <Icon
@@ -171,7 +178,7 @@ function Login({navigation}: any) {
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        <Spinner />
+        <Spinner size={'lg'} mr={'10%'} />
       </Modal>
     </VStack>
   );

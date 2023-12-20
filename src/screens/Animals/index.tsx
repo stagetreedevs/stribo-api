@@ -1,38 +1,118 @@
+/* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/react-in-jsx-scope */
+import {Text, VStack, Pressable, HStack, FlatList, Input} from 'native-base';
 import {
-  Text,
-  VStack,
-  Pressable,
-  HStack,
-  FlatList,
-  Input,
-  Image,
-} from 'native-base';
-import {useCallback, useContext, useEffect, useState} from 'react';
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import Header from '../../components/Header';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 //import {AnimalsData as Data} from './Data';
+import {
+  Menu,
+  MenuOptions,
+  MenuOption,
+  MenuTrigger,
+} from 'react-native-popup-menu';
 import BasicText from '../../components/BasicText';
 import Feather from 'react-native-vector-icons/Feather';
-import {AnimalsContext} from '../../contexts/AnimalsContext';
-import {RefreshControl} from 'react-native-gesture-handler';
+import {AnimalProps, AnimalsContext} from '../../contexts/AnimalsContext';
 import Toast from 'react-native-toast-message';
+import AnimalItem from './Animaltem';
+import BottomSheet from '@gorhom/bottom-sheet';
+import {RefreshControl} from 'react-native';
 
 type Props = {
   navigation: any;
 };
+const SimpleMenu = () => {
+  return (
+    <Menu
+      style={{
+        flex: 1,
+      }}>
+      <MenuTrigger>
+        <MaterialCommunityIcons
+          name={'dots-vertical'}
+          color={'#0A2117'}
+          size={26}
+        />
+      </MenuTrigger>
+      <MenuOptions
+        customStyles={{
+          optionsContainer: {
+            backgroundColor: '#DCF7E3',
+            borderRadius: 16,
+            padding: 8,
+            paddingHorizontal: 12,
+            width: 'auto',
+          },
+        }}>
+        <MenuOption onSelect={() => console.log()}>
+          <HStack space={3} mr={4} alignItems="center">
+            <BasicText size={16} theme="dark">
+              Manejo Nutricional
+            </BasicText>
+          </HStack>
+        </MenuOption>
+        <MenuOption onSelect={() => console.log()}>
+          <HStack space={3} mr={4} alignItems="center">
+            <BasicText size={16} theme="dark">
+              Procedimento Sanitário
+            </BasicText>
+          </HStack>
+        </MenuOption>
+        <MenuOption onSelect={() => console.log()}>
+          <HStack space={3} mr={4} alignItems="center">
+            <BasicText size={16} theme="dark">
+              Procedimento Clínico
+            </BasicText>
+          </HStack>
+        </MenuOption>
+        <MenuOption onSelect={() => console.log()}>
+          <HStack space={3} mr={4} alignItems="center">
+            <BasicText size={16} theme="dark">
+              Procedimento Reprodutivo
+            </BasicText>
+          </HStack>
+        </MenuOption>
+      </MenuOptions>
+    </Menu>
+  );
+};
 
 function Animals({navigation}: Props) {
-  const {animals, getAnimals} = useContext(AnimalsContext);
+  const {animals, getAnimals, deleteAnimal} = useContext(AnimalsContext);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [focus, setFocus] = useState(0);
+  const [showSheet, setShowSheet] = useState(false);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ['1%', '10%'], []);
+  const handleSheetChanges = useCallback((index: number) => {
+    if (index === 0) {
+      setShowSheet(false);
+      setSelected(null);
+      setAnimalSelected(null);
+    }
+  }, []);
   const [AnimalsData, setAnimalsData] = useState(animals);
   const [selectedTab, setSelectedTab] = useState<number>(0);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [animalSelected, setAnimalSelected] = useState<AnimalProps[] | null>(
+    null,
+  );
   const [search, setSearch] = useState<string>('');
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    setSelected(null);
+    setAnimalSelected(null);
+    setShowSheet(false);
     try {
       getAnimals();
     } catch (error) {
@@ -46,8 +126,12 @@ function Animals({navigation}: Props) {
       setRefreshing(false);
     }
   }, [getAnimals]);
+
   useEffect(() => {
     setAnimalsData(animals);
+    setAnimalSelected(null);
+    setSelected(null);
+    setShowSheet(false);
   }, [animals]);
 
   const EmptyState = (
@@ -67,6 +151,52 @@ function Animals({navigation}: Props) {
       <BasicText theme="dark">Sua caixa de animais está vazia</BasicText>
     </VStack>
   );
+  const setIndexSelected = (
+    index: number | null,
+    item: AnimalProps | null,
+    pop: boolean,
+  ) => {
+    // console.log(index);
+
+    setSelected(index);
+
+    if (animalSelected) {
+      if (animalSelected.length > 0) {
+        if (item) {
+          if (pop) {
+            const animalArr = animalSelected.filter(
+              animal => animal.id !== item.id,
+            );
+            if (animalArr.length === 0) {
+              console.log(animalArr.length === 0);
+
+              setAnimalSelected(null);
+              setShowSheet(false);
+            } else {
+              setAnimalSelected(animalArr);
+            }
+          } else {
+            const animalArr = animalSelected;
+            animalArr.push(item);
+            setAnimalSelected(animalArr);
+          }
+        } else {
+          console.log(showSheet);
+
+          setAnimalSelected(null);
+          setShowSheet(false);
+        }
+      }
+    } else {
+      if (item && !pop) {
+        setAnimalSelected([item]);
+        setShowSheet(true);
+      } else {
+        setAnimalSelected(null);
+        setShowSheet(false);
+      }
+    }
+  };
 
   const AnimalsPage = (
     <VStack flex={1}>
@@ -172,49 +302,21 @@ function Animals({navigation}: Props) {
       <FlatList
         mt={4}
         data={AnimalsData}
+        keyExtractor={item => item.id}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        renderItem={({item, index}) => (
-          <Pressable onPress={() => navigation.navigate('EditAnimal', {item})}>
-            <HStack key={index} justifyContent="space-between" marginY={2}>
-              <HStack space={2}>
-                {item.photo ? (
-                  <Image
-                    source={{uri: item.photo}}
-                    alt="userImage"
-                    h="50px"
-                    w="50px"
-                    borderRadius={25}
-                    borderColor="#0A2117"
-                  />
-                ) : (
-                  <VStack
-                    borderRadius={25}
-                    borderWidth={0.5}
-                    h="50px"
-                    w="50px"
-                    justifyContent="center"
-                    alignItems="center">
-                    <MaterialCommunityIcons
-                      name={'horse-variant'}
-                      size={35}
-                      style={{
-                        marginTop: 2,
-                      }}
-                      color={'#0A2117'}
-                    />
-                  </VStack>
-                )}
-                <VStack>
-                  <BasicText theme={'dark'}>{item.name}</BasicText>
-                  <BasicText theme={'dark'} size={14} opacity={0.5}>
-                    {item.castrated ? item.registerNumber : 'Sem registro'}
-                  </BasicText>
-                </VStack>
-              </HStack>
-            </HStack>
-          </Pressable>
+        renderItem={({item}) => (
+          <VStack key={item.id}>
+            <AnimalItem
+              item={item}
+              selected={selected}
+              showSheet={showSheet}
+              setSelected={setIndexSelected}
+              navigation={navigation}
+            />
+          </VStack>
         )}
         ListEmptyComponent={EmptyState}
       />
@@ -418,7 +520,7 @@ function Animals({navigation}: Props) {
         onPress={() => navigation.navigate('NewAnimal')}
         position="absolute"
         right={'5%'}
-        bottom={'2.5%'}
+        bottom={showSheet ? '12.5%' : '2.5%'}
         shadow="6">
         <VStack
           justifyContent="center"
@@ -430,6 +532,66 @@ function Animals({navigation}: Props) {
           <Feather name={'plus'} color={'#0A2117'} size={25} />
         </VStack>
       </Pressable>
+      {showSheet && animalSelected && (
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={1}
+          snapPoints={snapPoints}
+          onChange={handleSheetChanges}
+          backgroundStyle={{
+            backgroundColor: '#DCF7E3',
+            borderWidth: 1,
+            borderColor: '#00000030',
+            borderRadius: 25,
+          }}>
+          <HStack
+            flex={1}
+            px={8}
+            alignItems="center"
+            justifyContent="space-between">
+            <Pressable onPress={() => handleSheetChanges(0)}>
+              <MaterialCommunityIcons
+                color="#0A2117"
+                name={'checkbox-multiple-marked'}
+                size={22}
+              />
+            </Pressable>
+            <HStack space={4} w={animalSelected.length === 1 ? '30%' : '20%'}>
+              {animalSelected.length === 1 ? (
+                <Pressable
+                  onPress={() => {
+                    return navigation.navigate('EditAnimal', {
+                      item: animalSelected[0],
+                    });
+                  }}>
+                  <MaterialCommunityIcons
+                    color="#0A2117"
+                    name={'pencil-outline'}
+                    size={22}
+                  />
+                </Pressable>
+              ) : null}
+              <Pressable
+                onPress={() => {
+                  if (animalSelected.length > 0) {
+                    animalSelected.forEach(item => {
+                      deleteAnimal(item.id);
+                    });
+                  } else {
+                    deleteAnimal(animalSelected[0].id);
+                  }
+                }}>
+                <MaterialCommunityIcons
+                  color="#0A2117"
+                  name={'trash-can-outline'}
+                  size={22}
+                />
+              </Pressable>
+              <SimpleMenu />
+            </HStack>
+          </HStack>
+        </BottomSheet>
+      )}
     </VStack>
   );
 }

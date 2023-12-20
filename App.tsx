@@ -7,6 +7,7 @@ import AnimalsProvider from './src/contexts/AnimalsContext';
 import AuthProvider from './src/contexts/AuthContext';
 import NotificationProvider from './src/contexts/NotificationContext';
 import Routes from './src/routes';
+import 'react-native-gesture-handler';
 
 function App(): JSX.Element {
   const newColorTheme = {

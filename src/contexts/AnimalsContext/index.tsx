@@ -1,14 +1,16 @@
 /* eslint-disable react/react-in-jsx-scope */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {createContext, useEffect, useState} from 'react';
+import {createContext, useContext, useEffect, useState} from 'react';
 import Toast from 'react-native-toast-message';
 import {api} from '../../service/api';
+import {AuthContext} from '../AuthContext';
 
 interface Node {
   children: React.ReactNode;
 }
 
 export type AnimalProps = {
+  id: string;
   owner: string;
   name: string;
   race: string;
@@ -43,7 +45,7 @@ type AnimalContextProps = {
   setAnimals: React.Dispatch<React.SetStateAction<AnimalProps[] | null>>;
   setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
   getAnimals: () => Promise<void>;
-  editAnimal: () => Promise<void>;
+  deleteAnimal: (id: string) => Promise<void>;
   filterAnimal: (form: AnimalFilter) => Promise<void>;
 };
 
@@ -54,6 +56,7 @@ export const AnimalsContext = createContext<AnimalContextProps>(
 const AnimalsProvider = ({children}: Node) => {
   const [animals, setAnimals] = useState<AnimalProps[] | null>(null);
   const [refresh, setRefresh] = useState<boolean>(true);
+  const {user} = useContext(AuthContext);
 
   const getAnimals = async () => {
     try {
@@ -70,12 +73,32 @@ const AnimalsProvider = ({children}: Node) => {
       console.log(error);
     }
   };
+
   useEffect(() => {
     getAnimals();
-  }, [refresh]);
+  }, [refresh, user]);
 
-  const editAnimal = async () => {
-    setAnimals(null);
+  const deleteAnimal = async (id: string) => {
+    try {
+      const {status} = await api.delete<AnimalProps[]>(`animal/${id}`);
+      console.log(status);
+      if (status === 200) {
+        getAnimals();
+        Toast.show({
+          type: 'success',
+          text1: 'Animal deletado!',
+        });
+      } else {
+        throw status;
+      }
+    } catch (error) {
+      console.log(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Não foi possível deletar seu animail!',
+        text2: 'Tente Novamente mais tarde!',
+      });
+    }
   };
   const filterAnimal = async (form: AnimalFilter) => {
     console.log(form);
@@ -105,7 +128,7 @@ const AnimalsProvider = ({children}: Node) => {
         setAnimals,
         setRefresh,
         getAnimals,
-        editAnimal,
+        deleteAnimal,
         filterAnimal,
       }}>
       {children}
