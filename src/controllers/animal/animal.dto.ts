@@ -47,7 +47,13 @@ export class AnimalDto {
     father: string;
 
     @ApiProperty({ required: false })
+    father_id: string;
+
+    @ApiProperty({ required: false })
     mother: string;
+
+    @ApiProperty({ required: false })
+    mother_id: string;
 }
 
 export class UpdateAnimalDto {
@@ -94,7 +100,13 @@ export class UpdateAnimalDto {
     father: string;
 
     @ApiProperty({ required: false })
+    father_id: string;
+
+    @ApiProperty({ required: false })
     mother: string;
+
+    @ApiProperty({ required: false })
+    mother_id: string;
 }
 
 export class FilterAnimalDto {

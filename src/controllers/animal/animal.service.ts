@@ -1,17 +1,21 @@
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { S3Service } from '../s3/s3.service';
 import { Animal } from './animal.entity';
 import { FilterAnimalDto } from './animal.dto';
 import { UserService } from '../user/user.service';
+import { DeathService } from '../death/death.service';
+import { NutritionalService } from '../nutritional/nutritional.service';
 @Injectable()
 export class AnimalService {
     constructor(
         @InjectRepository(Animal) private readonly animal: Repository<Animal>,
+        @Inject(forwardRef(() => DeathService)) private readonly deathService: DeathService,
         private readonly s3Service: S3Service,
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        private readonly nutriService: NutritionalService,
     ) { }
 
     async create(body: Animal, photo: Express.Multer.File): Promise<Animal> {
@@ -23,7 +27,7 @@ export class AnimalService {
         }
 
         const dono = await this.userService.findOne(body.owner)
-        
+
         body.owner_name = dono.name;
         body.photo = imageUrl;
 
@@ -40,6 +44,44 @@ export class AnimalService {
             throw new HttpException('Animal não encontrado', HttpStatus.BAD_REQUEST);
         }
         return verify;
+    }
+
+    async findOneWithFamily(id: string): Promise<any> {
+        // Encontrar o animal principal
+        const mainAnimal = await this.animal.findOne({ where: { id } });
+
+        if (!mainAnimal) {
+            throw new HttpException('Animal não encontrado', HttpStatus.BAD_REQUEST);
+        }
+
+        // Função para buscar animal por ID, tratando nulos
+        const findAnimalById = async (animalId: string | null): Promise<any | null> => {
+            return animalId ? await this.animal.findOne({ where: { id: animalId } }) : null;
+        };
+
+        // Encontrar o pai
+        const father = await findAnimalById(mainAnimal.father_id);
+
+        // Encontrar a mãe
+        const mother = await findAnimalById(mainAnimal.mother_id);
+
+        // Encontrar os avós paternos
+        const paternalGrandfather = await findAnimalById(father?.father_id);
+        const paternalGrandmother = await findAnimalById(father?.mother_id);
+
+        // Encontrar os avós maternos
+        const maternalGrandfather = await findAnimalById(mother?.father_id);
+        const maternalGrandmother = await findAnimalById(mother?.mother_id);
+
+        // Agora você pode retornar todos os dados coletados
+        return {
+            father,
+            mother,
+            paternalGrandfather,
+            paternalGrandmother,
+            maternalGrandfather,
+            maternalGrandmother,
+        };
     }
 
     async findByOwner(id: string): Promise<Animal[]> {
@@ -89,6 +131,23 @@ export class AnimalService {
         return this.findOne(id);
     }
 
+    async lifeStats(id: string): Promise<any> {
+        const verify = await this.findOne(id);
+
+        if (!verify) {
+            throw new Error(`Animal não encontrado`);
+        }
+
+        await this.animal
+            .createQueryBuilder()
+            .update(Animal)
+            .set({ alive: !verify.alive })
+            .where("id = :id", { id })
+            .execute();
+
+        return await this.findOne(id);
+    }
+
     async remove(id: string): Promise<void> {
         const verify = await this.findOne(id);
 
@@ -97,7 +156,18 @@ export class AnimalService {
             await this.s3Service.deleteFileS3(verify.photo);
         }
 
+        await this.nutriService.removeManagement(id);
+        await this.deathService.delete(id);
         await this.animal.delete(id);
+    }
+
+    async findNameWithId(owner: string): Promise<any[]> {
+        const animals = await this.findByOwner(owner);
+
+        return animals.map(animal => ({
+            id: animal.id,
+            name: animal.name,
+        }));
     }
 
     async findAllNames(): Promise<string[]> {

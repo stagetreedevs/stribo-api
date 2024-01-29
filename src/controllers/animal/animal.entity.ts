@@ -8,8 +8,8 @@ export class Animal {
 
     @Column()
     owner: string;
-    
-    @Column({ default: '', nullable: true})
+
+    @Column({ default: '', nullable: true })
     owner_name: string;
 
     @Column()
@@ -39,6 +39,9 @@ export class Animal {
     @Column({ nullable: true })
     castrated: boolean;
 
+    @Column({ default: true })
+    alive: boolean;
+
     @Column({ default: '', nullable: true })
     sale: string;
 
@@ -58,7 +61,13 @@ export class Animal {
     father: string;
 
     @Column({ default: '', nullable: true })
+    father_id: string;
+
+    @Column({ default: '', nullable: true })
     mother: string;
+
+    @Column({ default: '', nullable: true })
+    mother_id: string;
 
     constructor(
         owner: string,
@@ -72,13 +81,16 @@ export class Animal {
         photo: string,
         occupation: string,
         castrated: boolean,
+        alive: boolean,
         sale: string,
         value: string,
         registerDate: Date,
         birthDate: Date,
         castrationDate: Date,
         father: string,
+        father_id: string,
         mother: string,
+        mother_id: string,
     ) {
         this.id = uuidv4();
         this.owner = owner;
@@ -92,12 +104,15 @@ export class Animal {
         this.photo = photo;
         this.occupation = occupation;
         this.castrated = castrated;
+        this.alive = alive;
         this.sale = sale;
         this.value = value;
         this.registerDate = registerDate;
         this.birthDate = birthDate;
         this.castrationDate = castrationDate;
         this.father = father;
+        this.father_id = father_id;
         this.mother = mother;
+        this.mother_id = mother_id;
     }
 }

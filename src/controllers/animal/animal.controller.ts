@@ -49,6 +49,24 @@ export class AnimalController {
     }
 
     @UseGuards(JwtAuthGuard)
+    @Get('family/:owner_id')
+    @ApiOperation({ summary: 'TODAS OS NOMES & IDs' })
+    async findNameWithId(
+        @Param('owner_id') owner_id: string
+    ): Promise<any> {
+        return this.animalService.findNameWithId(owner_id);
+    }
+
+    // @UseGuards(JwtAuthGuard)
+    // @Get('genealogy/:id')
+    // @ApiOperation({ summary: 'ARVORE GENEALÓGICA' })
+    // async findOneWithFamily(
+    //     @Param('id') id: string
+    // ): Promise<any> {
+    //     return this.animalService.findOneWithFamily(id);
+    // }
+
+    @UseGuards(JwtAuthGuard)
     @Get('names')
     @ApiOperation({ summary: 'TODAS OS NOMES' })
     async findAllNames(): Promise<string[]> {

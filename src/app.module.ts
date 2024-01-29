@@ -1,4 +1,7 @@
 /* eslint-disable prettier/prettier */
+import { BiometryModule } from './controllers/biometry/biometry.module';
+import { DeathModule } from './controllers/death/death.module';
+import { NutritionalModule } from './controllers/nutritional/nutritional.module';
 import { UserModule } from './controllers/user/user.module';
 import { AdminModule } from './controllers/admin/admin.module';
 import { AnimalModule } from './controllers/animal/animal.module';
@@ -23,9 +26,14 @@ import * as dotenv from 'dotenv';
 import { Property } from './controllers/property/property.entity';
 import { Animal } from './controllers/animal/animal.entity';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { Nutritional } from './controllers/nutritional/nutritional.entity';
+import { Death } from './controllers/death/death.entity';
 dotenv.config();
 @Module({
   imports: [
+    BiometryModule,
+    DeathModule,
+    NutritionalModule,
     AnimalModule,
     PropertyModule,
     S3Module,
@@ -42,7 +50,9 @@ dotenv.config();
         User,
         Notification,
         Property,
-        Animal
+        Animal,
+        Nutritional,
+        Death,
       ],
       autoLoadEntities: true,
       synchronize: true,
