@@ -28,9 +28,11 @@ import { Animal } from './controllers/animal/animal.entity';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Nutritional } from './controllers/nutritional/nutritional.entity';
 import { Death } from './controllers/death/death.entity';
+import { ProcedureModule } from './controllers/procedure/procedure.module';
 dotenv.config();
 @Module({
   imports: [
+    ProcedureModule,
     BiometryModule,
     DeathModule,
     NutritionalModule,
