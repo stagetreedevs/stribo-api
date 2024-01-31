@@ -3,6 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, LessThan, MoreThan, Repository } from 'typeorm';
 import { Procedure } from './procedure.entity';
+import { FilterProcedureDto } from './procedure.dto';
 @Injectable()
 export class ProcedureService {
     constructor(
@@ -97,7 +98,40 @@ export class ProcedureService {
             throw new HttpException('Procedimento nao encontrado', HttpStatus.BAD_REQUEST);
         }
         await this.procedimento.delete(id);
+    }
 
+    async findFiltered(body: FilterProcedureDto): Promise<Procedure[]> {
+        const queryBuilder = this.procedimento.createQueryBuilder('procedure');
+
+        if (body.initialDate) {
+            queryBuilder.andWhere('procedure.date >= :initialDate', {
+                initialDate: body.initialDate,
+            });
+        }
+
+        if (body.lastDate) {
+            queryBuilder.andWhere('procedure.date <= :lastDate', {
+                lastDate: body.lastDate,
+            });
+        }
+
+        if (body.procedure) {
+            queryBuilder.andWhere('procedure.procedure ILIKE :procedure', { procedure: `%${body.procedure}%` });
+        }
+
+        if (body.responsible) {
+            queryBuilder.andWhere('procedure.responsible = :responsible', { responsible: body.responsible });
+        }
+
+        if (body.status) {
+            queryBuilder.andWhere('procedure.status = :status', { status: body.status });
+        }
+
+        if (body.order && (body.order.toUpperCase() === 'ASC' || body.order.toUpperCase() === 'DESC')) {
+            queryBuilder.addOrderBy('procedure.date', body.order as 'ASC' | 'DESC');
+        }
+
+        return queryBuilder.getMany();
     }
 
 }

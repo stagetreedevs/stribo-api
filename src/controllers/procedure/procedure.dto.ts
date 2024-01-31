@@ -76,6 +76,9 @@ export class ProcedureEditDto {
     quantity: number;
 
     @ApiProperty()
+    status: string;
+
+    @ApiProperty()
     observation: string;
 
     @ApiProperty()
@@ -95,4 +98,24 @@ export class ProcedureEditDto {
 
     @ApiProperty()
     regress_responsible: string;
+}
+
+export class FilterProcedureDto {
+    @ApiProperty()
+    order?: string;
+
+    @ApiProperty({ required: false })
+    procedure?: string;
+    
+    @ApiProperty({ required: false })
+    responsible?: string;
+    
+    @ApiProperty({ required: false })
+    status?: string;
+
+    @ApiProperty({ required: false })
+    initialDate?: Date;
+
+    @ApiProperty({ required: false })
+    lastDate?: Date;
 }

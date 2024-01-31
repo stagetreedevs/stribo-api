@@ -3,7 +3,7 @@ import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards } from '@nes
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ProcedureService } from './procedure.service';
-import { ProcedureDto, ProcedureEditDto } from './procedure.dto';
+import { FilterProcedureDto, ProcedureDto, ProcedureEditDto } from './procedure.dto';
 import { Procedure } from './procedure.entity';
 @ApiTags('PROCEDIMENTO CLÍNICO')
 @ApiBearerAuth()
@@ -19,6 +19,16 @@ export class ProcedureController {
         @Body() body: Procedure,
     ): Promise<Procedure> {
         return this.procedService.create(body);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('filter')
+    @ApiOperation({ summary: 'FILTRO PARA PROCEDIMENTOS' })
+    @ApiBody({ type: FilterProcedureDto })
+    async findFiltered(
+        @Body() body: FilterProcedureDto,
+    ): Promise<Procedure[]> {
+        return this.procedService.findFiltered(body);
     }
 
     @UseGuards(JwtAuthGuard)

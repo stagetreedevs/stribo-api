@@ -181,6 +181,17 @@ export class AnimalService {
         return Array.from(uniqueNames);
     }
 
+    async findAllNamesWithId(): Promise<any[]> {
+        const animals = await this.animal.find();
+        const uniqueNames: any[] = [];
+
+        animals.forEach((animal) => {
+            uniqueNames.push({ label: animal.name, value: animal.id });
+        });
+
+        return uniqueNames;
+    }
+
     async findAllBreeds(): Promise<string[]> {
         const animals = await this.animal.find();
         const uniqueRaces = new Set<string>();
