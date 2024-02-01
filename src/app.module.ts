@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import { RegistrationPermissionsModule } from './controllers/registration-permissions/registration-permissions.module';
 import { BiometryModule } from './controllers/biometry/biometry.module';
 import { DeathModule } from './controllers/death/death.module';
 import { NutritionalModule } from './controllers/nutritional/nutritional.module';
@@ -29,9 +30,25 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { Nutritional } from './controllers/nutritional/nutritional.entity';
 import { Death } from './controllers/death/death.entity';
 import { ProcedureModule } from './controllers/procedure/procedure.module';
+import { ClinicalPermissionsModule } from './controllers/clinical-permissions/clinical-permissions.module';
+import { CommercialPermissionsModule } from './controllers/commercial-permissions/commercial-permissions.module';
+import { FinancialPermissionsModule } from './controllers/financial-permissions/financial-permissions.module';
+import { PurchasesPermissionsModule } from './controllers/purchases-permissions/purchases-permissions.module';
+import { ReproductivePermissionsModule } from './controllers/reproductive-permissions/reproductive-permissions.module';
+import { SportPermissionsModule } from './controllers/sport-permissions/sport-permissions.module';
+import { TrackingPermissionsModule } from './controllers/tracking-permissions/tracking-permissions.module';
 dotenv.config();
 @Module({
   imports: [
+    ClinicalPermissionsModule,
+    CommercialPermissionsModule,
+    FinancialPermissionsModule,
+    PurchasesPermissionsModule,
+    RegistrationPermissionsModule,
+    ReproductivePermissionsModule,
+    RegistrationPermissionsModule,
+    SportPermissionsModule,
+    TrackingPermissionsModule,
     ProcedureModule,
     BiometryModule,
     DeathModule,

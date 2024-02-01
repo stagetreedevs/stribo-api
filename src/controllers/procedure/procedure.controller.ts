@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ProcedureService } from './procedure.service';
-import { FilterProcedureDto, ProcedureDto, ProcedureEditDto } from './procedure.dto';
+import { FilterProcedureDto, ProcedureDto, ProcedureEditDto, ProcedureStatusDto } from './procedure.dto';
 import { Procedure } from './procedure.entity';
 @ApiTags('PROCEDIMENTO CLÍNICO')
 @ApiBearerAuth()
@@ -53,6 +53,13 @@ export class ProcedureController {
     }
 
     @UseGuards(JwtAuthGuard)
+    @Get('property/:property_id')
+    @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE' })
+    async findByProperty(@Param('property_id') property_id: string): Promise<any[]> {
+        return this.procedService.findByProperty(property_id);
+    }
+
+    @UseGuards(JwtAuthGuard)
     @Get('today/:property_id')
     @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE HOJE' })
     async findTodayProcedure(@Param('property_id') property_id: string): Promise<any[]> {
@@ -71,6 +78,15 @@ export class ProcedureController {
     @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE FUTUROS' })
     async findFutureProcedures(@Param('property_id') property_id: string): Promise<any[]> {
         return this.procedService.findFutureProcedures(property_id);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch(':procedure_id')
+    @ApiOperation({ summary: 'ATUALIZAR STATUS DO PROCEDIMENTO CLÍNICO' })
+    @ApiBody({ type: ProcedureStatusDto })
+    async updateStatus(@Param('procedure_id') procedure_id: string, @Body() body: ProcedureStatusDto): Promise<Procedure> {
+        const { status } = body;
+        return this.procedService.updateStatus(procedure_id, status);
     }
 
     @UseGuards(JwtAuthGuard)

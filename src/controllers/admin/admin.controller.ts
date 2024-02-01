@@ -34,7 +34,7 @@ export class AdminController {
     @UseGuards(JwtAuthGuard)
     @Get(':id')
     @ApiOperation({ summary: 'BUSCAR ADMIN' })
-    async findOne(@Param('id') id: string): Promise<Admin> {
+    async findOne(@Param('id') id: string): Promise<any> {
         return this.adminService.findOne(id);
     }
 

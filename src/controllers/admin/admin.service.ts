@@ -9,12 +9,28 @@ import { AdminDto } from './admin.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
+import { ClinicalPermissionsService } from '../clinical-permissions/clinical-permissions.service';
+import { CommercialPermissionsService } from '../commercial-permissions/commercial-permissions.service';
+import { FinancialPermissionsService } from '../financial-permissions/financial-permissions.service';
+import { PurchasesPermissionsService } from '../purchases-permissions/purchases-permissions.service';
+import { ReproductivePermissionsService } from '../reproductive-permissions/reproductive-permissions.service';
+import { RegistrationPermissionsService } from '../registration-permissions/registration-permissions.service';
+import { SportPermissionsService } from '../sport-permissions/sport-permissions.service';
+import { TrackingPermissionsService } from '../tracking-permissions/tracking-permissions.service';
 @Injectable()
 export class AdminService {
     constructor(
         @InjectRepository(Admin) private readonly adminRepos: Repository<Admin>,
-        @Inject(forwardRef(() => PropertyService)) private readonly propertyService: PropertyService,
         @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
+        @Inject(forwardRef(() => PropertyService)) private readonly propertyService: PropertyService,
+        @Inject(forwardRef(() => ClinicalPermissionsService)) private readonly clinicalService: ClinicalPermissionsService,
+        @Inject(forwardRef(() => CommercialPermissionsService)) private readonly commercialService: CommercialPermissionsService,
+        @Inject(forwardRef(() => FinancialPermissionsService)) private readonly financialService: FinancialPermissionsService,
+        @Inject(forwardRef(() => PurchasesPermissionsService)) private readonly purchasesService: PurchasesPermissionsService,
+        @Inject(forwardRef(() => RegistrationPermissionsService)) private readonly registrationService: RegistrationPermissionsService,
+        @Inject(forwardRef(() => ReproductivePermissionsService)) private readonly reproductiveService: ReproductivePermissionsService,
+        @Inject(forwardRef(() => SportPermissionsService)) private readonly sportService: SportPermissionsService,
+        @Inject(forwardRef(() => TrackingPermissionsService)) private readonly trackingService: TrackingPermissionsService,
         private readonly s3Service: S3Service,
         private readonly jwtService: JwtService,
         private readonly mailService: MailerService,
@@ -129,12 +145,34 @@ export class AdminService {
         return this.adminRepos.find();
     }
 
-    async findOne(id: string): Promise<Admin> {
+    async findOne(id: string): Promise<any> {
         const verify = await this.adminRepos.findOne({ where: { id } });
         if (!verify) {
             throw new HttpException('Administrador não encontrado', HttpStatus.BAD_REQUEST);
         }
-        return verify;
+
+        const clinical = await this.clinicalService.findByUsername(verify.username);
+        const commercial = await this.commercialService.findByUsername(verify.username);
+        const financial = await this.financialService.findByUsername(verify.username);
+        const purchases = await this.purchasesService.findByUsername(verify.username);
+        const registration = await this.registrationService.findByUsername(verify.username);
+        const reproductive = await this.reproductiveService.findByUsername(verify.username);
+        const sport = await this.sportService.findByUsername(verify.username);
+        const tracking = await this.trackingService.findByUsername(verify.username);
+
+        const res = {
+            ...verify,
+            clinical,
+            commercial,
+            financial,
+            purchases,
+            registration,
+            reproductive,
+            sport,
+            tracking
+        }
+
+        return res;
     }
 
     async findEmail(username: string): Promise<Admin> {

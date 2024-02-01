@@ -106,10 +106,10 @@ export class FilterProcedureDto {
 
     @ApiProperty({ required: false })
     procedure?: string;
-    
+
     @ApiProperty({ required: false })
     responsible?: string;
-    
+
     @ApiProperty({ required: false })
     status?: string;
 
@@ -118,4 +118,9 @@ export class FilterProcedureDto {
 
     @ApiProperty({ required: false })
     lastDate?: Date;
+}
+
+export class ProcedureStatusDto {
+    @ApiProperty()
+    status: string;
 }

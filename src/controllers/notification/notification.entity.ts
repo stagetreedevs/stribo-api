@@ -54,6 +54,10 @@ export class Notification {
         this.message = message;
         this.hour = hour;
         this.read = read;
+        this.animal = animal;
+        this.operator = operator;
+        this.category = category;
+        this.subCategory = subCategory;
         this.date = date;
     }
 }

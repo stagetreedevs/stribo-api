@@ -4,10 +4,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, LessThan, MoreThan, Repository } from 'typeorm';
 import { Procedure } from './procedure.entity';
 import { FilterProcedureDto } from './procedure.dto';
+import { AnimalService } from '../animal/animal.service';
 @Injectable()
 export class ProcedureService {
     constructor(
-        @InjectRepository(Procedure) private readonly procedimento: Repository<Procedure>
+        @InjectRepository(Procedure) private readonly procedimento: Repository<Procedure>,
+        private readonly animalService: AnimalService
     ) { }
 
     async create(body: Procedure): Promise<Procedure> {
@@ -19,20 +21,27 @@ export class ProcedureService {
     }
 
     async findOne(id: string): Promise<Procedure> {
-        const verify = await this.procedimento.findOne({ where: { id } });
-        return verify;
+        return await this.procedimento.findOne({ where: { id } });
     }
 
     async findByAnimal(animal_id: string): Promise<Procedure[]> {
         return this.procedimento.find({ where: { animal_id } });
     }
 
-    async findByProperty(property: string): Promise<Procedure[]> {
-        return this.procedimento.find({ where: { property } });
+    async findByProperty(property: string): Promise<any[]> {
+        const procedimentos = await this.procedimento.find({ where: { property } });
+        const result: any[] = [];
+        for (const procedimento of procedimentos) {
+            const animal = await this.animalService.findOne(procedimento.animal_id);
+            const body = { ...procedimento, animal_photo: animal.photo }
+            result.push(body);
+        }
+
+        return result;
     }
 
     async findAllProcedureNames(property: string): Promise<string[]> {
-        const procedimentos = await this.findByProperty(property);
+        const procedimentos = await this.procedimento.find({ where: { property } });
         const uniqueNames = new Set<string>();
 
         procedimentos.forEach((procedimento) => {
@@ -46,36 +55,77 @@ export class ProcedureService {
         const currentDate = new Date();
         currentDate.setHours(0, 0, 0, 0);
 
-        return this.procedimento.find({
+        const procedimentos = await this.procedimento.find({
             where: {
                 property,
                 date: Equal(currentDate),
             },
         });
+        const result: any[] = [];
+        for (const procedimento of procedimentos) {
+            const animal = await this.animalService.findOne(procedimento.animal_id);
+            const body = { ...procedimento, animal_photo: animal.photo }
+            result.push(body);
+        }
+
+        return result;
     }
 
     async findPastProcedures(property: string): Promise<any[]> {
         const currentDate = new Date();
         currentDate.setHours(0, 0, 0, 0);
 
-        return this.procedimento.find({
+        const procedimentos = await this.procedimento.find({
             where: {
                 property,
                 date: LessThan(currentDate),
             },
         });
+        const result: any[] = [];
+        for (const procedimento of procedimentos) {
+            const animal = await this.animalService.findOne(procedimento.animal_id);
+            const body = { ...procedimento, animal_photo: animal.photo }
+            result.push(body);
+        }
+
+        return result;
     }
 
     async findFutureProcedures(property: string): Promise<any[]> {
         const currentDate = new Date();
         currentDate.setHours(0, 0, 0, 0);
 
-        return this.procedimento.find({
+        const procedimentos = await this.procedimento.find({
             where: {
                 property,
                 date: MoreThan(currentDate),
             },
         });
+        const result: any[] = [];
+        for (const procedimento of procedimentos) {
+            const animal = await this.animalService.findOne(procedimento.animal_id);
+            const body = { ...procedimento, animal_photo: animal.photo }
+            result.push(body);
+        }
+
+        return result;
+    }
+
+    async updateStatus(id: string, status: string): Promise<any> {
+        const procedimento = await this.findOne(id);
+
+        if (!procedimento) {
+            throw new HttpException('Procedimento nao encontrado', HttpStatus.BAD_REQUEST);
+        }
+
+        await this.procedimento
+            .createQueryBuilder()
+            .update(Procedure)
+            .set({ status })
+            .where("id = :id", { id })
+            .execute();
+
+        return await this.findOne(id);
     }
 
     async update(id: string, body: any): Promise<Procedure> {

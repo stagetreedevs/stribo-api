@@ -56,6 +56,7 @@ export class Procedure {
 
   @Column({ default: '', nullable: true })
   regress_responsible: string;
+    animal_image: string;
 
   constructor(
     property: string,
