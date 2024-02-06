@@ -16,7 +16,7 @@ export class S3Service {
     
     async upload(file, folder): Promise<string> {
         const { originalname } = file;
-        const bucketS3 = 'stribo-storage';
+        const bucketS3 = 'stribo-bucket';
         const path: string = folder;
 
         return await this.uploadS3(file.buffer, bucketS3, path + '/' + originalname);
@@ -43,7 +43,7 @@ export class S3Service {
     }
 
     async deleteFileS3(url: string) {
-        const bucketS3 = 'stribo-storage';
+        const bucketS3 = 'stribo-bucket';
         const key = this.extractKeyFromUrl(url);
         const s3 = this.getS3();
         const params = {
