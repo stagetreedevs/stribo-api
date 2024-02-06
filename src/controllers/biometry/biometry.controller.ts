@@ -28,6 +28,13 @@ export class BiometryController {
         return this.bioService.findByAnimal(animal_id);
     }
 
+    @UseGuards(JwtAuthGuard)
+    @Get('height/:animal_id')
+    @ApiOperation({ summary: 'ALTURAS DOS ANIMAIS' })
+    async findHeights(@Param('animal_id') animal_id: string): Promise<any> {
+        return this.bioService.findHeights(animal_id);
+    }
+
     // @UseGuards(JwtAuthGuard)
     // @Delete(':animal_id')
     // @ApiOperation({ summary: 'DELETAR TODOS REGISTROS BIOMÉTRICOS' })

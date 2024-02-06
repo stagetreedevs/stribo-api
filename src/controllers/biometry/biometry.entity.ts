@@ -12,10 +12,10 @@ export class Biometry {
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', nullable: false })
     date: Date;
 
-    @Column()
+    @Column({ default: 0, type: 'numeric' })
     weight: number;
 
-    @Column()
+    @Column({ default: 0, type: 'numeric' })
     height: number;
 
     constructor(

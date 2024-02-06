@@ -36,6 +36,16 @@ export class BiometryService {
         });
     }
 
+    async findHeights(animal_id: string): Promise<any> {
+        const biometries = await this.findByAnimal(animal_id);
+        const labels = biometries.map(biometry => biometry.date);
+        const datasets = [{
+            data: biometries.map(biometry => biometry.height),
+        }];
+
+        return { labels, datasets };
+    }
+
     async findWithDiffs(animal_id: string): Promise<any> {
         try {
             const data: any = await this.findByAnimal(animal_id);
@@ -43,7 +53,7 @@ export class BiometryService {
             if (!data) {
                 throw new Error("Animal sem medidas cadastradas");
             }
-            
+
             const firstEntry = data[0];
 
             const result = data.map(entry => {
