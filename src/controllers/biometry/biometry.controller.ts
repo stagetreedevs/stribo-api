@@ -35,11 +35,11 @@ export class BiometryController {
         return this.bioService.findHeights(animal_id);
     }
 
-    // @UseGuards(JwtAuthGuard)
-    // @Delete(':animal_id')
-    // @ApiOperation({ summary: 'DELETAR TODOS REGISTROS BIOMÉTRICOS' })
-    // async delete(@Param('animal_id') animal_id: string): Promise<void> {
-    //     return this.bioService.delete(animal_id);
-    // }
+    @UseGuards(JwtAuthGuard)
+    @Delete(':animal_id')
+    @ApiOperation({ summary: 'DELETAR TODOS REGISTROS BIOMÉTRICOS DE UM ANIMAL' })
+    async delete(@Param('animal_id') animal_id: string): Promise<void> {
+        return this.bioService.delete(animal_id);
+    }
 
 }
