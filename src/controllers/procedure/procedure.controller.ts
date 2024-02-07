@@ -42,7 +42,14 @@ export class ProcedureController {
     @Get(':animal_id')
     @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DE UM ANIMAL' })
     async findByAnimal(@Param('animal_id') animal_id: string): Promise<Procedure[]> {
-        return this.procedService.findByAnimal(animal_id);
+        return this.procedService.findAndProcessProcedures(animal_id);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('details/:procedure_id')
+    @ApiOperation({ summary: 'DETALHES DE UM PROCEDIMENTO CLÍNICO' })
+    async findOne(@Param('procedure_id') procedure_id: string): Promise<Procedure> {
+        return this.procedService.findOne(procedure_id);
     }
 
     @UseGuards(JwtAuthGuard)

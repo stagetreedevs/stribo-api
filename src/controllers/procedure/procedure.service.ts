@@ -28,6 +28,55 @@ export class ProcedureService {
         return this.procedimento.find({ where: { animal_id } });
     }
 
+    async findAndProcessProcedures(animal_id: string): Promise<any[]> {
+        const procedures: Procedure[] = await this.findByAnimal(animal_id);
+        const currentDate = new Date();
+        const formattedCurrentDate = this.formatDate(currentDate);
+
+        const processedProcedures = procedures.reduce((acc, procedure) => {
+            const formattedProcedureDate = this.formatStringDate(procedure.date.toString());
+            // Compara as datas para obter o dia atual
+            const isToday = formattedProcedureDate === formattedCurrentDate;
+            const dateLabel = isToday ? `${formattedCurrentDate} (HOJE)` : formattedProcedureDate;
+            const existingDateIndex = acc.findIndex(item => item.date === dateLabel);
+            if (existingDateIndex !== -1) {
+                acc[existingDateIndex].procedures.push({
+                    procedure: procedure.procedure,
+                    obs: procedure.observation !== null ? procedure.observation : 'Nenhuma observação',
+                    hour: procedure.hour !== null ? procedure.hour : 'Nenhuma hora',
+                });
+            } else {
+                acc.push({
+                    date: dateLabel,
+                    procedures: [{
+                        procedure: procedure.procedure,
+                        obs: procedure.observation !== null ? procedure.observation : 'Nenhuma observação',
+                        hour: procedure.hour !== null ? procedure.hour : 'Nenhuma hora',
+                    }],
+                });
+            }
+
+            return acc;
+        }, []);
+
+        return processedProcedures;
+    }
+
+    // Função para formatar a data(string) no formato 'DD/MM/YYYY'
+    formatStringDate(dateString: string): string {
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year}`;
+    }
+
+    // Função para formatar a data(Date) no formato 'DD/MM/YYYY'
+    private formatDate(date: Date): string {
+        return date.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
     async findByProperty(property: string): Promise<any[]> {
         const procedimentos = await this.procedimento.find({ where: { property } });
         const result: any[] = [];
