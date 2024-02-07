@@ -28,5 +28,5 @@ jobs:
 
     - name: Build and push image
       run: |
-        docker build -t 975050187017.dkr.ecr.us-east-1.amazonaws.com/stribo:${{github.sha}} .
-        docker push 975050187017.dkr.ecr.us-east-1.amazonaws.com/stribo:${{github.sha}}
+        docker build -t public.ecr.aws/m6u7s0x0/stribo-images:${{github.sha}} .
+        docker push public.ecr.aws/m6u7s0x0/stribo-images:${{github.sha}}
