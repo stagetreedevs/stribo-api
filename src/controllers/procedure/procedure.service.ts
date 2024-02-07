@@ -137,7 +137,6 @@ export class ProcedureService {
 
         body.property = verify.property;
 
-        console.log(body);
         await this.procedimento.update(id, body);
         return this.findOne(id);
     }
