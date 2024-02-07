@@ -20,6 +20,11 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  @Get('health')
+  getHealth(): string {
+    return 'OK';
+  }
+
   // @Get('login-google')
   // @ApiOperation({ summary: 'LOGIN/CADASTRO GOOGLE WEB' })
   // @UseGuards(AuthGuard('google'))
