@@ -30,19 +30,26 @@ export class BiometryService {
     }
 
     async findByAnimal(animal_id: string): Promise<Biometry[]> {
-        return this.bioRepos.find({
+        const biometries = await this.bioRepos.find({
             where: { animal_id },
             order: { date: 'DESC' }
         });
+
+        const biometriesWithNumbers = biometries.map(biometry => ({
+            ...biometry,
+            weight: parseFloat(biometry.weight.toString()),
+            height: parseFloat(biometry.height.toString())
+        }));
+
+        return biometriesWithNumbers;
     }
 
     async findHeights(animal_id: string): Promise<any> {
         const biometries = await this.findByAnimal(animal_id);
         const labels = biometries.map(biometry => biometry.date);
         const datasets = [{
-            data: biometries.map(biometry => biometry.height),
+            data: biometries.map(biometry => parseFloat(biometry.height.toString())),
         }];
-
         return { labels, datasets };
     }
 
