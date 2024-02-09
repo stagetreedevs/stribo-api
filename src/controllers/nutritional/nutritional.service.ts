@@ -14,8 +14,7 @@ export class NutritionalService {
     }
 
     async findOne(id: string): Promise<Nutritional> {
-        const verify = await this.nutriRepos.findOne({ where: { id } });
-        return verify;
+        return await this.nutriRepos.findOne({ where: { id } });
     }
 
     async findAll(): Promise<Nutritional[]> {

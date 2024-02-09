@@ -53,6 +53,15 @@ export class BiometryService {
         return { labels, datasets };
     }
 
+    async findWeights(animal_id: string): Promise<any> {
+        const biometries = await this.findByAnimal(animal_id);
+        const labels = biometries.map(biometry => biometry.date);
+        const datasets = [{
+            data: biometries.map(biometry => parseFloat(biometry.weight.toString())),
+        }];
+        return { labels, datasets };
+    }
+
     async findWithDiffs(animal_id: string): Promise<any> {
         try {
             const data: any = await this.findByAnimal(animal_id);

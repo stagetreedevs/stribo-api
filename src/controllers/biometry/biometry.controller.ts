@@ -36,6 +36,13 @@ export class BiometryController {
     }
 
     @UseGuards(JwtAuthGuard)
+    @Get('weight/:animal_id')
+    @ApiOperation({ summary: 'PESOS DOS ANIMAIS' })
+    async findWeights(@Param('animal_id') animal_id: string): Promise<any> {
+        return this.bioService.findWeights(animal_id);
+    }
+
+    @UseGuards(JwtAuthGuard)
     @Delete(':animal_id')
     @ApiOperation({ summary: 'DELETAR TODOS REGISTROS BIOMÉTRICOS DE UM ANIMAL' })
     async delete(@Param('animal_id') animal_id: string): Promise<void> {

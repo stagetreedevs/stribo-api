@@ -36,6 +36,13 @@ export class NutritionalController {
     }
 
     @UseGuards(JwtAuthGuard)
+    @Get(':nutritional_id/manejo')
+    @ApiOperation({ summary: 'MANEJO COMPLETO VIA O ID' })
+    async findByManejo(@Param('nutritional_id') nutritional_id: string): Promise<Nutritional> {
+        return this.nutriService.findOne(nutritional_id);
+    }
+
+    @UseGuards(JwtAuthGuard)
     @Put(':product_id')
     @ApiOperation({ summary: 'EDITAR PRODUTO DO MANEJO' })
     @ApiBody({ type: NutritionalDto })
