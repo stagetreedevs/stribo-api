@@ -41,6 +41,7 @@ export class ProcedureService {
             const existingDateIndex = acc.findIndex(item => item.date === dateLabel);
             if (existingDateIndex !== -1) {
                 acc[existingDateIndex].procedures.push({
+                    id: procedure.id,
                     procedure: procedure.procedure,
                     obs: procedure.observation !== null ? procedure.observation : 'Nenhuma observação',
                     hour: procedure.hour !== null ? procedure.hour : 'Nenhuma hora',
@@ -49,6 +50,7 @@ export class ProcedureService {
                 acc.push({
                     date: dateLabel,
                     procedures: [{
+                        id: procedure.id,
                         procedure: procedure.procedure,
                         obs: procedure.observation !== null ? procedure.observation : 'Nenhuma observação',
                         hour: procedure.hour !== null ? procedure.hour : 'Nenhuma hora',
