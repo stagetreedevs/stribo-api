@@ -30,6 +30,11 @@ export class ProcedureService {
 
     async findAndProcessProcedures(animal_id: string): Promise<any[]> {
         const procedures: Procedure[] = await this.findByAnimal(animal_id);
+        return await this.formattedDate(procedures);
+    }
+
+    // Função que recebe um array de procedimentos e formata a resposta
+    async formattedDate(procedures: Procedure[]): Promise<any[]> {
         const currentDate = new Date();
         const formattedCurrentDate = this.formatDate(currentDate);
 

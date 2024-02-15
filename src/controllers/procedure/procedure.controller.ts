@@ -21,24 +21,25 @@ export class ProcedureController {
         return this.procedService.create(body);
     }
 
-    @UseGuards(JwtAuthGuard)
+    // @UseGuards(JwtAuthGuard)
     @Post('filter')
     @ApiOperation({ summary: 'FILTRO PARA PROCEDIMENTOS' })
     @ApiBody({ type: FilterProcedureDto })
     async findFiltered(
         @Body() body: FilterProcedureDto,
     ): Promise<Procedure[]> {
-        return this.procedService.findFiltered(body);
+        const procedures: Procedure[] = await this.procedService.findFiltered(body);
+        return await this.procedService.formattedDate(procedures);
     }
 
-    @UseGuards(JwtAuthGuard)
+    // @UseGuards(JwtAuthGuard)
     @Get()
     @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS' })
     async findAll(): Promise<Procedure[]> {
         return this.procedService.findAll();
     }
 
-    @UseGuards(JwtAuthGuard)
+    // @UseGuards(JwtAuthGuard)
     @Get(':animal_id')
     @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DE UM ANIMAL' })
     async findByAnimal(@Param('animal_id') animal_id: string): Promise<Procedure[]> {
@@ -59,7 +60,7 @@ export class ProcedureController {
         return this.procedService.findAllProcedureNames(property_id);
     }
 
-    @UseGuards(JwtAuthGuard)
+    // @UseGuards(JwtAuthGuard)
     @Get('property/:property_id')
     @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE' })
     async findByProperty(@Param('property_id') property_id: string): Promise<any[]> {
