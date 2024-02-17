@@ -40,10 +40,12 @@ export class ProcedureController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Get('animals')
+    @Get('animals/:property_id')
     @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
-    async findProcedureByAnimal(): Promise<any[]> {
-        return this.procedService.findProcedureByAnimal();
+    async findProcedureByAnimal(
+        @Param('property_id') property_id: string
+    ): Promise<any[]> {
+        return this.procedService.findProcedureByAnimal(property_id);
     }
 
     @UseGuards(JwtAuthGuard)

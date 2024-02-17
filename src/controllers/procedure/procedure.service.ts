@@ -56,6 +56,7 @@ export class ProcedureService {
                     date: dateLabel,
                     procedures: [{
                         id: procedure.id,
+                        status: procedure.status,
                         procedure: procedure.procedure,
                         obs: procedure.observation !== null ? procedure.observation : 'Nenhuma observação',
                         hour: procedure.hour !== null ? procedure.hour : 'Nenhuma hora',
@@ -84,8 +85,8 @@ export class ProcedureService {
         });
     }
 
-    async findProcedureByAnimal(): Promise<any[]> {
-        const procedimentos = await this.findAll();
+    async findProcedureByAnimal(property: string): Promise<any[]> {
+        const procedimentos = await this.procedimento.find({ where: { property } });
         const result: any[] = [];
         for (const procedimento of procedimentos) {
             const animal = await this.animalService.findOne(procedimento.animal_id);
@@ -110,6 +111,7 @@ export class ProcedureService {
             }
             procedimentosPorAnimal[procedimento.animal_id].procedures.push({
                 procedure: procedimento.procedure,
+                status: procedimento.status,
                 obs: procedimento.observation,
                 hour: procedimento.hour,
             });
@@ -163,7 +165,7 @@ export class ProcedureService {
             result.push(body);
         }
 
-        return result;
+        return await this.formattedDate(result);
     }
 
     async findPastProcedures(property: string): Promise<any[]> {
@@ -183,7 +185,7 @@ export class ProcedureService {
             result.push(body);
         }
 
-        return result;
+        return await this.formattedDate(result);
     }
 
     async findFutureProcedures(property: string): Promise<any[]> {
@@ -203,7 +205,7 @@ export class ProcedureService {
             result.push(body);
         }
 
-        return result;
+        return await this.formattedDate(result);
     }
 
     async updateStatus(id: string, status: string): Promise<any> {
