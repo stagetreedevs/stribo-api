@@ -66,9 +66,6 @@ export class DeathService {
 
     async delete(animal_id: string): Promise<void> {
         const animal = await this.findByAnimal(animal_id);
-        if (!animal) {
-            throw new HttpException('Animal nao encontrado', HttpStatus.BAD_REQUEST);
-        }
         await this.morgue.delete(animal.id);
     }
 

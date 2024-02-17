@@ -28,6 +28,17 @@ export class AnimalService {
 
         const dono = await this.userService.findOne(body.owner)
 
+        // Pegar ID's do pai e mãe
+        let pai, mae;
+        if (body.father !== "") {
+            pai = await this.findByNameInProperty(body.father, body.owner);
+            body.father_id = pai.id;
+        }
+        if (body.mother !== "") {
+            mae = await this.findByNameInProperty(body.mother, body.owner);
+            body.mother_id = mae.id;
+        }
+
         body.owner_name = dono.name;
         body.photo = imageUrl;
 
@@ -46,41 +57,52 @@ export class AnimalService {
         return verify;
     }
 
-    async findOneWithFamily(id: string): Promise<any> {
-        // Encontrar o animal principal
-        const mainAnimal = await this.animal.findOne({ where: { id } });
+    async findByNameInProperty(name: string, owner: string): Promise<Animal> {
+        const verify = await this.animal.findOne({ where: { name, owner } });
+        if (!verify) {
+            throw new HttpException('Animal não encontrado', HttpStatus.BAD_REQUEST);
+        }
+        return verify;
+    }
 
-        if (!mainAnimal) {
+    async findAncestors(animalId: string, generation: number): Promise<any[]> {
+        const animal = await this.animal.findOne({ where: { id: animalId } });
+
+        if (!animal || generation > 4) {
+            return [];
+        }
+
+        const ancestors = [];
+        const motherAncestors = [];
+        const fatherAncestors = [];
+
+        if (animal.mother_id) {
+            const mother = await this.animal.findOne({ where: { id: animal.mother_id } });
+            motherAncestors.push(...(await this.findAncestors(animal.mother_id, generation + 1)));
+            ancestors.push({ generation: generation, animal: mother, gender: 'female' }, ...motherAncestors);
+        }
+
+        if (animal.father_id) {
+            const father = await this.animal.findOne({ where: { id: animal.father_id } });
+            fatherAncestors.push(...(await this.findAncestors(animal.father_id, generation + 1)));
+            ancestors.push({ generation: generation, animal: father, gender: 'male' }, ...fatherAncestors);
+        }
+
+        return ancestors;
+    }
+
+    async findOneWithFamily(id: string): Promise<any> {
+        const animal = await this.animal.findOne({ where: { id } });
+
+        if (!animal) {
             throw new HttpException('Animal não encontrado', HttpStatus.BAD_REQUEST);
         }
 
-        // Função para buscar animal por ID, tratando nulos
-        const findAnimalById = async (animalId: string | null): Promise<any | null> => {
-            return animalId ? await this.animal.findOne({ where: { id: animalId } }) : null;
-        };
+        const ancestors = await this.findAncestors(id, 1);
 
-        // Encontrar o pai
-        const father = await findAnimalById(mainAnimal.father_id);
-
-        // Encontrar a mãe
-        const mother = await findAnimalById(mainAnimal.mother_id);
-
-        // Encontrar os avós paternos
-        const paternalGrandfather = await findAnimalById(father?.father_id);
-        const paternalGrandmother = await findAnimalById(father?.mother_id);
-
-        // Encontrar os avós maternos
-        const maternalGrandfather = await findAnimalById(mother?.father_id);
-        const maternalGrandmother = await findAnimalById(mother?.mother_id);
-
-        // Agora você pode retornar todos os dados coletados
         return {
-            father,
-            mother,
-            paternalGrandfather,
-            paternalGrandmother,
-            maternalGrandfather,
-            maternalGrandmother,
+            animal,
+            ancestors
         };
     }
 
@@ -157,7 +179,6 @@ export class AnimalService {
         }
 
         await this.nutriService.removeManagement(id);
-        await this.deathService.delete(id);
         await this.animal.delete(id);
     }
 

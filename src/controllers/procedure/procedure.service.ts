@@ -84,6 +84,45 @@ export class ProcedureService {
         });
     }
 
+    async findProcedureByAnimal(): Promise<any[]> {
+        const procedimentos = await this.findAll();
+        const result: any[] = [];
+        for (const procedimento of procedimentos) {
+            const animal = await this.animalService.findOne(procedimento.animal_id);
+            const body = { ...procedimento, animal_photo: animal.photo }
+            result.push(body);
+        }
+
+        return await this.formattedResponseAnimal(result);
+    }
+
+    async formattedResponseAnimal(procedimentos): Promise<any[]> {
+        const result: any[] = [];
+
+        const procedimentosPorAnimal = {};
+        for (const procedimento of procedimentos) {
+            if (!procedimentosPorAnimal[procedimento.animal_id]) {
+                procedimentosPorAnimal[procedimento.animal_id] = {
+                    animal_name: procedimento.animal_name,
+                    animal_photo: procedimento.animal_photo,
+                    procedures: [],
+                };
+            }
+            procedimentosPorAnimal[procedimento.animal_id].procedures.push({
+                procedure: procedimento.procedure,
+                obs: procedimento.observation,
+                hour: procedimento.hour,
+            });
+        }
+
+        // Converte o objeto em um array
+        for (const animalId in procedimentosPorAnimal) {
+            result.push(procedimentosPorAnimal[animalId]);
+        }
+
+        return result;
+    }
+
     async findByProperty(property: string): Promise<any[]> {
         const procedimentos = await this.procedimento.find({ where: { property } });
         const result: any[] = [];
@@ -93,7 +132,7 @@ export class ProcedureService {
             result.push(body);
         }
 
-        return result;
+        return await this.formattedDate(result);
     }
 
     async findAllProcedureNames(property: string): Promise<string[]> {

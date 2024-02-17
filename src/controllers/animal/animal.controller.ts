@@ -57,14 +57,14 @@ export class AnimalController {
         return this.animalService.findNameWithId(owner_id);
     }
 
-    // @UseGuards(JwtAuthGuard)
-    // @Get('genealogy/:id')
-    // @ApiOperation({ summary: 'ARVORE GENEALÓGICA' })
-    // async findOneWithFamily(
-    //     @Param('id') id: string
-    // ): Promise<any> {
-    //     return this.animalService.findOneWithFamily(id);
-    // }
+    @UseGuards(JwtAuthGuard)
+    @Get('genealogy/:id')
+    @ApiOperation({ summary: 'ARVORE GENEALÓGICA' })
+    async findOneWithFamily(
+        @Param('id') id: string
+    ): Promise<any> {
+        return this.animalService.findOneWithFamily(id);
+    }
 
     @UseGuards(JwtAuthGuard)
     @Get('names')
