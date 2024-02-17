@@ -49,6 +49,12 @@ export class Procedure {
   regress_quantity: number;
 
   @Column({ default: '', nullable: true })
+  regress_product: string;
+
+  @Column({ default: '', nullable: true })
+  regress_procedure: string;
+  
+  @Column({ default: '', nullable: true })
   regress_observation: string;
 
   @Column({ default: '', nullable: true })
@@ -56,7 +62,6 @@ export class Procedure {
 
   @Column({ default: '', nullable: true })
   regress_responsible: string;
-    animal_image: string;
 
   constructor(
     property: string,
@@ -75,7 +80,9 @@ export class Procedure {
     regress_quantity: number,
     regress_observation: string,
     regress_status: string,
-    regress_responsible: string
+    regress_responsible: string,
+    regress_procedure: string,
+    regress_product: string,
   ) {
     this.id = uuidv4();
     this.property = property;
@@ -91,6 +98,8 @@ export class Procedure {
     this.status = status;
     this.responsible = responsible;
     this.regress = regress;
+    this.regress_procedure = regress_procedure;
+    this.regress_product = regress_product;
     this.regress_quantity = regress_quantity;
     this.regress_observation = regress_observation;
     this.regress_status = regress_status;

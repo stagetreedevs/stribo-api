@@ -48,6 +48,12 @@ export class ProcedureDto {
 
     @ApiProperty()
     regress_responsible: string;
+
+    @ApiProperty()
+    regress_procedure: string;
+
+    @ApiProperty()
+    regress_product: string;
 }
 
 export class ProcedureEditDto {
@@ -98,6 +104,12 @@ export class ProcedureEditDto {
 
     @ApiProperty()
     regress_responsible: string;
+
+    @ApiProperty()
+    regress_procedure: string;
+
+    @ApiProperty()
+    regress_product: string;
 }
 
 export class FilterProcedureDto {
