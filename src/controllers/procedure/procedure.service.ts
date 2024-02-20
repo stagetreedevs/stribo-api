@@ -106,12 +106,12 @@ export class ProcedureService {
                 procedimentosPorAnimal[procedimento.animal_id] = {
                     animal_name: procedimento.animal_name,
                     animal_photo: procedimento.animal_photo,
+                    animal_registry: procedimento.animal_registry,
                     procedures: [],
                 };
             }
             procedimentosPorAnimal[procedimento.animal_id].procedures.push({
                 date: procedimento.date,
-                animal_registry: procedimento.animal_registry,
                 procedure: procedimento.procedure,
                 status: procedimento.status,
                 obs: procedimento.observation,
