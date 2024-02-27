@@ -46,7 +46,10 @@ export class BiometryService {
 
     async findHeights(animal_id: string): Promise<any> {
         const biometries = await this.findByAnimal(animal_id);
-        const labels = biometries.map(biometry => biometry.date);
+        const labels = biometries.map(biometry => {
+            const date = new Date(biometry.date);
+            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+        });
         const datasets = [{
             data: biometries.map(biometry => parseFloat(biometry.height.toString())),
         }];
@@ -55,7 +58,10 @@ export class BiometryService {
 
     async findWeights(animal_id: string): Promise<any> {
         const biometries = await this.findByAnimal(animal_id);
-        const labels = biometries.map(biometry => biometry.date);
+        const labels = biometries.map(biometry => {
+            const date = new Date(biometry.date);
+            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+        });
         const datasets = [{
             data: biometries.map(biometry => parseFloat(biometry.weight.toString())),
         }];
