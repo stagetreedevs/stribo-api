@@ -56,7 +56,9 @@ export class BiometryService {
         }];
 
         labels.reverse();
-        datasets.reverse();
+        for (const dataset of datasets) {
+            dataset.data.reverse();
+        }
 
         return { labels, datasets };
     }
@@ -73,7 +75,9 @@ export class BiometryService {
         }];
 
         labels.reverse();
-        datasets.reverse();
+        for (const dataset of datasets) {
+            dataset.data.reverse();
+        }
 
         return { labels, datasets };
     }
