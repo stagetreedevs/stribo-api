@@ -46,25 +46,35 @@ export class BiometryService {
 
     async findHeights(animal_id: string): Promise<any> {
         const biometries = await this.findByAnimal(animal_id);
-        const labels = biometries.map(biometry => {
+        const limitedBiometries = biometries.slice(0, 7);
+        const labels = limitedBiometries.map(biometry => {
             const date = new Date(biometry.date);
-            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
         });
         const datasets = [{
-            data: biometries.map(biometry => parseFloat(biometry.height.toString())),
+            data: limitedBiometries.map(biometry => parseFloat(biometry.height.toString())),
         }];
+
+        labels.reverse();
+        datasets.reverse();
+
         return { labels, datasets };
     }
 
     async findWeights(animal_id: string): Promise<any> {
         const biometries = await this.findByAnimal(animal_id);
-        const labels = biometries.map(biometry => {
+        const limitedBiometries = biometries.slice(0, 7);
+        const labels = limitedBiometries.map(biometry => {
             const date = new Date(biometry.date);
-            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
         });
         const datasets = [{
-            data: biometries.map(biometry => parseFloat(biometry.weight.toString())),
+            data: limitedBiometries.map(biometry => parseFloat(biometry.weight.toString())),
         }];
+
+        labels.reverse();
+        datasets.reverse();
+
         return { labels, datasets };
     }
 
