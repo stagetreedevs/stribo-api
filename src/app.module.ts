@@ -37,6 +37,7 @@ import { PurchasesPermissionsModule } from './controllers/purchases-permissions/
 import { ReproductivePermissionsModule } from './controllers/reproductive-permissions/reproductive-permissions.module';
 import { SportPermissionsModule } from './controllers/sport-permissions/sport-permissions.module';
 import { TrackingPermissionsModule } from './controllers/tracking-permissions/tracking-permissions.module';
+import { ProviderModule } from './controllers/provider/provider.module';
 dotenv.config();
 @Module({
   imports: [
@@ -57,6 +58,7 @@ dotenv.config();
     PropertyModule,
     S3Module,
     NotificationModule,
+    ProviderModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.PG_HOST,
