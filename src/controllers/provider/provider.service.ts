@@ -16,8 +16,8 @@ export class ProviderService {
         return await this.provideRepository.save(body);
     }
 
-    async createPartner(body: Provider, property_id: string): Promise<Provider> {
-        body.type = "Parceiro";
+    async createCustomer(body: Provider, property_id: string): Promise<Provider> {
+        body.type = "Cliente";
         body.property = property_id;
         return await this.provideRepository.save(body);
     }
@@ -40,7 +40,7 @@ export class ProviderService {
     async getPartners(property: string): Promise<Provider[]> {
         return this.provideRepository.find({
             order: { name: 'ASC' },
-            where: { type: 'Parceiro', property }
+            where: { type: 'Cliente', property }
         });
     }
 

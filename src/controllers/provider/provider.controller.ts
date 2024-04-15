@@ -5,7 +5,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ProviderService } from './provider.service';
 import { FilterProviderDto, ProviderDto, ProviderEditDto } from './provider.dto';
 import { Provider } from './provider.entity';
-@ApiTags('PARCEIROS/FORNECEDORES')
+@ApiTags('CLIENTES/FORNECEDORES')
 @ApiBearerAuth()
 @Controller('provider')
 export class ProviderController {
@@ -13,14 +13,14 @@ export class ProviderController {
     constructor(private readonly providerService: ProviderService) { }
 
     @UseGuards(JwtAuthGuard)
-    @Post('partner/:property_id')
-    @ApiOperation({ summary: 'CRIAR PARCEIRO' })
+    @Post('customer/:property_id')
+    @ApiOperation({ summary: 'CRIAR CLIENTE' })
     @ApiBody({ type: ProviderDto })
     async createPartner(
         @Param('property_id') property_id: string,
         @Body() body: Provider,
     ): Promise<Provider> {
-        return this.providerService.createPartner(body, property_id);
+        return this.providerService.createCustomer(body, property_id);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -36,7 +36,7 @@ export class ProviderController {
 
     @UseGuards(JwtAuthGuard)
     @Post('filter/:property_id')
-    @ApiOperation({ summary: 'FILTRO PARCEIRO/FORNECEDOR' })
+    @ApiOperation({ summary: 'FILTRO CLIENTE/FORNECEDOR' })
     @ApiBody({ type: FilterProviderDto })
     async findFiltered(
         @Param('property_id') property_id: string,
@@ -48,14 +48,14 @@ export class ProviderController {
 
     @UseGuards(JwtAuthGuard)
     @Get(':property_id')
-    @ApiOperation({ summary: 'TODOS PARCEIRO/FORNECEDOR' })
+    @ApiOperation({ summary: 'TODOS CLIENTE/FORNECEDOR' })
     async findAll(@Param('property_id') property_id: string): Promise<Provider[]> {
         return this.providerService.findAll(property_id);
     }
 
     @UseGuards(JwtAuthGuard)
-    @Get('partner/:property_id')
-    @ApiOperation({ summary: 'TODOS PARCEIROS' })
+    @Get('customer/:property_id')
+    @ApiOperation({ summary: 'TODOS CLIENTES' })
     async getPartners(@Param('property_id') property_id: string): Promise<any[]> {
         return this.providerService.getPartners(property_id);
     }
@@ -69,7 +69,7 @@ export class ProviderController {
 
     @UseGuards(JwtAuthGuard)
     @Put(':provider_id')
-    @ApiOperation({ summary: 'EDITAR PARCEIRO/FORNECEDOR' })
+    @ApiOperation({ summary: 'EDITAR CLIENTE/FORNECEDOR' })
     @ApiBody({ type: ProviderEditDto })
     async update(
         @Param('provider_id') provider_id: string,
@@ -80,7 +80,7 @@ export class ProviderController {
 
     @UseGuards(JwtAuthGuard)
     @Delete(':provider_id')
-    @ApiOperation({ summary: 'DELETAR PARCEIRO/FORNECEDOR' })
+    @ApiOperation({ summary: 'DELETAR CLIENTE/FORNECEDOR' })
     async removeProcedure(@Param('provider_id') provider_id: string): Promise<void> {
         return this.providerService.delete(provider_id);
     }
