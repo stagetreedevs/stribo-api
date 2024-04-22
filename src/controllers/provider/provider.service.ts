@@ -13,12 +13,166 @@ export class ProviderService {
     async createProvider(body: Provider, property_id: string): Promise<Provider> {
         body.type = "Fornecedor";
         body.property = property_id;
+
+        if (body.adress.length > 0) {
+            for (const address of body.adress) {
+                const requiredFields = [
+                    'country',
+                    'cep',
+                    'streetAddress',
+                    'numberAddress',
+                    'complement',
+                    'district',
+                    'city',
+                    'state',
+                    'description',
+                    'main',
+                ];
+
+                // Verificar se todos os campos obrigatórios estão presentes
+                for (const field of requiredFields) {
+                    if (!(field in address) || address[field] === null || address[field] === undefined) {
+                        throw new HttpException('Endereço incompleto. Campos faltantes.', HttpStatus.BAD_REQUEST);
+                    }
+                }
+
+                // Verificar se há campos extras no objeto
+                const extraFields = Object.keys(address).filter(field => !requiredFields.includes(field));
+                if (extraFields.length > 0) {
+                    throw new HttpException('Endereço inválido. Campos extras.', HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+
+        if (body.contacts.length > 0) {
+            for (const contact of body.contacts) {
+                const requiredFields = [
+                    'name',
+                    'phone',
+                    'obs'
+                ];
+
+                // Verificar se todos os campos obrigatórios estão presentes
+                for (const field of requiredFields) {
+                    if (!(field in contact) || contact[field] === null || contact[field] === undefined) {
+                        throw new HttpException('Contato incompleto. Campos faltantes.', HttpStatus.BAD_REQUEST);
+                    }
+                }
+
+                // Verificar se há campos extras no objeto
+                const extraFields = Object.keys(contact).filter(field => !requiredFields.includes(field));
+                if (extraFields.length > 0) {
+                    throw new HttpException('Contato inválido. Campos extras.', HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+
+        if (body.banks.length > 0) {
+            for (const bank of body.banks) {
+                const requiredFields = [
+                    'name',
+                    'account',
+                    'agency'
+                ];
+
+                // Verificar se todos os campos obrigatórios estão presentes
+                for (const field of requiredFields) {
+                    if (!(field in bank) || bank[field] === null || bank[field] === undefined) {
+                        throw new HttpException('Banco incompleto. Campos faltantes.', HttpStatus.BAD_REQUEST);
+                    }
+                }
+
+                // Verificar se há campos extras no objeto
+                const extraFields = Object.keys(bank).filter(field => !requiredFields.includes(field));
+                if (extraFields.length > 0) {
+                    throw new HttpException('Banco inválido. Campos extras.', HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+
         return await this.provideRepository.save(body);
     }
 
     async createCustomer(body: Provider, property_id: string): Promise<Provider> {
         body.type = "Cliente";
         body.property = property_id;
+
+        if (body.adress.length > 0) {
+            for (const address of body.adress) {
+                const requiredFields = [
+                    'country',
+                    'cep',
+                    'streetAddress',
+                    'numberAddress',
+                    'complement',
+                    'district',
+                    'city',
+                    'state',
+                    'description',
+                    'main',
+                ];
+
+                // Verificar se todos os campos obrigatórios estão presentes
+                for (const field of requiredFields) {
+                    if (!(field in address) || address[field] === null || address[field] === undefined) {
+                        throw new HttpException('Endereço incompleto. Campos faltantes.', HttpStatus.BAD_REQUEST);
+                    }
+                }
+
+                // Verificar se há campos extras no objeto
+                const extraFields = Object.keys(address).filter(field => !requiredFields.includes(field));
+                if (extraFields.length > 0) {
+                    throw new HttpException('Endereço inválido. Campos extras.', HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+
+        if (body.contacts.length > 0) {
+            for (const contact of body.contacts) {
+                const requiredFields = [
+                    'name',
+                    'phone',
+                    'obs'
+                ];
+
+                // Verificar se todos os campos obrigatórios estão presentes
+                for (const field of requiredFields) {
+                    if (!(field in contact) || contact[field] === null || contact[field] === undefined) {
+                        throw new HttpException('Contato incompleto. Campos faltantes.', HttpStatus.BAD_REQUEST);
+                    }
+                }
+
+                // Verificar se há campos extras no objeto
+                const extraFields = Object.keys(contact).filter(field => !requiredFields.includes(field));
+                if (extraFields.length > 0) {
+                    throw new HttpException('Contato inválido. Campos extras.', HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+
+        if (body.banks.length > 0) {
+            for (const bank of body.banks) {
+                const requiredFields = [
+                    'name',
+                    'account',
+                    'agency'
+                ];
+
+                // Verificar se todos os campos obrigatórios estão presentes
+                for (const field of requiredFields) {
+                    if (!(field in bank) || bank[field] === null || bank[field] === undefined) {
+                        throw new HttpException('Banco incompleto. Campos faltantes.', HttpStatus.BAD_REQUEST);
+                    }
+                }
+
+                // Verificar se há campos extras no objeto
+                const extraFields = Object.keys(bank).filter(field => !requiredFields.includes(field));
+                if (extraFields.length > 0) {
+                    throw new HttpException('Banco inválido. Campos extras.', HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+
         return await this.provideRepository.save(body);
     }
 
@@ -49,6 +203,79 @@ export class ProviderService {
 
         if (!verify) {
             throw new HttpException('Provider nao encontrado', HttpStatus.BAD_REQUEST);
+        }
+
+        if (body.adress.length > 0) {
+            for (const address of body.adress) {
+                const requiredFields = [
+                    'country',
+                    'cep',
+                    'streetAddress',
+                    'numberAddress',
+                    'complement',
+                    'district',
+                    'city',
+                    'state',
+                    'description',
+                    'main',
+                ];
+
+                // Verificar se todos os campos obrigatórios estão presentes
+                const missingFields = requiredFields.filter(field => !(field in address));
+                if (missingFields.length > 0) {
+                    throw new HttpException('Endereço incompleto. Campos faltantes.', HttpStatus.BAD_REQUEST);
+                }
+
+                // Verificar se há campos extras no objeto
+                const extraFields = Object.keys(address).filter(field => !requiredFields.includes(field));
+                if (extraFields.length > 0) {
+                    throw new HttpException('Endereço inválido. Campos extras.', HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+
+        if (body.contacts.length > 0) {
+            for (const contact of body.contacts) {
+                const requiredFields = [
+                    'name',
+                    'phone',
+                    'obs'
+                ];
+
+                // Verificar se todos os campos obrigatórios estão presentes
+                const missingFields = requiredFields.filter(field => !(field in contact));
+                if (missingFields.length > 0) {
+                    throw new HttpException('Contato incompleto. Campos faltantes.', HttpStatus.BAD_REQUEST);
+                }
+
+                // Verificar se há campos extras no objeto
+                const extraFields = Object.keys(contact).filter(field => !requiredFields.includes(field));
+                if (extraFields.length > 0) {
+                    throw new HttpException('Contato inválido. Campos extras.', HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+
+        if (body.banks.length > 0) {
+            for (const bank of body.banks) {
+                const requiredFields = [
+                    'name',
+                    'account',
+                    'agency'
+                ];
+
+                // Verificar se todos os campos obrigatórios estão presentes
+                const missingFields = requiredFields.filter(field => !(field in bank));
+                if (missingFields.length > 0) {
+                    throw new HttpException('Banco incompleto. Campos faltantes.', HttpStatus.BAD_REQUEST);
+                }
+
+                // Verificar se há campos extras no objeto
+                const extraFields = Object.keys(bank).filter(field => !requiredFields.includes(field));
+                if (extraFields.length > 0) {
+                    throw new HttpException('Banco inválido. Campos extras.', HttpStatus.BAD_REQUEST);
+                }
+            }
         }
 
         await this.provideRepository.update(id, body);

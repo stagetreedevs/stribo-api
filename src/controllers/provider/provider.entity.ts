@@ -2,9 +2,16 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 interface ProviderAdress {
+    country: string;
+    cep: string;
     streetAddress: string;
-    numberAddress: number;
-    main: boolean;
+    numberAddress: number | null;
+    complement: string;
+    district: string;
+    city: string;
+    state: string;
+    description: string;
+    main: boolean | null;
 };
 interface ProviderBank {
     name: string;
@@ -13,6 +20,7 @@ interface ProviderBank {
 };
 interface ProviderContact {
     name: string;
+    phone: string;
     obs: string;
 };
 @Entity()

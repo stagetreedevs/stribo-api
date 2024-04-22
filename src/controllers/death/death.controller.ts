@@ -43,7 +43,7 @@ export class DeathController {
         return this.deathService.update(animal_id, body);
     }
 
-    // @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Delete(':animal_id')
     @ApiOperation({ summary: 'REVIVE UM ANIMAL' })
     async removeManagement(@Param('animal_id') animal_id: string): Promise<void> {

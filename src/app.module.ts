@@ -38,6 +38,12 @@ import { ReproductivePermissionsModule } from './controllers/reproductive-permis
 import { SportPermissionsModule } from './controllers/sport-permissions/sport-permissions.module';
 import { TrackingPermissionsModule } from './controllers/tracking-permissions/tracking-permissions.module';
 import { ProviderModule } from './controllers/provider/provider.module';
+import { BudgetModule } from './controllers/documents/budget/budget.module';
+import { ReceiptModule } from './controllers/documents/receipt/receipt.module';
+import { ServiceOrderModule } from './controllers/documents/service-order/service-order.module';
+import { InvoiceModule } from './controllers/documents/invoice/invoice.module';
+import { ContractModule } from './controllers/documents/contract/contract.module';
+import { BankSlipModule } from './controllers/documents/bank-slip/bank-slip.module';
 dotenv.config();
 @Module({
   imports: [
@@ -59,6 +65,12 @@ dotenv.config();
     S3Module,
     NotificationModule,
     ProviderModule,
+    BudgetModule,
+    ReceiptModule,
+    ServiceOrderModule,
+    InvoiceModule,
+    ContractModule,
+    BankSlipModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.PG_HOST,
