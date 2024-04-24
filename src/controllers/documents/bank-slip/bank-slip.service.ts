@@ -3,6 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BankSlip } from './bank-slip.entity';
+import { FilterDocumentsDto } from '../documents.dto';
 @Injectable()
 export class BankSlipService {
     constructor(
@@ -61,6 +62,32 @@ export class BankSlipService {
 
         await this.ticketRepository.update(ticket_number, body);
         return this.findByNumber(ticket_number);
+    }
+
+    async findFiltered(body: FilterDocumentsDto): Promise<any[]> {
+        const queryBuilder = this.ticketRepository.createQueryBuilder('bank-slip');
+    
+        if (body.initialDate) {
+            queryBuilder.andWhere('bank-slip.date >= :initialDate', {
+                initialDate: body.initialDate,
+            });
+        }
+    
+        if (body.lastDate) {
+            queryBuilder.andWhere('bank-slip.date <= :lastDate', {
+                lastDate: body.lastDate,
+            });
+        }
+    
+        if (body.provider) {
+            queryBuilder.andWhere('bank-slip.provider = :provider', { provider: body.provider });
+        }
+    
+        if (body.order && (body.order.toUpperCase() === 'ASC' || body.order.toUpperCase() === 'DESC')) {
+            queryBuilder.addOrderBy('bank-slip.date', body.order as 'ASC' | 'DESC');
+        }
+    
+        return queryBuilder.getMany();
     }
 
     async delete(ticket_number: string): Promise<void> {

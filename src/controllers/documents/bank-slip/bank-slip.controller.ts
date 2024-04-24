@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { BankSlipService } from './bank-slip.service';
 import { BankSlipDto, BankSlipEditDto } from './bank-slip.dto';
+import { FilterDocumentsDto } from '../documents.dto';
 @ApiTags('DOCUMENTO - BOLETO')
 @ApiBearerAuth()
 @Controller('bank-slip')
@@ -18,6 +19,16 @@ export class BankSlipController {
         @Body() body: BankSlipDto,
     ): Promise<any> {
         return this.ticketService.create(body);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('filter')
+    @ApiOperation({ summary: 'FILTRO PARA BOLETOS' })
+    @ApiBody({ type: FilterDocumentsDto })
+    async findFiltered(
+        @Body() body: FilterDocumentsDto,
+    ): Promise<any[]> {
+        return this.ticketService.findFiltered(body);
     }
 
     @UseGuards(JwtAuthGuard)

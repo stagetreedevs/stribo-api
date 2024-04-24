@@ -3,7 +3,7 @@ import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards } from '@nes
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ContractService } from './contract.service';
-import { ContractDto, ContractEditDto } from './contract.dto';
+import { ContractDto, ContractEditDto, FilterContractDto } from './contract.dto';
 @ApiTags('DOCUMENTO - CONTRATO')
 @ApiBearerAuth()
 @Controller('contract')
@@ -18,6 +18,16 @@ export class ContractController {
         @Body() body: ContractDto,
     ): Promise<any> {
         return this.contractService.create(body);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('filter')
+    @ApiOperation({ summary: 'FILTRO PARA CONTRATOS' })
+    @ApiBody({ type: FilterContractDto })
+    async findFiltered(
+        @Body() body: FilterContractDto,
+    ): Promise<any[]> {
+        return this.contractService.findFiltered(body);
     }
 
     @UseGuards(JwtAuthGuard)

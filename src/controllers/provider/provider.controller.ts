@@ -68,6 +68,24 @@ export class ProviderController {
     }
 
     @UseGuards(JwtAuthGuard)
+    @Get('name/customer/:property_id')
+    @ApiOperation({ summary: 'TODOS OS NOMES DOS CLIENTES DE DETERMINADA PROPRIEDADE' })
+    async findAllNamesCustomerByProperty(
+        @Param('property_id') property_id: string
+    ): Promise<string[]> {
+        return this.providerService.findAllNamesCustomerByProperty(property_id);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('name/supplier/:property_id')
+    @ApiOperation({ summary: 'TODOS OS NOMES DOS FORNECEDORES DE DETERMINADA PROPRIEDADE' })
+    async findAllNamesProvidersByProperty(
+        @Param('property_id') property_id: string
+    ): Promise<string[]> {
+        return this.providerService.findAllNamesProvidersByProperty(property_id);
+    }
+
+    @UseGuards(JwtAuthGuard)
     @Put(':provider_id')
     @ApiOperation({ summary: 'EDITAR CLIENTE/FORNECEDOR' })
     @ApiBody({ type: ProviderEditDto })

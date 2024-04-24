@@ -3,6 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceOrder } from './service-order.entity';
+import { FilterDocumentsDto } from '../documents.dto';
 @Injectable()
 export class ServiceOrderService {
     constructor(
@@ -23,6 +24,32 @@ export class ServiceOrderService {
 
     async findAll(): Promise<any> {
         return this.orderRepository.find();
+    }
+
+    async findFiltered(body: FilterDocumentsDto): Promise<any[]> {
+        const queryBuilder = this.orderRepository.createQueryBuilder('service_order');
+
+        if (body.initialDate) {
+            queryBuilder.andWhere('service_order.date >= :initialDate', {
+                initialDate: body.initialDate,
+            });
+        }
+
+        if (body.lastDate) {
+            queryBuilder.andWhere('service_order.date <= :lastDate', {
+                lastDate: body.lastDate,
+            });
+        }
+
+        if (body.provider) {
+            queryBuilder.andWhere('service_order.provider = :provider', { provider: body.provider });
+        }
+
+        if (body.order && (body.order.toUpperCase() === 'ASC' || body.order.toUpperCase() === 'DESC')) {
+            queryBuilder.addOrderBy('service_order.date', body.order as 'ASC' | 'DESC');
+        }
+
+        return queryBuilder.getMany();
     }
 
     async update(order_number: string, body: any): Promise<any> {

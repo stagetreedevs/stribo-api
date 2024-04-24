@@ -3,6 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Budget } from './budget.entity';
+import { FilterDocumentsDto } from '../documents.dto';
 @Injectable()
 export class BudgetService {
     constructor(
@@ -23,6 +24,32 @@ export class BudgetService {
 
     async findAll(): Promise<any> {
         return this.budgetRepository.find();
+    }
+
+    async findFiltered(body: FilterDocumentsDto): Promise<any[]> {
+        const queryBuilder = this.budgetRepository.createQueryBuilder('budget');
+
+        if (body.initialDate) {
+            queryBuilder.andWhere('budget.date >= :initialDate', {
+                initialDate: body.initialDate,
+            });
+        }
+
+        if (body.lastDate) {
+            queryBuilder.andWhere('budget.date <= :lastDate', {
+                lastDate: body.lastDate,
+            });
+        }
+
+        if (body.provider) {
+            queryBuilder.andWhere('budget.provider = :provider', { provider: body.provider });
+        }
+
+        if (body.order && (body.order.toUpperCase() === 'ASC' || body.order.toUpperCase() === 'DESC')) {
+            queryBuilder.addOrderBy('budget.date', body.order as 'ASC' | 'DESC');
+        }
+
+        return queryBuilder.getMany();
     }
 
     async update(budget_number: string, body: any): Promise<any> {

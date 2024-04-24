@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ServiceOrderService } from './service-order.service';
 import { ServiceOrderDto, ServiceOrderEditDto } from './service-order.dto';
+import { FilterDocumentsDto } from '../documents.dto';
 @ApiTags('DOCUMENTO - ORDEM DE SERVIÇO')
 @ApiBearerAuth()
 @Controller('service-order')
@@ -18,6 +19,16 @@ export class ServiceOrderController {
         @Body() body: ServiceOrderDto,
     ): Promise<any> {
         return this.orderService.create(body);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('filter')
+    @ApiOperation({ summary: 'FILTRO PARA ORDEM DE SERVIÇO' })
+    @ApiBody({ type: FilterDocumentsDto })
+    async findFiltered(
+        @Body() body: FilterDocumentsDto,
+    ): Promise<any[]> {
+        return this.orderService.findFiltered(body);
     }
 
     @UseGuards(JwtAuthGuard)

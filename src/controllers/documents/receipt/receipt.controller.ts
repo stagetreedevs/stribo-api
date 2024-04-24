@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ReceiptService } from './receipt.service';
 import { ReceiptDto, ReceiptEditDto } from './receipt.dto';
+import { FilterDocumentsDto } from '../documents.dto';
 @ApiTags('DOCUMENTO - RECIBOS')
 @ApiBearerAuth()
 @Controller('receipt')
@@ -18,6 +19,16 @@ export class ReceiptController {
         @Body() body: ReceiptDto,
     ): Promise<any> {
         return this.receiptService.create(body);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('filter')
+    @ApiOperation({ summary: 'FILTRO PARA RECIBO' })
+    @ApiBody({ type: FilterDocumentsDto })
+    async findFiltered(
+        @Body() body: FilterDocumentsDto,
+    ): Promise<any[]> {
+        return this.receiptService.findFiltered(body);
     }
 
     @UseGuards(JwtAuthGuard)

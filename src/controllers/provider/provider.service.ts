@@ -198,6 +198,34 @@ export class ProviderService {
         });
     }
 
+    async findAllNamesProvidersByProperty(property: string): Promise<string[]> {
+        const animals = await this.provideRepository.find({
+            order: { name: 'ASC' },
+            where: { type: 'Fornecedor', property }
+        });
+        const uniqueNames = new Set<string>();
+
+        animals.forEach((animal) => {
+            uniqueNames.add(animal.name);
+        });
+
+        return Array.from(uniqueNames);
+    }
+
+    async findAllNamesCustomerByProperty(property: string): Promise<string[]> {
+        const animals = await this.provideRepository.find({
+            order: { name: 'ASC' },
+            where: { type: 'Cliente', property }
+        });
+        const uniqueNames = new Set<string>();
+
+        animals.forEach((animal) => {
+            uniqueNames.add(animal.name);
+        });
+
+        return Array.from(uniqueNames);
+    }
+
     async update(id: string, body: any): Promise<Provider> {
         const verify = await this.findOne(id);
 

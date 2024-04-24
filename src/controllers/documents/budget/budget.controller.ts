@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { BudgetService } from './budget.service';
 import { BudgetDto, BudgetEditDto } from './budget.dto';
+import { FilterDocumentsDto } from '../documents.dto';
 @ApiTags('DOCUMENTO - ORÇAMENTO')
 @ApiBearerAuth()
 @Controller('budget')
@@ -18,6 +19,16 @@ export class BudgetController {
         @Body() body: BudgetDto,
     ): Promise<any> {
         return this.budgetService.create(body);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('filter')
+    @ApiOperation({ summary: 'FILTRO PARA ORÇAMENTO' })
+    @ApiBody({ type: FilterDocumentsDto })
+    async findFiltered(
+        @Body() body: FilterDocumentsDto,
+    ): Promise<any[]> {
+        return this.budgetService.findFiltered(body);
     }
 
     @UseGuards(JwtAuthGuard)

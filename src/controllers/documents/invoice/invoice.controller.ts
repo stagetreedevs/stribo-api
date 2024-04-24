@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { InvoiceService } from './invoice.service';
 import { InvoiceDto, InvoiceEditDto } from './invoice.dto';
+import { FilterDocumentsDto } from '../documents.dto';
 @ApiTags('DOCUMENTO - NOTA FISCAL')
 @ApiBearerAuth()
 @Controller('invoice')
@@ -18,6 +19,16 @@ export class InvoiceController {
         @Body() body: InvoiceDto,
     ): Promise<any> {
         return this.invoiceService.create(body);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('filter')
+    @ApiOperation({ summary: 'FILTRO PARA NOTA FISCAL' })
+    @ApiBody({ type: FilterDocumentsDto })
+    async findFiltered(
+        @Body() body: FilterDocumentsDto,
+    ): Promise<any[]> {
+        return this.invoiceService.findFiltered(body);
     }
 
     @UseGuards(JwtAuthGuard)

@@ -74,6 +74,15 @@ export class AnimalController {
     }
 
     @UseGuards(JwtAuthGuard)
+    @Get('names/:property_id')
+    @ApiOperation({ summary: 'TODAS OS NOMES DE UMA PROPRIEDADE' })
+    async findAllNamesByProperty(
+        @Param('property_id') property_id: string
+    ): Promise<string[]> {
+        return this.animalService.findAllNamesByProperty(property_id);
+    }
+
+    @UseGuards(JwtAuthGuard)
     @Get('breeds')
     @ApiOperation({ summary: 'TODAS AS RAÇAS' })
     async findAllBreeds(): Promise<string[]> {

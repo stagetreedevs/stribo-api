@@ -14,9 +14,6 @@ export class ContractDto {
     animal_name: string;
 
     @ApiProperty()
-    animal_id: string;
-
-    @ApiProperty()
     provider: string;
 
     @ApiProperty()
@@ -49,9 +46,6 @@ export class ContractEditDto {
     animal_name: string;
 
     @ApiProperty()
-    animal_id: string;
-
-    @ApiProperty()
     provider: string;
 
     @ApiProperty()
@@ -71,4 +65,24 @@ export class ContractEditDto {
 
     @ApiProperty()
     contract_object: string;
+}
+
+export class FilterContractDto {
+    @ApiProperty({ required: false })
+    initialDate?: Date;
+
+    @ApiProperty({ required: false })
+    lastDate?: Date;
+
+    @ApiProperty()
+    provider: string;
+
+    @ApiProperty()
+    animal_name: string;
+
+    @ApiProperty()
+    event: string;
+
+    @ApiProperty()
+    order?: string;
 }
