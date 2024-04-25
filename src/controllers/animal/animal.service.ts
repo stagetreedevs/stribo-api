@@ -219,13 +219,13 @@ export class AnimalService {
 
     async findAllNamesByProperty(property: string): Promise<string[]> {
         const animals = await this.animal.find({ where: { property } });
-        const uniqueNames = new Set<string>();
+        const uniqueNames: any[] = [];
 
         animals.forEach((animal) => {
-            uniqueNames.add(animal.name);
+            uniqueNames.push({ label: animal.name, value: animal.id });
         });
 
-        return Array.from(uniqueNames);
+        return uniqueNames;
     }
 
     async findAllBreeds(): Promise<string[]> {

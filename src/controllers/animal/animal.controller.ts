@@ -78,7 +78,7 @@ export class AnimalController {
     @ApiOperation({ summary: 'TODAS OS NOMES DE UMA PROPRIEDADE' })
     async findAllNamesByProperty(
         @Param('property_id') property_id: string
-    ): Promise<string[]> {
+    ): Promise<any[]> {
         return this.animalService.findAllNamesByProperty(property_id);
     }
 

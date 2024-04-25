@@ -11,6 +11,9 @@ export class ContractDto {
     event: string;
 
     @ApiProperty()
+    animal_id: string;
+
+    @ApiProperty()
     animal_name: string;
 
     @ApiProperty()
@@ -41,6 +44,9 @@ export class ContractEditDto {
 
     @ApiProperty()
     event: string;
+
+    @ApiProperty()
+    animal_id: string;
 
     @ApiProperty()
     animal_name: string;

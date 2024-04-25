@@ -25,12 +25,6 @@ export class ContractService {
             throw new Error('Pagamento parcelado tem que ter no mínimo 2 itens.');
         }
 
-        // Adiciona o id o animal se ele preencher os requisitos
-        const animal = await this.animalService.findOneNameByProperty(body.property, body.animal_name);
-        if(animal) {
-            body.animal_id = animal.id;
-        }
-
         return await this.contractRepository.save(body);
     }
 

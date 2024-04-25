@@ -198,32 +198,33 @@ export class ProviderService {
         });
     }
 
-    async findAllNamesProvidersByProperty(property: string): Promise<string[]> {
-        const animals = await this.provideRepository.find({
+    async findAllNamesProvidersByProperty(property: string): Promise<any[]> {
+        const providers = await this.provideRepository.find({
             order: { name: 'ASC' },
             where: { type: 'Fornecedor', property }
         });
-        const uniqueNames = new Set<string>();
 
-        animals.forEach((animal) => {
-            uniqueNames.add(animal.name);
+        const labels: any[] = [];
+
+        providers.forEach((provider) => {
+            labels.push({ label: provider.name, value: provider.id });
         });
 
-        return Array.from(uniqueNames);
+        return labels;
     }
 
-    async findAllNamesCustomerByProperty(property: string): Promise<string[]> {
-        const animals = await this.provideRepository.find({
+    async findAllNamesCustomerByProperty(property: string): Promise<any[]> {
+        const cutomers = await this.provideRepository.find({
             order: { name: 'ASC' },
             where: { type: 'Cliente', property }
         });
-        const uniqueNames = new Set<string>();
+        const labels: any[] = [];
 
-        animals.forEach((animal) => {
-            uniqueNames.add(animal.name);
+        cutomers.forEach((provider) => {
+            labels.push({ label: provider.name, value: provider.id });
         });
 
-        return Array.from(uniqueNames);
+        return labels;
     }
 
     async update(id: string, body: any): Promise<Provider> {

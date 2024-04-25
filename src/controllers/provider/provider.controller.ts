@@ -72,7 +72,7 @@ export class ProviderController {
     @ApiOperation({ summary: 'TODOS OS NOMES DOS CLIENTES DE DETERMINADA PROPRIEDADE' })
     async findAllNamesCustomerByProperty(
         @Param('property_id') property_id: string
-    ): Promise<string[]> {
+    ): Promise<any[]> {
         return this.providerService.findAllNamesCustomerByProperty(property_id);
     }
 
@@ -81,7 +81,7 @@ export class ProviderController {
     @ApiOperation({ summary: 'TODOS OS NOMES DOS FORNECEDORES DE DETERMINADA PROPRIEDADE' })
     async findAllNamesProvidersByProperty(
         @Param('property_id') property_id: string
-    ): Promise<string[]> {
+    ): Promise<any[]> {
         return this.providerService.findAllNamesProvidersByProperty(property_id);
     }
 
