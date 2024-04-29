@@ -44,6 +44,7 @@ import { ServiceOrderModule } from './controllers/documents/service-order/servic
 import { InvoiceModule } from './controllers/documents/invoice/invoice.module';
 import { ContractModule } from './controllers/documents/contract/contract.module';
 import { BankSlipModule } from './controllers/documents/bank-slip/bank-slip.module';
+import { AnimalDocumentModule } from './controllers/animal/documents/animal-document.module';
 dotenv.config();
 @Module({
   imports: [
@@ -71,6 +72,7 @@ dotenv.config();
     InvoiceModule,
     ContractModule,
     BankSlipModule,
+    AnimalDocumentModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.PG_HOST,

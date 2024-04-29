@@ -9,11 +9,13 @@ import { UserModule } from '../user/user.module';
 import { DeathModule } from '../death/death.module';
 import { NutritionalModule } from '../nutritional/nutritional.module';
 import { BiometryModule } from '../biometry/biometry.module';
+import { AnimalDocumentModule } from './documents/animal-document.module';
 @Module({
     imports: [
         TypeOrmModule.forFeature([Animal]),
         forwardRef(() => DeathModule),
         forwardRef(() => BiometryModule),
+        forwardRef(() => AnimalDocumentModule),
         S3Module,
         UserModule,
         NutritionalModule,

@@ -6,13 +6,13 @@ import { S3Service } from '../s3/s3.service';
 import { Animal } from './animal.entity';
 import { FilterAnimalDto } from './animal.dto';
 import { UserService } from '../user/user.service';
-import { DeathService } from '../death/death.service';
 import { NutritionalService } from '../nutritional/nutritional.service';
+import { AnimalDocumentService } from './documents/animal-document.service';
 @Injectable()
 export class AnimalService {
     constructor(
         @InjectRepository(Animal) private readonly animal: Repository<Animal>,
-        @Inject(forwardRef(() => DeathService)) private readonly deathService: DeathService,
+        @Inject(forwardRef(() => AnimalDocumentService)) private readonly documentService: AnimalDocumentService,
         private readonly s3Service: S3Service,
         private readonly userService: UserService,
         private readonly nutriService: NutritionalService,
@@ -177,6 +177,9 @@ export class AnimalService {
         if (verify.photo) {
             await this.s3Service.deleteFileS3(verify.photo);
         }
+
+        // Deletar os documentos
+        await this.documentService.removeAllDocuments(id);
 
         await this.nutriService.removeManagement(id);
         await this.animal.delete(id);
