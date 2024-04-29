@@ -1,13 +1,15 @@
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AnimalDocument } from './animal-document.entity';
 import { S3Service } from 'src/controllers/s3/s3.service';
+import { AnimalService } from '../animal.service';
 @Injectable()
 export class AnimalDocumentService {
     constructor(
         @InjectRepository(AnimalDocument) private readonly document: Repository<AnimalDocument>,
+        @Inject(forwardRef(() => AnimalService)) private readonly animalService: AnimalService,
         private readonly s3Service: S3Service
     ) { }
 
@@ -15,7 +17,14 @@ export class AnimalDocumentService {
         if (!file) {
             throw new HttpException('Arquivo não enviado', HttpStatus.BAD_REQUEST);
         }
+        
+        if(!body.animal) {
+            throw new HttpException('Animal não escolhido', HttpStatus.BAD_REQUEST);
+        }
 
+        const animal = await this.animalService.findOne(body.animal);
+
+        body.property = animal.property;
         body.filename = file.originalname;
         body.size = this.bytesToKB(file.size);
 
