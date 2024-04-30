@@ -28,7 +28,7 @@ export class AnimalDocumentService {
         body.filename = file.originalname;
         body.size = this.bytesToKB(file.size);
 
-        const url = await this.s3Service.upload(file, 'documents');
+        const url = await this.s3Service.upload(file, `documents/${body.animal}`);
         body.url = url;
 
         return await this.document.save(body);
