@@ -17,16 +17,18 @@ export class ProviderService {
         if (body.adress.length > 0) {
             for (const address of body.adress) {
                 const requiredFields = [
-                    'country',
+                    'billingAddress',
                     'cep',
-                    'streetAddress',
-                    'numberAddress',
-                    'complement',
-                    'district',
                     'city',
-                    'state',
+                    'complement',
+                    'country',
                     'description',
-                    'main',
+                    'district',
+                    'mainAdress',
+                    'numberAddress',
+                    'streetAddress',
+                    'others',
+                    'state',
                 ];
 
                 // Verificar se todos os campos obrigatórios estão presentes
@@ -104,12 +106,14 @@ export class ProviderService {
                     'cep',
                     'streetAddress',
                     'numberAddress',
+                    'billingAddress',
+                    'mainAdress',
+                    'others',
                     'complement',
                     'district',
                     'city',
                     'state',
                     'description',
-                    'main',
                 ];
 
                 // Verificar se todos os campos obrigatórios estão presentes
@@ -241,12 +245,14 @@ export class ProviderService {
                     'cep',
                     'streetAddress',
                     'numberAddress',
+                    'billingAddress',
+                    'mainAdress',
+                    'others',
                     'complement',
                     'district',
                     'city',
                     'state',
                     'description',
-                    'main',
                 ];
 
                 // Verificar se todos os campos obrigatórios estão presentes

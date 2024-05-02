@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 interface ProviderAdress {
     country: string;
     cep: string;
+    mainAdress: boolean;
+    billingAddress: boolean;
     streetAddress: string;
     numberAddress: number | null;
     complement: string;
@@ -12,6 +14,7 @@ interface ProviderAdress {
     state: string;
     description: string;
     main: boolean | null;
+    others: boolean | null;
 };
 interface ProviderBank {
     name: string;
