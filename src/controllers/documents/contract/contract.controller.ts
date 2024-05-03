@@ -37,6 +37,13 @@ export class ContractController {
         return this.contractService.findAll();
     }
 
+    @Get('pdf/:contract_number')
+    async downloadPDF(
+        @Param('contract_number') contract_number: string
+    ): Promise<void> {
+        await this.contractService.generatePdf(contract_number);
+    }
+
     @UseGuards(JwtAuthGuard)
     @Get(':contract_number/number')
     @ApiOperation({ summary: 'CONTRATO VIA NUMERO DE CONTRATO' })

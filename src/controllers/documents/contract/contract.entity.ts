@@ -47,6 +47,9 @@ export class Contract {
     @Column()
     contract_object: string;
 
+    @Column({ default: '' })
+    pdf_url: string;
+
     constructor(
         property: string,
         title: string,
@@ -59,7 +62,8 @@ export class Contract {
         installments: Installment[] | null,
         status: string,
         date: Date,
-        contract_object: string
+        contract_object: string,
+        pdf_url: string
     ) {
         this.contract_number = uuidv4();
         this.property = property;
@@ -74,5 +78,6 @@ export class Contract {
         this.status = status;
         this.date = date;
         this.contract_object = contract_object;
+        this.pdf_url = pdf_url;
     }
 }
