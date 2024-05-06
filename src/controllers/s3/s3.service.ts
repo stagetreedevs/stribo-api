@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { S3 } from 'aws-sdk';
 @Injectable()
 export class S3Service {
@@ -58,11 +58,10 @@ export class S3Service {
             if (!fileExists) {
                 return { message: 'Arquivo excluído com sucesso.' };
             } else {
-                throw new Error('Não foi possível excluir o arquivo.');
+                throw new HttpException('Não foi possível excluir o arquivo.', HttpStatus.BAD_REQUEST);
             }
         } catch (err) {
-            console.error('Erro ao excluir o arquivo:', err);
-            throw err;
+            throw new HttpException(`Erro ao excluir o arquivo: ${err}`, HttpStatus.BAD_REQUEST);
         }
     }
 

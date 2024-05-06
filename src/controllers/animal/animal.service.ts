@@ -157,7 +157,7 @@ export class AnimalService {
         const verify = await this.findOne(id);
 
         if (!verify) {
-            throw new Error(`Animal não encontrado`);
+            throw new HttpException('Animal não encontrado', HttpStatus.BAD_REQUEST);
         }
 
         await this.animal

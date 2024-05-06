@@ -15,12 +15,12 @@ export class BankSlipService {
 
         // Verifica se payment é true(a vista) e installments não é nulo
         if (payment && installments !== null) {
-            throw new Error('Pagamento a vista não tem parcelas.');
+            body.installments = null;
         }
 
         // Verifica se payment é false(parcelado) e installments é nulo ou tem menos de 1 item
         if (!payment && (installments === null || installments.length < 1)) {
-            throw new Error('Pagamento parcelado tem que ter no mínimo 2 itens.');
+            throw new HttpException('Pagamento parcelado tem que ter no mínimo 2 itens.', HttpStatus.BAD_REQUEST);
         }
 
         return await this.ticketRepository.save(body);
@@ -49,12 +49,12 @@ export class BankSlipService {
 
         // Verifica se payment é true(a vista) e installments não é nulo
         if (payment && installments !== null) {
-            throw new Error('Pagamento a vista não tem parcelas.');
+            body.installments = null;
         }
 
         // Verifica se payment é false(parcelado) e installments é nulo ou tem menos de 1 item
         if (!payment && (installments === null || installments.length < 1)) {
-            throw new Error('Pagamento parcelado tem que ter no mínimo 2 itens.');
+            throw new HttpException('Pagamento parcelado tem que ter no mínimo 2 itens.', HttpStatus.BAD_REQUEST);
         }
 
         body.ticket_number = verify.ticket_number;
@@ -66,27 +66,27 @@ export class BankSlipService {
 
     async findFiltered(body: FilterDocumentsDto): Promise<any[]> {
         const queryBuilder = this.ticketRepository.createQueryBuilder('bank-slip');
-    
+
         if (body.initialDate) {
             queryBuilder.andWhere('bank-slip.date >= :initialDate', {
                 initialDate: body.initialDate,
             });
         }
-    
+
         if (body.lastDate) {
             queryBuilder.andWhere('bank-slip.date <= :lastDate', {
                 lastDate: body.lastDate,
             });
         }
-    
+
         if (body.provider) {
             queryBuilder.andWhere('bank-slip.provider = :provider', { provider: body.provider });
         }
-    
+
         if (body.order && (body.order.toUpperCase() === 'ASC' || body.order.toUpperCase() === 'DESC')) {
             queryBuilder.addOrderBy('bank-slip.date', body.order as 'ASC' | 'DESC');
         }
-    
+
         return queryBuilder.getMany();
     }
 

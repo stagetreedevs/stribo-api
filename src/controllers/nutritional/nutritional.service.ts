@@ -55,7 +55,7 @@ export class NutritionalService {
                 await this.removeProduct(product.id);
             }
         } catch (error) {
-            throw new Error("Falha ao excluir manejo");
+            throw new HttpException('Falha ao excluir manejo', HttpStatus.BAD_REQUEST);
         }
     }
 

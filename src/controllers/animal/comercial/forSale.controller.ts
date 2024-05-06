@@ -47,7 +47,7 @@ export class ForSaleController {
 
     @UseGuards(JwtAuthGuard)
     @Put(':sale_id')
-    @ApiOperation({ summary: 'EDITAR BOLETO' })
+    @ApiOperation({ summary: 'EDITAR ANIMAL A VENDA' })
     @ApiBody({ type: ForSaleEditDto })
     async update(
         @Param('sale_id') sale_id: string,

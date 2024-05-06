@@ -59,7 +59,7 @@ export class ForSaleService {
     async findByPropertyIndication(property: string): Promise<any[]> {
         const animais = await this.findAll();
         const res = [];
-    
+
         for (const animal of animais) {
             if (animal.property === property) {
                 animal.marketable = true;
@@ -68,10 +68,10 @@ export class ForSaleService {
             }
             res.push(animal);
         }
-    
+
         return res;
     }
-    
+
 
     async update(sale_id: string, body: any): Promise<any> {
         const animal = await this.findOne(sale_id);
@@ -84,20 +84,20 @@ export class ForSaleService {
 
         // Verifica se payment é true(a vista) e installments não é nulo
         if (payment && installments !== null) {
-            throw new Error('Pagamento a vista não tem parcelas.');
+            body.installments = null;
         }
 
         // Verifica se payment é false(parcelado) e installments é nulo ou tem menos de 1 item
         if (!payment && (installments === null || installments.length < 1)) {
-            throw new Error('Pagamento parcelado tem que ter no mínimo 2 itens.');
+            throw new HttpException('Pagamento parcelado tem que ter no mínimo 2 itens.', HttpStatus.BAD_REQUEST);
         }
 
-        animal.value = body.valye;
+        animal.value = body.value;
         animal.payment = body.payment;
         animal.installments = body.installments;
 
         await this.saleRepository.update(animal.id, animal);
-        return this.findOne(animal.id);
+        return await this.findOne(animal.id);
     }
 
     async remove(id: string, property_id: string): Promise<void> {

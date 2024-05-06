@@ -87,7 +87,7 @@ export class BiometryService {
             const data: any = await this.findByAnimal(animal_id);
 
             if (!data) {
-                throw new Error("Animal sem medidas cadastradas");
+                throw new HttpException('Animal sem medidas cadastradas.', HttpStatus.BAD_REQUEST);
             }
 
             const firstEntry = data[0];
@@ -106,7 +106,7 @@ export class BiometryService {
             return result;
 
         } catch (error) {
-            throw new Error("Falha ao listar medidas");
+            throw new HttpException('Falha ao listar medidas.', HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -118,7 +118,7 @@ export class BiometryService {
                 await this.bioRepos.delete(info.id);
             }
         } catch (error) {
-            throw new Error("Falha ao excluir medidas");
+            throw new HttpException('Falha ao excluir medidas.', HttpStatus.BAD_REQUEST);
         }
     }
 

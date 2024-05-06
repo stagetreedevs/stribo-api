@@ -23,12 +23,12 @@ export class ContractService {
 
         // Verifica se payment é true(a vista) e installments não é nulo
         if (payment && installments !== null) {
-            throw new Error('Pagamento a vista não tem parcelas.');
+            body.installments = null;
         }
 
         // Verifica se payment é false(parcelado) e installments é nulo ou tem menos de 1 item
         if (!payment && (installments === null || installments.length < 1)) {
-            throw new Error('Pagamento parcelado tem que ter no mínimo 2 itens.');
+            throw new HttpException('Pagamento parcelado tem que ter no mínimo 2 itens.', HttpStatus.BAD_REQUEST);
         }
 
         const newContract = await this.contractRepository.save(body);
@@ -62,12 +62,12 @@ export class ContractService {
 
         // Verifica se payment é true(a vista) e installments não é nulo
         if (payment && installments !== null) {
-            throw new Error('Pagamento a vista não tem parcelas.');
+            body.installments = null;
         }
 
         // Verifica se payment é false(parcelado) e installments é nulo ou tem menos de 1 item
         if (!payment && (installments === null || installments.length < 1)) {
-            throw new Error('Pagamento parcelado tem que ter no mínimo 2 itens.');
+            throw new HttpException('Pagamento parcelado tem que ter no mínimo 2 itens.', HttpStatus.BAD_REQUEST);
         }
 
         body.contract_number = verify.contract_number;
