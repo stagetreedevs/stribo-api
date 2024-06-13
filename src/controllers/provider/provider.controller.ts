@@ -42,8 +42,7 @@ export class ProviderController {
         @Param('property_id') property_id: string,
         @Body() body: FilterProviderDto,
     ): Promise<Provider[]> {
-        const filtered = await this.providerService.findFiltered(body);
-        return this.providerService.filterByProperty(filtered, property_id);
+        return await this.providerService.findFiltered(body, property_id);
     }
 
     @UseGuards(JwtAuthGuard)

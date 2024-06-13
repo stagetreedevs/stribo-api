@@ -325,7 +325,7 @@ export class ProviderService {
         await this.provideRepository.delete(id);
     }
 
-    async findFiltered(body: FilterProviderDto): Promise<Provider[]> {
+    async findFiltered(body: FilterProviderDto, property: string): Promise<Provider[]> {
         const queryBuilder = this.provideRepository.createQueryBuilder('provider');
 
         if (body.initialDate) {
@@ -338,6 +338,11 @@ export class ProviderService {
             queryBuilder.andWhere('provider.createdAt <= :lastDate', {
                 lastDate: body.lastDate,
             });
+        }
+
+        // FILTRA PELA PROPRIEDADE
+        if (property) {
+            queryBuilder.andWhere('provider.property = :property', { property: property });
         }
 
         if (body.name) {
@@ -353,23 +358,6 @@ export class ProviderService {
         }
 
         return queryBuilder.getMany();
-    }
-
-    filterByProperty(arrayFiltered: any, property: string): any[] {
-        if (arrayFiltered.lenght > 0) {
-            const providers = [];
-
-            for (const provider of arrayFiltered) {
-                if (provider.property === property) {
-                    providers.push(provider);
-                }
-            }
-
-            return providers;
-        }
-        else {
-            return arrayFiltered;
-        }
     }
 
 }

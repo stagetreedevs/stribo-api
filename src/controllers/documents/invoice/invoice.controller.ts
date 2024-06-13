@@ -22,13 +22,14 @@ export class InvoiceController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Post('filter')
+    @Post('filter/:property')
     @ApiOperation({ summary: 'FILTRO PARA NOTA FISCAL' })
     @ApiBody({ type: FilterDocumentsDto })
     async findFiltered(
+        @Param('property') property: string,
         @Body() body: FilterDocumentsDto,
     ): Promise<any[]> {
-        return this.invoiceService.findFiltered(body);
+        return this.invoiceService.findFiltered(body, property);
     }
 
     @UseGuards(JwtAuthGuard)

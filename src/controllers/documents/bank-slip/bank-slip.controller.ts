@@ -22,13 +22,14 @@ export class BankSlipController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Post('filter')
+    @Post('filter/:property')
     @ApiOperation({ summary: 'FILTRO PARA BOLETOS' })
     @ApiBody({ type: FilterDocumentsDto })
     async findFiltered(
-        @Body() body: FilterDocumentsDto,
+        @Param('property') property: string,
+        @Body() body: FilterDocumentsDto
     ): Promise<any[]> {
-        return this.ticketService.findFiltered(body);
+        return this.ticketService.findFiltered(body, property);
     }
 
     @UseGuards(JwtAuthGuard)

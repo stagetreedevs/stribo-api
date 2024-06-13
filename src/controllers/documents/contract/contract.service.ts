@@ -87,7 +87,7 @@ export class ContractService {
         return this.findByNumber(contract_number);
     }
 
-    async findFiltered(body: FilterContractDto): Promise<any[]> {
+    async findFiltered(body: FilterContractDto, property: string): Promise<any[]> {
         const queryBuilder = this.contractRepository.createQueryBuilder('contract');
 
         if (body.initialDate) {
@@ -100,6 +100,11 @@ export class ContractService {
             queryBuilder.andWhere('contract.date <= :lastDate', {
                 lastDate: body.lastDate,
             });
+        }
+
+        // FILTRA PELA PROPRIEDADE
+        if (property) {
+            queryBuilder.andWhere('contract.property = :property', { property: property });
         }
 
         if (body.provider) {

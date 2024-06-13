@@ -22,13 +22,14 @@ export class ServiceOrderController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Post('filter')
+    @Post('filter/:property')
     @ApiOperation({ summary: 'FILTRO PARA ORDEM DE SERVIÇO' })
     @ApiBody({ type: FilterDocumentsDto })
     async findFiltered(
+        @Param('property') property: string,
         @Body() body: FilterDocumentsDto,
     ): Promise<any[]> {
-        return this.orderService.findFiltered(body);
+        return this.orderService.findFiltered(body, property);
     }
 
     @UseGuards(JwtAuthGuard)

@@ -22,13 +22,14 @@ export class BudgetController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Post('filter')
+    @Post('filter/:property')
     @ApiOperation({ summary: 'FILTRO PARA ORÇAMENTO' })
     @ApiBody({ type: FilterDocumentsDto })
     async findFiltered(
+        @Param('property') property: string,
         @Body() body: FilterDocumentsDto,
     ): Promise<any[]> {
-        return this.budgetService.findFiltered(body);
+        return this.budgetService.findFiltered(body, property);
     }
 
     @UseGuards(JwtAuthGuard)

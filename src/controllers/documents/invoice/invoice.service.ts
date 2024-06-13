@@ -26,7 +26,7 @@ export class InvoiceService {
         return this.invoiceRepository.find();
     }
 
-    async findFiltered(body: FilterDocumentsDto): Promise<any[]> {
+    async findFiltered(body: FilterDocumentsDto, property: string): Promise<any[]> {
         const queryBuilder = this.invoiceRepository.createQueryBuilder('invoice');
 
         if (body.initialDate) {
@@ -39,6 +39,11 @@ export class InvoiceService {
             queryBuilder.andWhere('invoice.date <= :lastDate', {
                 lastDate: body.lastDate,
             });
+        }
+
+        // FILTRA PELA PROPRIEDADE
+        if (property) {
+            queryBuilder.andWhere('invoice.property = :property', { property: property });
         }
 
         if (body.provider) {

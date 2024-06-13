@@ -64,7 +64,7 @@ export class BankSlipService {
         return this.findByNumber(ticket_number);
     }
 
-    async findFiltered(body: FilterDocumentsDto): Promise<any[]> {
+    async findFiltered(body: FilterDocumentsDto, property: string): Promise<any[]> {
         const queryBuilder = this.ticketRepository.createQueryBuilder('bank-slip');
 
         if (body.initialDate) {
@@ -77,6 +77,11 @@ export class BankSlipService {
             queryBuilder.andWhere('bank-slip.date <= :lastDate', {
                 lastDate: body.lastDate,
             });
+        }
+
+        // FILTRA PELA PROPRIEDADE
+        if (property) {
+            queryBuilder.andWhere('bank-slip.property = :property', { property: property });
         }
 
         if (body.provider) {

@@ -22,13 +22,14 @@ export class ReceiptController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Post('filter')
+    @Post('filter/:property')
     @ApiOperation({ summary: 'FILTRO PARA RECIBO' })
     @ApiBody({ type: FilterDocumentsDto })
     async findFiltered(
+        @Param('property') property: string,
         @Body() body: FilterDocumentsDto,
     ): Promise<any[]> {
-        return this.receiptService.findFiltered(body);
+        return this.receiptService.findFiltered(body, property);
     }
 
     @UseGuards(JwtAuthGuard)

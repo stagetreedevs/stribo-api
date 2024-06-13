@@ -26,29 +26,34 @@ export class ReceiptService {
         return this.receiptRepository.find();
     }
 
-    async findFiltered(body: FilterDocumentsDto): Promise<any[]> {
+    async findFiltered(body: FilterDocumentsDto, property: string): Promise<any[]> {
         const queryBuilder = this.receiptRepository.createQueryBuilder('receipt');
-    
+
         if (body.initialDate) {
             queryBuilder.andWhere('receipt.date >= :initialDate', {
                 initialDate: body.initialDate,
             });
         }
-    
+
         if (body.lastDate) {
             queryBuilder.andWhere('receipt.date <= :lastDate', {
                 lastDate: body.lastDate,
             });
         }
-    
+
+        // FILTRA PELA PROPRIEDADE
+        if (property) {
+            queryBuilder.andWhere('receipt.property = :property', { property: property });
+        }
+
         if (body.provider) {
             queryBuilder.andWhere('receipt.provider = :provider', { provider: body.provider });
         }
-    
+
         if (body.order && (body.order.toUpperCase() === 'ASC' || body.order.toUpperCase() === 'DESC')) {
             queryBuilder.addOrderBy('receipt.date', body.order as 'ASC' | 'DESC');
         }
-    
+
         return queryBuilder.getMany();
     }
 

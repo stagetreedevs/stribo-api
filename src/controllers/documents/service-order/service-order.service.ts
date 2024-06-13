@@ -26,7 +26,7 @@ export class ServiceOrderService {
         return this.orderRepository.find();
     }
 
-    async findFiltered(body: FilterDocumentsDto): Promise<any[]> {
+    async findFiltered(body: FilterDocumentsDto, property: string): Promise<any[]> {
         const queryBuilder = this.orderRepository.createQueryBuilder('service_order');
 
         if (body.initialDate) {
@@ -39,6 +39,11 @@ export class ServiceOrderService {
             queryBuilder.andWhere('service_order.date <= :lastDate', {
                 lastDate: body.lastDate,
             });
+        }
+
+        // FILTRA PELA PROPRIEDADE
+        if (property) {
+            queryBuilder.andWhere('service_order.property = :property', { property: property });
         }
 
         if (body.provider) {

@@ -21,13 +21,14 @@ export class ContractController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Post('filter')
+    @Post('filter/:property')
     @ApiOperation({ summary: 'FILTRO PARA CONTRATOS' })
     @ApiBody({ type: FilterContractDto })
     async findFiltered(
+        @Param('property') property: string,
         @Body() body: FilterContractDto,
     ): Promise<any[]> {
-        return this.contractService.findFiltered(body);
+        return this.contractService.findFiltered(body, property);
     }
 
     @UseGuards(JwtAuthGuard)

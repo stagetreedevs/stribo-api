@@ -26,7 +26,7 @@ export class BudgetService {
         return this.budgetRepository.find();
     }
 
-    async findFiltered(body: FilterDocumentsDto): Promise<any[]> {
+    async findFiltered(body: FilterDocumentsDto, property: string): Promise<any[]> {
         const queryBuilder = this.budgetRepository.createQueryBuilder('budget');
 
         if (body.initialDate) {
@@ -39,6 +39,11 @@ export class BudgetService {
             queryBuilder.andWhere('budget.date <= :lastDate', {
                 lastDate: body.lastDate,
             });
+        }
+
+        // FILTRA PELA PROPRIEDADE
+        if (property) {
+            queryBuilder.andWhere('budget.property = :property', { property: property });
         }
 
         if (body.provider) {
