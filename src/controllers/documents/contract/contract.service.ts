@@ -34,13 +34,13 @@ export class ContractService {
         const newContract = await this.contractRepository.save(body);
         const url = await this.generatePdf(newContract);
         newContract.pdf_url = url;
-        await this.contractRepository.update(newContract.contract_number, newContract);
 
+        await this.contractRepository.update({ id: newContract.id }, newContract);
         return newContract;
     }
 
-    async findByNumber(contract_number: string): Promise<any> {
-        return await this.contractRepository.findOne({ where: { contract_number } });
+    async findById(id: string): Promise<any> {
+        return await this.contractRepository.findOne({ where: { id } });
     }
 
     async findByProperty(property: string): Promise<any> {
@@ -51,8 +51,8 @@ export class ContractService {
         return this.contractRepository.find();
     }
 
-    async update(contract_number: string, body: any): Promise<any> {
-        const verify = await this.findByNumber(contract_number);
+    async update(id: string, body: any): Promise<any> {
+        const verify = await this.findById(id);
 
         if (!verify) {
             throw new HttpException('Contrato não encontrado', HttpStatus.BAD_REQUEST);
@@ -70,7 +70,7 @@ export class ContractService {
             throw new HttpException('Pagamento parcelado tem que ter no mínimo 2 itens.', HttpStatus.BAD_REQUEST);
         }
 
-        body.contract_number = verify.contract_number;
+        body.id = verify.id;
         body.property = verify.property;
 
         if (verify.pdf_url !== '') {
@@ -83,8 +83,8 @@ export class ContractService {
             body.pdf_url = url;
         }
 
-        await this.contractRepository.update(contract_number, body);
-        return this.findByNumber(contract_number);
+        await this.contractRepository.update({ id }, body);
+        return this.findById(id);
     }
 
     async findFiltered(body: FilterContractDto, property: string): Promise<any[]> {
@@ -126,12 +126,12 @@ export class ContractService {
         return queryBuilder.getMany();
     }
 
-    async delete(contract_number: string): Promise<void> {
-        const contrato = await this.findByNumber(contract_number);
+    async delete(id: string): Promise<void> {
+        const contrato = await this.findById(id);
         if (contrato.pdf_url !== "") {
             await this.s3Service.deleteFileS3(contrato.pdf_url);
         }
-        await this.contractRepository.delete(contract_number);
+        await this.contractRepository.delete({ id });
     }
 
     async generatePdf(contrato: any): Promise<string> {
@@ -218,7 +218,7 @@ export class ContractService {
             doc.end()
         })
 
-        const path = `stribo-bucket/contracts/${contrato.contract_number}`;
+        const path = `stribo-bucket/contracts/${contrato.id}`;
         const url = await this.s3Service.uploadS3(pdfBuffer, path, `${contrato.title}.pdf`);
         return url;
     }

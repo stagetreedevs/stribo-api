@@ -38,49 +38,42 @@ export class ContractController {
         return this.contractService.findAll();
     }
 
-    @Get('pdf/:contract_number')
-    async downloadPDF(
-        @Param('contract_number') contract_number: string
-    ): Promise<void> {
-        await this.contractService.generatePdf(contract_number);
-    }
-
     @UseGuards(JwtAuthGuard)
-    @Get(':contract_number/number')
-    @ApiOperation({ summary: 'CONTRATO VIA NUMERO DE CONTRATO' })
+    @Get(':id/number')
+    @ApiOperation({ summary: 'CONTRATO VIA ID' })
     async findByNumber(
-        @Param('contract_number') contract_number: string
+        @Param('id') id: string
     ): Promise<any> {
-        return this.contractService.findByNumber(contract_number);
+        return this.contractService.findById(id);
     }
 
     @UseGuards(JwtAuthGuard)
-    @Get(':contract_number/property')
+    @Get(':id/property')
     @ApiOperation({ summary: 'CONTRATO VIA PROPRIEDADE' })
     async findByProperty(
-        @Param('contract_number') contract_number: string
+        @Param('id') id: string
     ): Promise<any> {
-        return this.contractService.findByProperty(contract_number);
+        return this.contractService.findByProperty(id);
     }
 
     @UseGuards(JwtAuthGuard)
-    @Put(':contract_number')
+    @Put(':id')
     @ApiOperation({ summary: 'EDITAR CONTRATO' })
     @ApiBody({ type: ContractEditDto })
     async update(
-        @Param('contract_number') contract_number: string,
+        @Param('id') id: string,
         @Body() body: ContractEditDto
     ): Promise<any> {
-        return this.contractService.update(contract_number, body);
+        return this.contractService.update(id, body);
     }
 
     @UseGuards(JwtAuthGuard)
-    @Delete(':contract_number')
+    @Delete(':id')
     @ApiOperation({ summary: 'DELETA UM CONTRATO' })
     async delete(
-        @Param('contract_number') contract_number: string
+        @Param('id') id: string
     ): Promise<void> {
-        return this.contractService.delete(contract_number);
+        return this.contractService.delete(id);
     }
 
 }

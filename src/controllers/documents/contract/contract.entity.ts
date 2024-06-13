@@ -9,7 +9,10 @@ interface Installment {
 @Entity()
 export class Contract {
     @PrimaryGeneratedColumn('uuid')
-    contract_number: string;
+    id: string;
+
+    @PrimaryGeneratedColumn()
+    contract_number: number;
 
     @Column()
     property: string;
@@ -65,7 +68,7 @@ export class Contract {
         contract_object: string,
         pdf_url: string
     ) {
-        this.contract_number = uuidv4();
+        this.id = uuidv4();
         this.property = property;
         this.title = title;
         this.event = event;
@@ -80,4 +83,5 @@ export class Contract {
         this.contract_object = contract_object;
         this.pdf_url = pdf_url;
     }
+
 }
