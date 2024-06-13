@@ -18,3 +18,14 @@ export class ForSaleEditDto {
     @ApiProperty()
     installments: any[] | null;
 }
+
+export class FilterAnimalForSale {
+    @ApiProperty({ default: 'ASC' })
+    order?: string;
+
+    @ApiProperty({ required: false })
+    initialDate?: Date;
+
+    @ApiProperty({ required: false })
+    lastDate?: Date;
+}

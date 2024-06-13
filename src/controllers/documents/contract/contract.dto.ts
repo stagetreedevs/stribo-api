@@ -89,6 +89,6 @@ export class FilterContractDto {
     @ApiProperty()
     event: string;
 
-    @ApiProperty()
+    @ApiProperty({ default: 'ASC' })
     order?: string;
 }

@@ -11,6 +11,6 @@ export class FilterDocumentsDto {
     @ApiProperty()
     provider: string;
 
-    @ApiProperty()
+    @ApiProperty({ default: 'ASC' })
     order?: string;
 }

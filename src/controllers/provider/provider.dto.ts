@@ -137,7 +137,7 @@ export class ProviderEditDto {
 }
 
 export class FilterProviderDto {
-    @ApiProperty()
+    @ApiProperty({ default: 'ASC' })
     order?: string;
 
     @ApiProperty({ required: false })

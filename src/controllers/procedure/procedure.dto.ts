@@ -113,7 +113,7 @@ export class ProcedureEditDto {
 }
 
 export class FilterProcedureDto {
-    @ApiProperty()
+    @ApiProperty({ default: 'ASC' })
     order?: string;
 
     @ApiProperty({ required: false })

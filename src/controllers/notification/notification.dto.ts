@@ -30,7 +30,7 @@ export class NotificationDto {
 }
 
 export class FilterNotificationDto {
-    @ApiProperty()
+    @ApiProperty({ default: 'ASC' })
     order?: string;
 
     @ApiProperty({ required: false })

@@ -3,7 +3,7 @@ import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards } from '@nes
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ForSaleService } from './forSale.service';
-import { ForSaleDto, ForSaleEditDto } from './forSale.dto';
+import { FilterAnimalForSale, ForSaleDto, ForSaleEditDto } from './forSale.dto';
 @ApiTags('COMERCIAL - ANIMAIS À VENDA')
 @ApiBearerAuth()
 @Controller('sale')
@@ -18,6 +18,16 @@ export class ForSaleController {
         @Body() body: ForSaleDto
     ): Promise<any> {
         return this.saleService.create(body);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('filter')
+    @ApiOperation({ summary: 'FILTRO PARA ANIMAIS' })
+    @ApiBody({ type: FilterAnimalForSale })
+    async findFiltered(
+        @Body() body: FilterAnimalForSale,
+    ): Promise<any[]> {
+        return this.saleService.findFiltered(body);
     }
 
     @UseGuards(JwtAuthGuard)

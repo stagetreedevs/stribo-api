@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ForSale } from './forSale.entity';
 import { AnimalService } from '../animal.service';
+import { FilterAnimalForSale } from './forSale.dto';
 @Injectable()
 export class ForSaleService {
     constructor(
@@ -113,5 +114,28 @@ export class ForSaleService {
             throw new HttpException('Você não possui autorização para excluir este animal', HttpStatus.BAD_REQUEST);
         }
     }
+
+    async findFiltered(filterDto: FilterAnimalForSale): Promise<any[]> {
+        const queryBuilder = this.saleRepository.createQueryBuilder('for_sale');
+
+        if (filterDto.initialDate) {
+            queryBuilder.andWhere('for_sale.date >= :initialDate', {
+                initialDate: filterDto.initialDate,
+            });
+        }
+
+        if (filterDto.lastDate) {
+            queryBuilder.andWhere('for_sale.date <= :lastDate', {
+                lastDate: filterDto.lastDate,
+            });
+        }
+
+        if (filterDto.order && (filterDto.order.toUpperCase() === 'ASC' || filterDto.order.toUpperCase() === 'DESC')) {
+            queryBuilder.addOrderBy('for_sale.date', filterDto.order as 'ASC' | 'DESC');
+        }
+
+        return queryBuilder.getMany();
+    }
+
 
 }

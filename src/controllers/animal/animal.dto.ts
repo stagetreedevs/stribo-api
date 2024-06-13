@@ -110,7 +110,7 @@ export class UpdateAnimalDto {
 }
 
 export class FilterAnimalDto {
-    @ApiProperty()
+    @ApiProperty({ default: 'ASC' })
     order?: string;
 
     @ApiProperty({ required: false })
