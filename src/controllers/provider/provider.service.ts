@@ -211,7 +211,7 @@ export class ProviderService {
         const labels: any[] = [];
 
         providers.forEach((provider) => {
-            labels.push({ label: provider.name, value: provider.id });
+            labels.push({ label: provider.name, value: provider.name });
         });
 
         return labels;
@@ -225,7 +225,7 @@ export class ProviderService {
         const labels: any[] = [];
 
         cutomers.forEach((provider) => {
-            labels.push({ label: provider.name, value: provider.id });
+            labels.push({ label: provider.name, value: provider.name });
         });
 
         return labels;
