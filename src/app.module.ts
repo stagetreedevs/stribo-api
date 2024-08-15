@@ -46,6 +46,8 @@ import { ContractModule } from './controllers/documents/contract/contract.module
 import { BankSlipModule } from './controllers/documents/bank-slip/bank-slip.module';
 import { AnimalDocumentModule } from './controllers/animal/documents/animal-document.module';
 import { ForSaleModule } from './controllers/animal/comercial/forSale.module';
+import { ReproductiveModule } from './controllers/reproductive/reproductive.module';
+import { Reproductive } from './controllers/reproductive/reproductive.entity';
 dotenv.config();
 @Module({
   imports: [
@@ -90,6 +92,7 @@ dotenv.config();
         Animal,
         Nutritional,
         Death,
+        Reproductive,
       ],
       autoLoadEntities: true,
       synchronize: true,
@@ -99,13 +102,13 @@ dotenv.config();
         host: 'smtp.sendgrid.net',
         auth: {
           user: 'apikey',
-          pass: process.env.SENDGRID_SECRET_KEY
-        }
-      }
+          pass: process.env.SENDGRID_SECRET_KEY,
+        },
+      },
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [config]
+      load: [config],
     }),
     JwtModule.register({
       secret: 'mySecretKey',
@@ -115,12 +118,10 @@ dotenv.config();
     GoogleModule,
     AuthModule,
     UserModule,
-    AdminModule
+    AdminModule,
+    ReproductiveModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    AuthService,
-  ]
+  providers: [AppService, AuthService],
 })
-export class AppModule { }
+export class AppModule {}
