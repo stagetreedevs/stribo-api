@@ -10,10 +10,10 @@ export class Reproductive {
   animal_id: string;
 
   @Column()
-  accountable: string;
+  responsible: string;
 
   @Column()
-  procedure_id: string;
+  procedure_name: string;
 
   @Column()
   mare_type: string;
@@ -44,17 +44,17 @@ export class Reproductive {
   @Column({ nullable: true })
   observation: string;
 
-  @Column({ type: 'date', default: () => 'now()' })
+  @Column({ type: 'timestamp', default: () => 'now()' })
   date: Date;
 
-  @Column({ type: 'date', nullable: true })
-  return_date: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  regress_date: Date;
 
   @Column({ nullable: true })
-  return_procedure_id: string;
+  regress_procedure_name: string;
 
   @Column({ nullable: true })
-  return_observation: string;
+  regress_observation: string;
 
   constructor(
     animal_id: string,
@@ -74,8 +74,8 @@ export class Reproductive {
   ) {
     this.id = uuidv4();
     this.animal_id = animal_id;
-    this.accountable = accountable;
-    this.procedure_id = procedure_id;
+    this.responsible = accountable;
+    this.procedure_name = procedure_id;
     this.mare_type = mare_type;
     this.situation = situation;
     this.right_ovary = right_ovary;
@@ -84,8 +84,8 @@ export class Reproductive {
     this.uterine_edema = uterine_edema;
     this.observation = observation;
     this.date = date;
-    this.return_date = return_date;
-    this.return_procedure_id = return_procedure_id;
-    this.return_observation = return_observation;
+    this.regress_date = return_date;
+    this.regress_procedure_name = return_procedure_id;
+    this.regress_observation = return_observation;
   }
 }

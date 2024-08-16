@@ -1,8 +1,35 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { ReproductiveService } from './reproductive.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  AnimalReproductives,
+  ReproductiveInfo,
+  ReproductiveService,
+  Status,
+} from './reproductive.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ReproductiveDto } from './reproductive.dto';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  FilterReproductiveDto,
+  ReproductiveDto,
+  SearchByDateDto,
+  UpdateReproductiveDto,
+} from './reproductive.dto';
 import { Reproductive } from './reproductive.entity';
 
 @ApiTags('REPRODUTIVO')
@@ -17,5 +44,65 @@ export class ReproductiveController {
   @ApiBody({ type: ReproductiveDto })
   async create(@Body() body: Reproductive): Promise<Reproductive> {
     return this.reproductiveService.create(body);
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Get()
+  @ApiOperation({ summary: 'TODOS REPRODUTIVOS' })
+  async findAll(): Promise<ReproductiveInfo[]> {
+    return this.reproductiveService.findAll();
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Get('filter')
+  @ApiOperation({ summary: 'FILTRAR REPRODUTIVOS' })
+  async filter(@Query() query: FilterReproductiveDto): Promise<Reproductive[]> {
+    return this.reproductiveService.filter(query);
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Get('search-date/:date')
+  @ApiOperation({ summary: 'BUSCAR POR DATA' })
+  @ApiQuery({ type: SearchByDateDto })
+  async searchByDate(
+    @Param('date') date: string,
+    @Query() query: SearchByDateDto,
+  ): Promise<AnimalReproductives[] | ReproductiveInfo[]> {
+    return this.reproductiveService.findByDate(new Date(date), query.layout);
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Get('details/:id')
+  @ApiOperation({ summary: 'REPRODUTIVO POR ID' })
+  async findById(@Param('id') id: string): Promise<Reproductive> {
+    return this.reproductiveService.findById(id);
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Put(':id')
+  @ApiOperation({ summary: 'ATUALIZAR REPRODUTIVO' })
+  @ApiBody({ type: UpdateReproductiveDto })
+  async update(
+    @Param('id') id: string,
+    @Body() body: Reproductive,
+  ): Promise<Reproductive> {
+    return this.reproductiveService.update(id, body);
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Patch(':id/status')
+  @ApiOperation({ summary: 'ATUALIZAR STATUS REPRODUTIVO' })
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: Status,
+  ): Promise<Reproductive> {
+    return this.reproductiveService.updateStatus(id, status);
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  @ApiOperation({ summary: 'DELETAR REPRODUTIVO' })
+  async delete(@Param('id') id: string): Promise<void> {
+    return this.reproductiveService.delete(id);
   }
 }
