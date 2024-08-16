@@ -61,6 +61,20 @@ export class ReproductiveController {
   }
 
   //@UseGuards(JwtAuthGuard)
+  @Get('past')
+  @ApiOperation({ summary: 'REPRODUTIVOS PASSADOS' })
+  async findPast(): Promise<ReproductiveInfo[]> {
+    return this.reproductiveService.findPast();
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Get('future')
+  @ApiOperation({ summary: 'REPRODUTIVOS FUTUROS' })
+  async findFuture(): Promise<ReproductiveInfo[]> {
+    return this.reproductiveService.findFuture();
+  }
+
+  //@UseGuards(JwtAuthGuard)
   @Get('search-date/:date')
   @ApiOperation({ summary: 'BUSCAR POR DATA' })
   @ApiQuery({ type: SearchByDateDto })

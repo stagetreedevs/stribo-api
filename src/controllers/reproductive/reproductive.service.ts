@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Reproductive } from './reproductive.entity';
-import { Between, Repository } from 'typeorm';
+import { Between, LessThan, MoreThan, Repository } from 'typeorm';
 import { AnimalService } from '../animal/animal.service';
 import { Not } from 'typeorm';
 import { FilterReproductiveDto } from './reproductive.dto';
@@ -295,6 +295,84 @@ export class ReproductiveService {
     });
 
     return reproductives;
+  }
+
+  async findPast(): Promise<ReproductiveInfo[]> {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    const reproductives = await this.reproductive.find({
+      where: {
+        date: LessThan(currentDate),
+      },
+      order: { date: 'DESC' },
+    });
+
+    const animais: Animal[] = [];
+
+    return await Promise.all(
+      reproductives.map(async (reproductive) => {
+        if (!animais.find((animal) => animal.id === reproductive.animal_id)) {
+          animais.push(
+            await this.animalService.findOne(reproductive.animal_id),
+          );
+        }
+
+        const animal = animais.find(
+          (animal) => animal.id === reproductive.animal_id,
+        );
+
+        return {
+          id: reproductive.id,
+          procedure_name: reproductive.procedure_name,
+          situation: reproductive.situation,
+          animal_id: reproductive.animal_id,
+          animal_name: animal.name,
+          register_number: animal.registerNumber,
+          date: reproductive.date,
+          status: reproductive.status,
+        };
+      }),
+    );
+  }
+
+  async findFuture(): Promise<ReproductiveInfo[]> {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    const reproductives = await this.reproductive.find({
+      where: {
+        date: MoreThan(currentDate),
+      },
+      order: { date: 'DESC' },
+    });
+
+    const animais: Animal[] = [];
+
+    return await Promise.all(
+      reproductives.map(async (reproductive) => {
+        if (!animais.find((animal) => animal.id === reproductive.animal_id)) {
+          animais.push(
+            await this.animalService.findOne(reproductive.animal_id),
+          );
+        }
+
+        const animal = animais.find(
+          (animal) => animal.id === reproductive.animal_id,
+        );
+
+        return {
+          id: reproductive.id,
+          procedure_name: reproductive.procedure_name,
+          situation: reproductive.situation,
+          animal_id: reproductive.animal_id,
+          animal_name: animal.name,
+          register_number: animal.registerNumber,
+          date: reproductive.date,
+          status: reproductive.status,
+        };
+      }),
+    );
   }
 
   async delete(id: string): Promise<void> {
