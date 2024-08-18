@@ -116,11 +116,11 @@ export class FilterReproductiveDto {
   @ApiProperty({ required: false })
   status: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, enum: ['ASC', 'DESC'] })
   order: 'ASC' | 'DESC';
 }
 
 export class SearchByDateDto {
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, enum: ['procedures', 'animals'] })
   layout: 'procedures' | 'animals';
 }

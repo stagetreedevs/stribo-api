@@ -130,31 +130,12 @@ export class ReproductiveService {
     const reproductives = await this.reproductive.find({
       order: { date: 'DESC' },
     });
-    const animais: Animal[] = [];
-    return await Promise.all(
-      reproductives.map(async (reproductive) => {
-        if (!animais.find((animal) => animal.id === reproductive.animal_id)) {
-          animais.push(
-            await this.animalService.findOne(reproductive.animal_id),
-          );
-        }
 
-        const animal = animais.find(
-          (animal) => animal.id === reproductive.animal_id,
-        );
+    if (reproductives.length == 0) {
+      return [];
+    }
 
-        return {
-          id: reproductive.id,
-          procedure_name: reproductive.procedure_name,
-          situation: reproductive.situation,
-          animal_id: reproductive.animal_id,
-          animal_name: animal.name,
-          register_number: animal.registerNumber,
-          date: reproductive.date,
-          status: reproductive.status,
-        };
-      }),
-    );
+    return await this.getAnimalsAndFormatResponse(reproductives);
   }
 
   async update(id: string, body: Reproductive): Promise<Reproductive> {
@@ -196,7 +177,6 @@ export class ReproductiveService {
     layout: 'procedures' | 'animals',
   ): Promise<AnimalReproductives[] | ReproductiveInfo[]> {
     if (layout === 'procedures') {
-      console.log(date);
       const reproductives = await this.reproductive.find({
         where: {
           date: Between(
@@ -207,32 +187,11 @@ export class ReproductiveService {
         order: { date: 'DESC' },
       });
 
-      const animais: Animal[] = [];
+      if (reproductives.length == 0) {
+        return [];
+      }
 
-      return await Promise.all(
-        reproductives.map(async (reproductive) => {
-          if (!animais.find((animal) => animal.id === reproductive.animal_id)) {
-            animais.push(
-              await this.animalService.findOne(reproductive.animal_id),
-            );
-          }
-
-          const animal = animais.find(
-            (animal) => animal.id === reproductive.animal_id,
-          );
-
-          return {
-            id: reproductive.id,
-            procedure_name: reproductive.procedure_name,
-            situation: reproductive.situation,
-            animal_id: reproductive.animal_id,
-            animal_name: animal.name,
-            register_number: animal.registerNumber,
-            date: reproductive.date,
-            status: reproductive.status,
-          };
-        }),
-      );
+      return await this.getAnimalsAndFormatResponse(reproductives);
     } else {
       let reproductives: Reproductive[] | ReproductiveSimpleInfo[] =
         await this.reproductive.find({
@@ -245,14 +204,20 @@ export class ReproductiveService {
           order: { date: 'DESC' },
         });
 
-      reproductives = reproductives.map((reproductive) => ({
-        id: reproductive.id,
-        procedure_name: reproductive.procedure_name,
-        situation: reproductive.situation,
-        date: reproductive.date,
-        status: reproductive.status,
-        animal_id: reproductive.animal_id,
-      }));
+      if (reproductives.length == 0) {
+        return [];
+      }
+
+      reproductives = reproductives.map(
+        (reproductive: Reproductive | ReproductiveSimpleInfo) => ({
+          id: reproductive.id,
+          procedure_name: reproductive.procedure_name,
+          situation: reproductive.situation,
+          date: reproductive.date,
+          status: reproductive.status,
+          animal_id: reproductive.animal_id,
+        }),
+      );
 
       const animals = await this.animalService.findAll();
 
@@ -277,7 +242,7 @@ export class ReproductiveService {
     }
   }
 
-  async filter(filter: FilterReproductiveDto): Promise<Reproductive[]> {
+  async filter(filter: FilterReproductiveDto): Promise<ReproductiveInfo[]> {
     const { procedure_name, status, responsible, start_date, end_date, order } =
       filter;
 
@@ -294,7 +259,11 @@ export class ReproductiveService {
       },
     });
 
-    return reproductives;
+    if (reproductives.length == 0) {
+      return [];
+    }
+
+    return await this.getAnimalsAndFormatResponse(reproductives);
   }
 
   async findPast(): Promise<ReproductiveInfo[]> {
@@ -308,32 +277,11 @@ export class ReproductiveService {
       order: { date: 'DESC' },
     });
 
-    const animais: Animal[] = [];
+    if (reproductives.length == 0) {
+      return [];
+    }
 
-    return await Promise.all(
-      reproductives.map(async (reproductive) => {
-        if (!animais.find((animal) => animal.id === reproductive.animal_id)) {
-          animais.push(
-            await this.animalService.findOne(reproductive.animal_id),
-          );
-        }
-
-        const animal = animais.find(
-          (animal) => animal.id === reproductive.animal_id,
-        );
-
-        return {
-          id: reproductive.id,
-          procedure_name: reproductive.procedure_name,
-          situation: reproductive.situation,
-          animal_id: reproductive.animal_id,
-          animal_name: animal.name,
-          register_number: animal.registerNumber,
-          date: reproductive.date,
-          status: reproductive.status,
-        };
-      }),
-    );
+    return await this.getAnimalsAndFormatResponse(reproductives);
   }
 
   async findFuture(): Promise<ReproductiveInfo[]> {
@@ -347,6 +295,26 @@ export class ReproductiveService {
       order: { date: 'DESC' },
     });
 
+    if (reproductives.length == 0) {
+      return [];
+    }
+
+    return await this.getAnimalsAndFormatResponse(reproductives);
+  }
+
+  async delete(id: string): Promise<void> {
+    const reproductive = await this.reproductive.findOne({ where: { id } });
+
+    if (!reproductive) {
+      throw new ForbiddenException('Reproductive not found');
+    }
+
+    await this.reproductive.delete(id);
+  }
+
+  async getAnimalsAndFormatResponse(
+    reproductives: Reproductive[],
+  ): Promise<ReproductiveInfo[]> {
     const animais: Animal[] = [];
 
     return await Promise.all(
@@ -373,15 +341,5 @@ export class ReproductiveService {
         };
       }),
     );
-  }
-
-  async delete(id: string): Promise<void> {
-    const reproductive = await this.reproductive.findOne({ where: { id } });
-
-    if (!reproductive) {
-      throw new ForbiddenException('Reproductive not found');
-    }
-
-    await this.reproductive.delete(id);
   }
 }

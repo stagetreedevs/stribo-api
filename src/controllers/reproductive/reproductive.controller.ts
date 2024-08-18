@@ -56,7 +56,9 @@ export class ReproductiveController {
   //@UseGuards(JwtAuthGuard)
   @Get('filter')
   @ApiOperation({ summary: 'FILTRAR REPRODUTIVOS' })
-  async filter(@Query() query: FilterReproductiveDto): Promise<Reproductive[]> {
+  async filter(
+    @Query() query: FilterReproductiveDto,
+  ): Promise<ReproductiveInfo[]> {
     return this.reproductiveService.filter(query);
   }
 
@@ -77,9 +79,8 @@ export class ReproductiveController {
   //@UseGuards(JwtAuthGuard)
   @Get('search-date/:date')
   @ApiOperation({ summary: 'BUSCAR POR DATA' })
-  @ApiQuery({ type: SearchByDateDto })
   async searchByDate(
-    @Param('date') date: string,
+    @Param('date') date: Date,
     @Query() query: SearchByDateDto,
   ): Promise<AnimalReproductives[] | ReproductiveInfo[]> {
     return this.reproductiveService.findByDate(new Date(date), query.layout);
