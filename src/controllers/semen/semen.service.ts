@@ -10,6 +10,7 @@ import { AnimalService } from '../animal/animal.service';
 import { FilterSemenShippingDto } from './dto/shipping.dto';
 
 export type ReturnSemenShipping = {
+  id: string;
   client: string;
   amount_reeds: number;
   semen_type: string;
@@ -81,10 +82,11 @@ export class SemenService {
       ).length;
 
       const requested = semenShipping.filter(
-        (semen) => semen.status != 'Solicitado',
+        (semen) => semen.status != 'Enviado',
       ).length;
 
       const response: ReturnSemenShipping[] = semenShipping.map((semen) => ({
+        id: semen.id,
         client: semen.client,
         amount_reeds: semen.amount_reeds,
         semen_type: semen.semen_type,
@@ -110,10 +112,11 @@ export class SemenService {
     ).length;
 
     const requested = semenShipping.filter(
-      (semen) => semen.status != 'Solicitado',
+      (semen) => semen.status != 'Enviado',
     ).length;
 
     const response: ReturnSemenShipping[] = semenShipping.map((semen) => ({
+      id: semen.id,
       client: semen.client,
       amount_reeds: semen.amount_reeds,
       semen_type: semen.semen_type,
@@ -139,7 +142,10 @@ export class SemenService {
     return await this.semenShipping.save({ ...semenShipping, ...body });
   }
 
-  async updateStatus(id: string, status: string): Promise<SemenShipping> {
+  async updateStatus(
+    id: string,
+    status: 'Não enviado' | 'Enviado' | 'Prenhez confirmada',
+  ): Promise<SemenShipping> {
     const semenShipping = await this.semenShipping.findOne({ where: { id } });
 
     if (!semenShipping) {
@@ -151,7 +157,7 @@ export class SemenService {
 
   async updateCommercialStatus(
     id: string,
-    commercialStatus: string,
+    commercialStatus: 'Pedido confirmado' | 'Coleta Paga',
   ): Promise<SemenShipping> {
     const semenShipping = await this.semenShipping.findOne({ where: { id } });
 
@@ -161,7 +167,7 @@ export class SemenService {
 
     return await this.semenShipping.save({
       ...semenShipping,
-      commercialStatus,
+      commercial_status: commercialStatus,
     });
   }
 

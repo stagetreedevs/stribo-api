@@ -48,11 +48,17 @@ export class SemenShipping {
   @Column({ nullable: true })
   observation: string;
 
-  @Column({ default: 'Pedido confirmado' })
-  commercial_status: string;
+  @Column({
+    enum: ['Pedido confirmado', 'Coleta Paga'],
+    default: 'Pedido confirmado',
+  })
+  commercial_status: 'Pedido confirmado' | 'Coleta Paga';
 
-  @Column({ default: 'Não enviado' })
-  status: string;
+  @Column({
+    enum: ['Não enviado', 'Enviado', 'Prenhez confirmada'],
+    default: 'Não enviado',
+  })
+  status: 'Não enviado' | 'Enviado' | 'Prenhez confirmada';
 
   constructor(
     order_date: Date,
@@ -69,8 +75,8 @@ export class SemenShipping {
     company: string,
     protocol: string,
     observation: string,
-    commercial_status: string,
-    status: string,
+    commercial_status: 'Pedido confirmado' | 'Coleta Paga',
+    status: 'Não enviado' | 'Enviado' | 'Prenhez confirmada',
   ) {
     this.id = uuidv4();
     this.order_date = order_date;

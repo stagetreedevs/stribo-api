@@ -11,7 +11,12 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SemenService } from './semen.service';
-import { FilterSemenShippingDto, SemenShippingDto } from './dto/shipping.dto';
+import {
+  FilterSemenShippingDto,
+  SemenShippingDto,
+  UpdateCommercialStatusDto,
+  UpdateStatusDto,
+} from './dto/shipping.dto';
 import { SemenShipping } from './entity/shipping.entity';
 
 @ApiTags('SEMEM')
@@ -46,20 +51,16 @@ export class SemenController {
   @Patch('shipping/:id/commercial-status/:status')
   @ApiOperation({ summary: 'ALTERAR STATUS COMERCIAL' })
   async updateCommercialStatus(
-    @Param('id') id: string,
-    @Param('status') status: string,
+    @Param() params: UpdateCommercialStatusDto,
   ): Promise<SemenShipping> {
-    return this.semenService.updateCommercialStatus(id, status);
+    return this.semenService.updateCommercialStatus(params.id, params.status);
   }
 
   // @UseGuards(JwtAuthGuard)
   @Patch('shipping/:id/status/:status')
   @ApiOperation({ summary: 'ALTERAR STATUS' })
-  async updateStatus(
-    @Param('id') id: string,
-    @Param('status') status: string,
-  ): Promise<SemenShipping> {
-    return this.semenService.updateStatus(id, status);
+  async updateStatus(@Param() params: UpdateStatusDto): Promise<SemenShipping> {
+    return this.semenService.updateStatus(params.id, params.status);
   }
 
   // @UseGuards(JwtAuthGuard)
