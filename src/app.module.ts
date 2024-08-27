@@ -49,6 +49,7 @@ import { ForSaleModule } from './controllers/animal/comercial/forSale.module';
 import { ReproductiveModule } from './controllers/reproductive/reproductive.module';
 import { Reproductive } from './controllers/reproductive/reproductive.entity';
 import { SemenShipping } from './controllers/semen/entity/shipping.entity';
+import { SemenModule } from './controllers/semen/semen.module';
 dotenv.config();
 @Module({
   imports: [
@@ -122,6 +123,7 @@ dotenv.config();
     UserModule,
     AdminModule,
     ReproductiveModule,
+    SemenModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService],
