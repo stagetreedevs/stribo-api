@@ -50,6 +50,7 @@ import { ReproductiveModule } from './controllers/reproductive/reproductive.modu
 import { Reproductive } from './controllers/reproductive/reproductive.entity';
 import { SemenShipping } from './controllers/semen/entity/shipping.entity';
 import { SemenModule } from './controllers/semen/semen.module';
+import { SemenReceipt } from './controllers/semen/entity/receipt.entity';
 dotenv.config();
 @Module({
   imports: [
@@ -96,6 +97,7 @@ dotenv.config();
         Death,
         Reproductive,
         SemenShipping,
+        SemenReceipt,
       ],
       autoLoadEntities: true,
       synchronize: true,

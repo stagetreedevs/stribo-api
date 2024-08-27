@@ -65,7 +65,10 @@ export class SemenService {
         where: {
           order_date:
             filter.start_date && filter.end_date
-              ? Between(filter.start_date, filter.end_date)
+              ? Between(
+                  new Date(filter.start_date.setHours(0, 0, 0, 0)),
+                  new Date(filter.end_date.setHours(23, 59, 59, 999)),
+                )
               : undefined,
           stallion_name: filter.stallion_name || undefined,
           semen_type: filter.semen_type || undefined,
@@ -152,7 +155,13 @@ export class SemenService {
       throw new NotFoundException('Semen shipping not found');
     }
 
-    return await this.semenShipping.save({ ...semenShipping, status });
+    const now = new Date();
+
+    return await this.semenShipping.save({
+      ...semenShipping,
+      status,
+      shipping_date: status == 'Enviado' ? now : null,
+    });
   }
 
   async updateCommercialStatus(

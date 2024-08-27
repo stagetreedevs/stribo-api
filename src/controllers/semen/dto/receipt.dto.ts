@@ -1,17 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class SemenShippingDto {
+export class SemenReceiptDto {
   @ApiProperty()
   order_date: Date;
 
   @ApiProperty()
-  shipping_date: Date;
+  receipt_date: Date;
 
   @ApiProperty()
-  stallion_property: string;
-
-  @ApiProperty()
-  client: string;
+  receiver: string;
 
   @ApiProperty()
   stallion_id: string;
@@ -20,16 +17,22 @@ export class SemenShippingDto {
   stallion_name: string;
 
   @ApiProperty()
-  semen_type: string;
-
-  @ApiProperty({ required: false })
   mare_id: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty()
   mare_name: string;
 
   @ApiProperty()
+  semen_type: string;
+
+  @ApiProperty()
   amount_reeds: number;
+
+  @ApiProperty({ required: false })
+  departure_number: string;
+
+  @ApiProperty()
+  protocol: string;
 
   @ApiProperty()
   carrier_name: string;
@@ -37,14 +40,17 @@ export class SemenShippingDto {
   @ApiProperty({ required: false })
   company: string;
 
-  @ApiProperty()
-  protocol: string;
-
   @ApiProperty({ required: false })
   observation: string;
+
+  @ApiProperty({ enum: ['Pedido confirmado', 'Coleta Paga'] })
+  commercial_status: 'Pedido confirmado' | 'Coleta Paga';
+
+  @ApiProperty({ enum: ['Não enviado', 'Enviado', 'Prenhez confirmada'] })
+  status: 'Não enviado' | 'Enviado' | 'Prenhez confirmada';
 }
 
-export class FilterSemenShippingDto {
+export class FilterSemenReceiptDto {
   @ApiProperty({ required: false })
   start_date?: Date;
 
@@ -52,7 +58,7 @@ export class FilterSemenShippingDto {
   end_date?: Date;
 
   @ApiProperty({ required: false })
-  client?: string;
+  receiver?: string;
 
   @ApiProperty({ required: false })
   semen_type?: string;
@@ -75,7 +81,7 @@ export class UpdateCommercialStatusDto {
   id: string;
 
   @ApiProperty({ enum: ['Pedido confirmado', 'Coleta Paga'] })
-  status: 'Pedido confirmado' | 'Coleta Paga';
+  commercial_status: 'Pedido confirmado' | 'Coleta Paga';
 }
 
 export class UpdateStatusDto {
