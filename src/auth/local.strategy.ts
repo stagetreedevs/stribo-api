@@ -21,8 +21,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     }
     const json = {
       accessToken: this.jwtService.sign(user),
-      user: user
-    }
+      user: user,
+    };
     return json;
   }
 }

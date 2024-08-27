@@ -48,6 +48,7 @@ import { AnimalDocumentModule } from './controllers/animal/documents/animal-docu
 import { ForSaleModule } from './controllers/animal/comercial/forSale.module';
 import { ReproductiveModule } from './controllers/reproductive/reproductive.module';
 import { Reproductive } from './controllers/reproductive/reproductive.entity';
+import { SemenShipping } from './controllers/semen/entity/shipping.entity';
 dotenv.config();
 @Module({
   imports: [
@@ -93,6 +94,7 @@ dotenv.config();
         Nutritional,
         Death,
         Reproductive,
+        SemenShipping,
       ],
       autoLoadEntities: true,
       synchronize: true,
