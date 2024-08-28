@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SemenReceiptService } from './semen-receipt.service';
@@ -17,6 +18,7 @@ import {
   UpdateCommercialStatusDto,
   UpdateStatusDto,
 } from './semen-receipt.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @ApiTags('SEMEM RECEIPT')
 @ApiBearerAuth()
@@ -24,7 +26,7 @@ import {
 export class SemenReceiptController {
   constructor(private readonly semenReceiptService: SemenReceiptService) {}
 
-  // @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'CRIAR RECEBIMENTO DE SÊMEN' })
   @ApiBody({ type: SemenReceiptDto })
@@ -42,7 +44,7 @@ export class SemenReceiptController {
   // @UseGuards(JwtAuthGuard)
   @Get('detail/:id')
   @ApiOperation({ summary: 'DETALHES RECEBIMENTO DE SÊMEN' })
-  async findById(@Query('id') id: string): Promise<any> {
+  async findById(@Param('id') id: string): Promise<any> {
     return this.semenReceiptService.findById(id);
   }
 

@@ -43,7 +43,7 @@ export class SemenShippingController {
   // @UseGuards(JwtAuthGuard)
   @Get('detail/:id')
   @ApiOperation({ summary: 'DETALHES ENVIO DE SÊMEN' })
-  async findById(@Query('id') id: string): Promise<SemenShipping> {
+  async findById(@Param('id') id: string): Promise<SemenShipping> {
     return this.semenService.findById(id);
   }
 

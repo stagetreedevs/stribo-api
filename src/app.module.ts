@@ -52,6 +52,10 @@ import { SemenShipping } from './controllers/semen-shipping/semen-shipping.entit
 import { SemenShippingModule } from './controllers/semen-shipping/semen-shipping.module';
 import { SemenReceiptModule } from './controllers/semen-receipt/semen-receipt.module';
 import { SemenReceipt } from './controllers/semen-receipt/semen-receipt.entity';
+import { SemenFrozenModule } from './controllers/semen-frozen/semen-frozen.module';
+import { Cylinder } from './controllers/cylinder/cylinder.entity';
+import { CylinderModule } from './controllers/cylinder/cylinder.module';
+import { SemenFrozen } from './controllers/semen-frozen/semen-frozen.entity';
 dotenv.config();
 @Module({
   imports: [
@@ -99,6 +103,8 @@ dotenv.config();
         Reproductive,
         SemenShipping,
         SemenReceipt,
+        SemenFrozen,
+        Cylinder,
       ],
       autoLoadEntities: true,
       synchronize: true,
@@ -128,6 +134,8 @@ dotenv.config();
     ReproductiveModule,
     SemenShippingModule,
     SemenReceiptModule,
+    SemenFrozenModule,
+    CylinderModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService],

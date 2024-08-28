@@ -118,6 +118,9 @@ export class FilterReproductiveDto {
 
   @ApiProperty({ required: false, enum: ['ASC', 'DESC'] })
   order: 'ASC' | 'DESC';
+
+  @ApiProperty({ required: false })
+  animal_id: string;
 }
 
 export class SearchByDateDto {

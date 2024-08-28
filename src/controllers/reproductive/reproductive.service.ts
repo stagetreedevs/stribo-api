@@ -243,8 +243,15 @@ export class ReproductiveService {
   }
 
   async filter(filter: FilterReproductiveDto): Promise<ReproductiveInfo[]> {
-    const { procedure_name, status, responsible, start_date, end_date, order } =
-      filter;
+    const {
+      procedure_name,
+      status,
+      responsible,
+      start_date,
+      end_date,
+      order,
+      animal_id,
+    } = filter;
 
     const reproductives = await this.reproductive.find({
       where: {
@@ -253,6 +260,7 @@ export class ReproductiveService {
         responsible: responsible ? responsible : undefined,
         date:
           start_date && end_date ? Between(start_date, end_date) : undefined,
+        animal_id: animal_id ? animal_id : undefined,
       },
       order: {
         date: order,
