@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SemenShipping } from './entity/shipping.entity';
+import { SemenShipping } from './semen-shipping.entity';
 import { Between, Repository } from 'typeorm';
 import { AnimalService } from '../animal/animal.service';
-import { FilterSemenShippingDto } from './dto/shipping.dto';
+import { FilterSemenShippingDto, SemenShippingDto } from './semen-shipping.dto';
 
 export type ReturnSemenShipping = {
   id: string;
@@ -19,14 +19,14 @@ export type ReturnSemenShipping = {
 };
 
 @Injectable()
-export class SemenService {
+export class SemenShippingService {
   constructor(
     @InjectRepository(SemenShipping)
     private readonly semenShipping: Repository<SemenShipping>,
     private readonly animalService: AnimalService,
   ) {}
 
-  async create(body: SemenShipping): Promise<SemenShipping> {
+  async create(body: SemenShippingDto): Promise<SemenShipping> {
     const stallion = await this.animalService.findOne(body.stallion_id);
 
     if (!stallion) {
@@ -70,7 +70,7 @@ export class SemenService {
                   new Date(filter.end_date.setHours(23, 59, 59, 999)),
                 )
               : undefined,
-          stallion_name: filter.stallion_name || undefined,
+          client: filter.client || undefined,
           semen_type: filter.semen_type || undefined,
           commercial_status: filter.commercial_status || undefined,
           status: filter.status || undefined,
@@ -135,7 +135,7 @@ export class SemenService {
     };
   }
 
-  async update(id: string, body: SemenShipping): Promise<SemenShipping> {
+  async update(id: string, body: SemenShippingDto): Promise<SemenShipping> {
     const semenShipping = await this.semenShipping.findOne({ where: { id } });
 
     if (!semenShipping) {
@@ -166,7 +166,7 @@ export class SemenService {
 
   async updateCommercialStatus(
     id: string,
-    commercialStatus: 'Pedido confirmado' | 'Coleta Paga',
+    commercial_status: 'Pedido confirmado' | 'Coleta Paga',
   ): Promise<SemenShipping> {
     const semenShipping = await this.semenShipping.findOne({ where: { id } });
 
@@ -176,7 +176,7 @@ export class SemenService {
 
     return await this.semenShipping.save({
       ...semenShipping,
-      commercial_status: commercialStatus,
+      commercial_status,
     });
   }
 

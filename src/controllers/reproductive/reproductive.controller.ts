@@ -38,7 +38,7 @@ import { Reproductive } from './reproductive.entity';
 export class ReproductiveController {
   constructor(private readonly reproductiveService: ReproductiveService) {}
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'CRIAR REPRODUTIVO' })
   @ApiBody({ type: ReproductiveDto })
@@ -46,14 +46,14 @@ export class ReproductiveController {
     return this.reproductiveService.create(body);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS REPRODUTIVOS' })
   async findAll(): Promise<ReproductiveInfo[]> {
     return this.reproductiveService.findAll();
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('filter')
   @ApiOperation({ summary: 'FILTRAR REPRODUTIVOS' })
   async filter(
@@ -62,21 +62,21 @@ export class ReproductiveController {
     return this.reproductiveService.filter(query);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('past')
   @ApiOperation({ summary: 'REPRODUTIVOS PASSADOS' })
   async findPast(): Promise<ReproductiveInfo[]> {
     return this.reproductiveService.findPast();
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('future')
   @ApiOperation({ summary: 'REPRODUTIVOS FUTUROS' })
   async findFuture(): Promise<ReproductiveInfo[]> {
     return this.reproductiveService.findFuture();
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('search-date/:date')
   @ApiOperation({ summary: 'BUSCAR POR DATA' })
   async searchByDate(
@@ -86,14 +86,14 @@ export class ReproductiveController {
     return this.reproductiveService.findByDate(new Date(date), query.layout);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('details/:id')
   @ApiOperation({ summary: 'REPRODUTIVO POR ID' })
   async findById(@Param('id') id: string): Promise<Reproductive> {
     return this.reproductiveService.findById(id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @ApiOperation({ summary: 'ATUALIZAR REPRODUTIVO' })
   @ApiBody({ type: UpdateReproductiveDto })
@@ -104,7 +104,7 @@ export class ReproductiveController {
     return this.reproductiveService.update(id, body);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Patch(':id/status')
   @ApiOperation({ summary: 'ATUALIZAR STATUS REPRODUTIVO' })
   async updateStatus(
@@ -114,7 +114,7 @@ export class ReproductiveController {
     return this.reproductiveService.updateStatus(id, status);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'DELETAR REPRODUTIVO' })
   async delete(@Param('id') id: string): Promise<void> {

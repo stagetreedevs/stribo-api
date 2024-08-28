@@ -81,7 +81,7 @@ export class UpdateCommercialStatusDto {
   id: string;
 
   @ApiProperty({ enum: ['Pedido confirmado', 'Coleta Paga'] })
-  commercial_status: 'Pedido confirmado' | 'Coleta Paga';
+  status: 'Pedido confirmado' | 'Coleta Paga';
 }
 
 export class UpdateStatusDto {

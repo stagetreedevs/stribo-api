@@ -48,9 +48,10 @@ import { AnimalDocumentModule } from './controllers/animal/documents/animal-docu
 import { ForSaleModule } from './controllers/animal/comercial/forSale.module';
 import { ReproductiveModule } from './controllers/reproductive/reproductive.module';
 import { Reproductive } from './controllers/reproductive/reproductive.entity';
-import { SemenShipping } from './controllers/semen/entity/shipping.entity';
-import { SemenModule } from './controllers/semen/semen.module';
-import { SemenReceipt } from './controllers/semen/entity/receipt.entity';
+import { SemenShipping } from './controllers/semen-shipping/semen-shipping.entity';
+import { SemenShippingModule } from './controllers/semen-shipping/semen-shipping.module';
+import { SemenReceiptModule } from './controllers/semen-receipt/semen-receipt.module';
+import { SemenReceipt } from './controllers/semen-receipt/semen-receipt.entity';
 dotenv.config();
 @Module({
   imports: [
@@ -125,7 +126,8 @@ dotenv.config();
     UserModule,
     AdminModule,
     ReproductiveModule,
-    SemenModule,
+    SemenShippingModule,
+    SemenReceiptModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService],
