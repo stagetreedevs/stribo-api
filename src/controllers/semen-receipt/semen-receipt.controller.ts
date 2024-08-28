@@ -20,7 +20,7 @@ import {
 } from './semen-receipt.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-@ApiTags('SEMEM RECEIPT')
+@ApiTags('SEMEM RECEBIMENTO')
 @ApiBearerAuth()
 @Controller('semen-receipt')
 export class SemenReceiptController {

@@ -9,9 +9,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { SemenFrozenService } from './semen-frozen.service';
-import { ApiBody, ApiOperation } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FilterSemenFrozen, SemenFrozenDto } from './semen-frozen.dto';
 
+@ApiTags('SEMEM CONGELADO')
 @Controller('semen-frozen')
 export class SemenFrozenController {
   constructor(private readonly semenFrozenService: SemenFrozenService) {}

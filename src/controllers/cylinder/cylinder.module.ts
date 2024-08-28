@@ -10,5 +10,6 @@ import { PropertyModule } from '../property/property.module';
   imports: [TypeOrmModule.forFeature([Cylinder]), AnimalModule, PropertyModule],
   controllers: [CylinderController],
   providers: [CylinderService],
+  exports: [CylinderService],
 })
 export class CylinderModule {}

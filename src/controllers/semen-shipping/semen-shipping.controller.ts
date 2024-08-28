@@ -19,7 +19,7 @@ import {
 } from './semen-shipping.dto';
 import { SemenShipping } from './semen-shipping.entity';
 
-@ApiTags('SEMEM SHIPPING')
+@ApiTags('SEMEM ENVIADOS')
 @ApiBearerAuth()
 @Controller('semen-shipping')
 export class SemenShippingController {

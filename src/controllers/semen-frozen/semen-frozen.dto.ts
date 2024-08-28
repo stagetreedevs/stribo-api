@@ -51,9 +51,13 @@ export class FilterSemenFrozen {
   @ApiProperty({ required: false })
   cylinder_id?: string;
 
-  @ApiProperty({ required: false, enum: ['ASC', 'DESC'] })
+  @ApiProperty({ required: false, enum: ['ASC', 'DESC'], default: 'DESC' })
   order?: 'ASC' | 'DESC';
 
-  @ApiProperty({ required: false })
+  @ApiProperty({
+    required: false,
+    enum: ['storages', 'animals'],
+    default: 'storages',
+  })
   layout?: 'storages' | 'animals' | null;
 }
