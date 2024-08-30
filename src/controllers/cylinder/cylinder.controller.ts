@@ -19,7 +19,7 @@ import { CylinderDto } from './cylinder.dto';
 export class CylinderController {
   constructor(private readonly cylinderService: CylinderService) {}
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'CRIAR BOTIJÃO' })
   @ApiBody({ type: CylinderDto })
@@ -27,21 +27,28 @@ export class CylinderController {
     return this.cylinderService.create(body);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS BOTIJÕES' })
   async findAll(): Promise<any> {
     return this.cylinderService.findAll();
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('property/:property_id')
+  @ApiOperation({ summary: 'TODOS BOTIJÕES POR PROPRIEDADE' })
+  async findByProperty(@Param('property_id') property: string): Promise<any> {
+    return this.cylinderService.findAll(property);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('detail/:id')
   @ApiOperation({ summary: 'DETALHES BOTIJÃO' })
   async findById(@Body('id') id: string): Promise<any> {
     return this.cylinderService.findById(id);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @ApiOperation({ summary: 'ATUALIZAR BOTIJÃO' })
   async update(
@@ -51,7 +58,7 @@ export class CylinderController {
     return this.cylinderService.update(id, body);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'DELETAR BOTIJÃO' })
   async delete(@Param('id') id: string): Promise<any> {

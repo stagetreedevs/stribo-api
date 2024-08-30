@@ -8,6 +8,9 @@ export class SemenShippingDto {
   shipping_date: Date;
 
   @ApiProperty()
+  property: string;
+
+  @ApiProperty()
   stallion_property: string;
 
   @ApiProperty()
@@ -50,6 +53,9 @@ export class FilterSemenShippingDto {
 
   @ApiProperty({ required: false })
   end_date?: Date;
+
+  @ApiProperty({ required: false })
+  property: string;
 
   @ApiProperty({ required: false })
   client?: string;

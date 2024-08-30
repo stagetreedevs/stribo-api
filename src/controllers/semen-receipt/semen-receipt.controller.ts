@@ -26,7 +26,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class SemenReceiptController {
   constructor(private readonly semenReceiptService: SemenReceiptService) {}
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'CRIAR RECEBIMENTO DE SÊMEN' })
   @ApiBody({ type: SemenReceiptDto })
@@ -34,21 +34,31 @@ export class SemenReceiptController {
     return this.semenReceiptService.create(body);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS RECEBIMENTO DE SÊMEN' })
   async findAll(@Query() query: FilterSemenReceiptDto): Promise<any> {
     return this.semenReceiptService.findAll(query);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('property/:property_id')
+  @ApiOperation({ summary: 'TODOS RECEBIMENTO DE SÊMEN POR PROPRIEDADE' })
+  async findByProperty(
+    @Query() query: FilterSemenReceiptDto,
+    @Param('property_id') property: string,
+  ): Promise<any> {
+    return this.semenReceiptService.findAll(query, property);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('detail/:id')
   @ApiOperation({ summary: 'DETALHES RECEBIMENTO DE SÊMEN' })
   async findById(@Param('id') id: string): Promise<any> {
     return this.semenReceiptService.findById(id);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Patch(':id/commercial-status/:status')
   @ApiOperation({ summary: 'ALTERAR STATUS COMERCIAL' })
   async updateCommercialStatus(
@@ -60,14 +70,14 @@ export class SemenReceiptController {
     );
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Patch(':id/status/:status')
   @ApiOperation({ summary: 'ALTERAR STATUS' })
   async updateStatus(@Param() params: UpdateStatusDto): Promise<any> {
     return this.semenReceiptService.updateStatus(params.id, params.status);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @ApiOperation({ summary: 'ATUALIZAR RECEBIMENTO DE SÊMEN' })
   async update(
@@ -77,7 +87,7 @@ export class SemenReceiptController {
     return this.semenReceiptService.update(id, body);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'DELETAR RECEBIMENTO DE SÊMEN' })
   async delete(@Param('id') id: string): Promise<any> {

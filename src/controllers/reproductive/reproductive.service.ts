@@ -126,8 +126,11 @@ export class ReproductiveService {
     }
   }
 
-  async findAll(): Promise<ReproductiveInfo[]> {
+  async findAll(property: string | null = null): Promise<ReproductiveInfo[]> {
     const reproductives = await this.reproductive.find({
+      where: {
+        property: property || undefined,
+      },
       order: { date: 'DESC' },
     });
 
@@ -175,6 +178,7 @@ export class ReproductiveService {
   async findByDate(
     date: Date,
     layout: 'procedures' | 'animals',
+    property: string | null = null,
   ): Promise<AnimalReproductives[] | ReproductiveInfo[]> {
     if (layout === 'procedures') {
       const reproductives = await this.reproductive.find({
@@ -183,6 +187,7 @@ export class ReproductiveService {
             new Date(date.setHours(0, 0, 0, 0)),
             new Date(date.setHours(23, 59, 59, 999)),
           ),
+          property: property || undefined,
         },
         order: { date: 'DESC' },
       });
@@ -200,6 +205,7 @@ export class ReproductiveService {
               new Date(date.setHours(0, 0, 0, 0)),
               new Date(date.setHours(23, 59, 59, 999)),
             ),
+            property: property || undefined,
           },
           order: { date: 'DESC' },
         });
@@ -242,7 +248,10 @@ export class ReproductiveService {
     }
   }
 
-  async filter(filter: FilterReproductiveDto): Promise<ReproductiveInfo[]> {
+  async filter(
+    filter: FilterReproductiveDto,
+    property: string | null = null,
+  ): Promise<ReproductiveInfo[]> {
     const {
       procedure_name,
       status,
@@ -261,6 +270,7 @@ export class ReproductiveService {
         date:
           start_date && end_date ? Between(start_date, end_date) : undefined,
         animal_id: animal_id ? animal_id : undefined,
+        property: property ? property : undefined,
       },
       order: {
         date: order,
@@ -274,13 +284,14 @@ export class ReproductiveService {
     return await this.getAnimalsAndFormatResponse(reproductives);
   }
 
-  async findPast(): Promise<ReproductiveInfo[]> {
+  async findPast(property: string | null = null): Promise<ReproductiveInfo[]> {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
     const reproductives = await this.reproductive.find({
       where: {
         date: LessThan(currentDate),
+        property: property || undefined,
       },
       order: { date: 'DESC' },
     });
@@ -292,13 +303,16 @@ export class ReproductiveService {
     return await this.getAnimalsAndFormatResponse(reproductives);
   }
 
-  async findFuture(): Promise<ReproductiveInfo[]> {
+  async findFuture(
+    property: string | null = null,
+  ): Promise<ReproductiveInfo[]> {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
     const reproductives = await this.reproductive.find({
       where: {
         date: MoreThan(currentDate),
+        property: property || undefined,
       },
       order: { date: 'DESC' },
     });

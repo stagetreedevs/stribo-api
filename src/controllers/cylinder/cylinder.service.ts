@@ -51,8 +51,12 @@ export class CylinderService {
     return await this.cylinder.save(data);
   }
 
-  async findAll(): Promise<Cylinder[]> {
-    return await this.cylinder.find();
+  async findAll(property: string | null = null) {
+    return await this.cylinder.find({
+      where: {
+        property: property || undefined,
+      },
+    });
   }
 
   async findById(id: string): Promise<Cylinder> {

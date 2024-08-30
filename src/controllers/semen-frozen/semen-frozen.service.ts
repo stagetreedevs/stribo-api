@@ -66,13 +66,18 @@ export class SemenFrozenService {
     return await this.semenFrozen.findOne({ where: { id } });
   }
 
-  async getStock(): Promise<number> {
-    const storages = await this.semenFrozen.find();
+  async getStock(property: string | null = null): Promise<number> {
+    const storages = await this.semenFrozen.find({
+      where: {
+        property: property || undefined,
+      },
+    });
     return storages.reduce((acc, storage) => acc + storage.number_reeds, 0);
   }
 
   async findAll(
     filter: FilterSemenFrozen | null,
+    property: string | null = null,
   ): Promise<SemenFrozenInfo[] | AnimalSemenFrozen[]> {
     let storages: SemenFrozen[] | SemenFrozenInfo[] =
       await this.semenFrozen.find({
@@ -85,6 +90,7 @@ export class SemenFrozenService {
                 )
               : undefined,
           cylinder_id: filter.cylinder_id,
+          property: property || filter.property || undefined,
         },
         order: { collection_date: filter.order || 'DESC' },
       });

@@ -7,6 +7,9 @@ export class CylinderDto {
   @ApiProperty()
   capacity: number;
 
+  @ApiProperty({ required: false, default: '' })
+  property: string;
+
   @ApiProperty({ required: false, default: 0 })
   stored: number;
 

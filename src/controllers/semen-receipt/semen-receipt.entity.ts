@@ -6,6 +6,9 @@ export class SemenReceipt {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: '' })
+  property: string;
+
   @Column({ type: 'timestamp', default: () => 'now()' })
   order_date: Date;
 
@@ -66,6 +69,7 @@ export class SemenReceipt {
     receiver: string,
     stallion_id: string,
     stallion_name: string,
+    property: string,
     mare_id: string,
     mare_name: string,
     semen_type: string,
@@ -83,6 +87,7 @@ export class SemenReceipt {
     this.receipt_date = receipt_date;
     this.receiver = receiver;
     this.stallion_id = stallion_id;
+    this.property = property;
     this.stallion_name = stallion_name;
     this.mare_id = mare_id;
     this.mare_name = mare_name;

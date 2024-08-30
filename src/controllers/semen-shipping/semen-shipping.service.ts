@@ -54,7 +54,10 @@ export class SemenShippingService {
     return semenShipping;
   }
 
-  async findAll(filter: FilterSemenShippingDto | null): Promise<{
+  async findAll(
+    filter: FilterSemenShippingDto | null,
+    property: string | null = null,
+  ): Promise<{
     semenShipping: ReturnSemenShipping[];
     total: number;
     shipped: number;
@@ -74,6 +77,7 @@ export class SemenShippingService {
           semen_type: filter.semen_type || undefined,
           commercial_status: filter.commercial_status || undefined,
           status: filter.status || undefined,
+          property: property || undefined,
         },
         order: { order_date: filter.order || 'DESC' },
       });

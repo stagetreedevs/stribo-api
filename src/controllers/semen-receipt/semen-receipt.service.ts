@@ -57,6 +57,7 @@ export class SemenReceiptService {
 
   async findAll(
     filter: FilterSemenReceiptDto | null,
+    property: string | null = null,
   ): Promise<ReturnSemenReceipt[]> {
     if (filter) {
       const semenReceipt = await this.semenReceipt.find({
@@ -72,6 +73,7 @@ export class SemenReceiptService {
           semen_type: filter.semen_type || undefined,
           commercial_status: filter.commercial_status || undefined,
           status: filter.status || undefined,
+          property: property || undefined,
         },
         order: { order_date: filter.order || 'DESC' },
       });

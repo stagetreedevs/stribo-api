@@ -8,6 +8,9 @@ export class SemenFrozenDto {
   animal_id: string;
 
   @ApiProperty()
+  property: string;
+
+  @ApiProperty()
   animal_name: string;
 
   @ApiProperty()
@@ -47,6 +50,9 @@ export class FilterSemenFrozen {
 
   @ApiProperty({ required: false })
   end_date?: Date;
+
+  @ApiProperty({ required: false })
+  property: string;
 
   @ApiProperty({ required: false })
   cylinder_id?: string;

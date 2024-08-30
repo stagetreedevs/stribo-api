@@ -9,6 +9,9 @@ export class SemenFrozen {
   @Column({ type: 'timestamp', default: () => 'now()' })
   collection_date: Date;
 
+  @Column({ default: '' })
+  property: string;
+
   @Column()
   animal_id: string;
 
@@ -50,6 +53,7 @@ export class SemenFrozen {
     animal_id: string,
     animal_name: string,
     cylinder_id: string,
+    property: string,
     cylinder_identifier: string,
     number_reeds: number,
     observation: string,
@@ -64,6 +68,7 @@ export class SemenFrozen {
     this.collection_date = collection_date;
     this.animal_id = animal_id;
     this.animal_name = animal_name;
+    this.property = property;
     this.cylinder_id = cylinder_id;
     this.cylinder_identifier = cylinder_identifier;
     this.number_reeds = number_reeds;

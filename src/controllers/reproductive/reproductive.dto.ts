@@ -5,6 +5,9 @@ export class ReproductiveDto {
   animal_id: string;
 
   @ApiProperty()
+  property: string;
+
+  @ApiProperty()
   responsible: string;
 
   @ApiProperty()
@@ -58,6 +61,9 @@ export class UpdateReproductiveDto {
   responsible: string;
 
   @ApiProperty({ required: false })
+  property: string;
+
+  @ApiProperty({ required: false })
   procedure_name: string;
 
   @ApiProperty({ required: false })
@@ -106,6 +112,9 @@ export class FilterReproductiveDto {
 
   @ApiProperty({ required: false })
   responsible: string;
+
+  @ApiProperty({ required: false })
+  property: string;
 
   @ApiProperty({ type: Date, required: false })
   start_date: Date;

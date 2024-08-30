@@ -17,13 +17,7 @@ import {
   Status,
 } from './reproductive.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiQuery,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   FilterReproductiveDto,
   ReproductiveDto,
@@ -54,12 +48,30 @@ export class ReproductiveController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('property/:property_id')
+  @ApiOperation({ summary: 'TODOS REPRODUTIVOS POR PROPRIEDADE' })
+  async findByProperty(
+    @Param('property_id') property,
+  ): Promise<ReproductiveInfo[]> {
+    return this.reproductiveService.findAll(property);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('filter')
   @ApiOperation({ summary: 'FILTRAR REPRODUTIVOS' })
   async filter(
     @Query() query: FilterReproductiveDto,
   ): Promise<ReproductiveInfo[]> {
     return this.reproductiveService.filter(query);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('filter/property/:property_id')
+  @ApiOperation({ summary: 'FILTRAR REPRODUTIVOS POR PROPRIEDADE' })
+  async filterByProperty(
+    @Param('property_id') property,
+  ): Promise<ReproductiveInfo[]> {
+    return this.reproductiveService.filter(property);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -70,10 +82,28 @@ export class ReproductiveController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('past/property/:property_id')
+  @ApiOperation({ summary: 'REPRODUTIVOS PASSADOS POR PROPRIEDADE' })
+  async findPastByProperty(
+    @Param('property_id') property,
+  ): Promise<ReproductiveInfo[]> {
+    return this.reproductiveService.findPast(property);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('future')
   @ApiOperation({ summary: 'REPRODUTIVOS FUTUROS' })
   async findFuture(): Promise<ReproductiveInfo[]> {
     return this.reproductiveService.findFuture();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('future/property/:property_id')
+  @ApiOperation({ summary: 'REPRODUTIVOS FUTUROS POR PROPRIEDADE' })
+  async findFutureByProperty(
+    @Param('property_id') property,
+  ): Promise<ReproductiveInfo[]> {
+    return this.reproductiveService.findFuture(property);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -84,6 +114,16 @@ export class ReproductiveController {
     @Query() query: SearchByDateDto,
   ): Promise<AnimalReproductives[] | ReproductiveInfo[]> {
     return this.reproductiveService.findByDate(new Date(date), query.layout);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('search-date/:date/property/:property_id')
+  @ApiOperation({ summary: 'BUSCAR POR DATA E PROPRIEDADE' })
+  async searchByDateAndProperty(
+    @Param('date') date: Date,
+    @Param('property_id') property,
+  ): Promise<AnimalReproductives[] | ReproductiveInfo[]> {
+    return this.reproductiveService.findByDate(new Date(date), property);
   }
 
   @UseGuards(JwtAuthGuard)
