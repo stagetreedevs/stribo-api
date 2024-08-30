@@ -46,6 +46,16 @@ import { ContractModule } from './controllers/documents/contract/contract.module
 import { BankSlipModule } from './controllers/documents/bank-slip/bank-slip.module';
 import { AnimalDocumentModule } from './controllers/animal/documents/animal-document.module';
 import { ForSaleModule } from './controllers/animal/comercial/forSale.module';
+import { ReproductiveModule } from './controllers/reproductive/reproductive.module';
+import { Reproductive } from './controllers/reproductive/reproductive.entity';
+import { SemenShipping } from './controllers/semen-shipping/semen-shipping.entity';
+import { SemenShippingModule } from './controllers/semen-shipping/semen-shipping.module';
+import { SemenReceiptModule } from './controllers/semen-receipt/semen-receipt.module';
+import { SemenReceipt } from './controllers/semen-receipt/semen-receipt.entity';
+import { SemenFrozenModule } from './controllers/semen-frozen/semen-frozen.module';
+import { Cylinder } from './controllers/cylinder/cylinder.entity';
+import { CylinderModule } from './controllers/cylinder/cylinder.module';
+import { SemenFrozen } from './controllers/semen-frozen/semen-frozen.entity';
 dotenv.config();
 @Module({
   imports: [
@@ -90,6 +100,11 @@ dotenv.config();
         Animal,
         Nutritional,
         Death,
+        Reproductive,
+        SemenShipping,
+        SemenReceipt,
+        SemenFrozen,
+        Cylinder,
       ],
       autoLoadEntities: true,
       synchronize: true,
@@ -99,13 +114,13 @@ dotenv.config();
         host: 'smtp.sendgrid.net',
         auth: {
           user: 'apikey',
-          pass: process.env.SENDGRID_SECRET_KEY
-        }
-      }
+          pass: process.env.SENDGRID_SECRET_KEY,
+        },
+      },
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [config]
+      load: [config],
     }),
     JwtModule.register({
       secret: 'mySecretKey',
@@ -115,12 +130,14 @@ dotenv.config();
     GoogleModule,
     AuthModule,
     UserModule,
-    AdminModule
+    AdminModule,
+    ReproductiveModule,
+    SemenShippingModule,
+    SemenReceiptModule,
+    SemenFrozenModule,
+    CylinderModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    AuthService,
-  ]
+  providers: [AppService, AuthService],
 })
-export class AppModule { }
+export class AppModule {}
