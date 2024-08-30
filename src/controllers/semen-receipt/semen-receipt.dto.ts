@@ -11,6 +11,9 @@ export class SemenReceiptDto {
   receiver: string;
 
   @ApiProperty()
+  property: string;
+
+  @ApiProperty()
   stallion_id: string;
 
   @ApiProperty()
@@ -56,6 +59,9 @@ export class FilterSemenReceiptDto {
 
   @ApiProperty({ required: false })
   end_date?: Date;
+
+  @ApiProperty({ required: false })
+  property: string;
 
   @ApiProperty({ required: false })
   receiver?: string;

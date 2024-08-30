@@ -12,6 +12,9 @@ export class SemenShipping {
   @Column({ type: 'timestamp', nullable: true })
   shipping_date: Date;
 
+  @Column({ default: '' })
+  property: string;
+
   @Column()
   stallion_property: string;
 
@@ -67,6 +70,7 @@ export class SemenShipping {
     client: string,
     stallion_id: string,
     stallion_name: string,
+    property: string,
     semen_type: string,
     mare_id: string,
     mare_name: string,
@@ -84,6 +88,7 @@ export class SemenShipping {
     this.stallion_property = stallion_property;
     this.client = client;
     this.stallion_id = stallion_id;
+    property = property;
     this.stallion_name = stallion_name;
     this.semen_type = semen_type;
     this.mare_id = mare_id;

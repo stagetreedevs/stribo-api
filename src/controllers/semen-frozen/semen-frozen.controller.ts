@@ -7,17 +7,19 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { SemenFrozenService } from './semen-frozen.service';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FilterSemenFrozen, SemenFrozenDto } from './semen-frozen.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @ApiTags('SEMEM CONGELADO')
 @Controller('semen-frozen')
 export class SemenFrozenController {
   constructor(private readonly semenFrozenService: SemenFrozenService) {}
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'CRIAR SÊMEN CONGELADO' })
   @ApiBody({ type: SemenFrozenDto })
@@ -25,28 +27,43 @@ export class SemenFrozenController {
     return this.semenFrozenService.create(body);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS SÊMEN CONGELADO' })
   async findAll(@Query() query: FilterSemenFrozen): Promise<any> {
     return this.semenFrozenService.findAll(query);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @Get('property/:property_id')
+  @ApiOperation({ summary: 'TODOS SÊMEN CONGELADO POR PROPRIEDADE' })
+  async findByProperty(
+    @Query() query: FilterSemenFrozen,
+    @Param('property_id') property: string,
+  ): Promise<any> {
+    return this.semenFrozenService.findAll(query, property);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('detail/:id')
   @ApiOperation({ summary: 'DETALHES SÊMEN CONGELADO' })
   async findById(@Param('id') id: string): Promise<any> {
     return this.semenFrozenService.findById(id);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('stock')
   @ApiOperation({ summary: 'ESTOQUE SÊMEN CONGELADO' })
   async stock(): Promise<any> {
     return this.semenFrozenService.getStock();
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @Get('stock/:property_id')
+  @ApiOperation({ summary: 'ESTOQUE SÊMEN CONGELADO POR PROPRIEDADE' })
+  async stockByProperty(@Param('property_id') property: string): Promise<any> {
+    return this.semenFrozenService.getStock(property);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @ApiOperation({ summary: 'ATUALIZAR SÊMEN CONGELADO' })
   @ApiBody({ type: SemenFrozenDto })
@@ -57,7 +74,7 @@ export class SemenFrozenController {
     return this.semenFrozenService.update(id, body);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'DELETAR SÊMEN CONGELADO' })
   async delete(@Param('id') id: string): Promise<any> {

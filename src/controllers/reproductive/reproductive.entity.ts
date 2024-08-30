@@ -9,6 +9,9 @@ export class Reproductive {
   @Column()
   animal_id: string;
 
+  @Column({ default: '' })
+  property: string;
+
   @Column()
   responsible: string;
 
@@ -60,6 +63,7 @@ export class Reproductive {
     animal_id: string,
     accountable: string,
     procedure_id: string,
+    property: string,
     mare_type: string,
     situation: string,
     right_ovary: string,
@@ -76,6 +80,7 @@ export class Reproductive {
     this.animal_id = animal_id;
     this.responsible = accountable;
     this.procedure_name = procedure_id;
+    this.property = property;
     this.mare_type = mare_type;
     this.situation = situation;
     this.right_ovary = right_ovary;
