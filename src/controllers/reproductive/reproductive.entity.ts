@@ -9,6 +9,12 @@ export class Reproductive {
   @Column()
   animal_id: string;
 
+  @Column()
+  animal_name: string;
+
+  @Column()
+  animal_registry: string;
+
   @Column({ default: '' })
   property: string;
 
@@ -16,7 +22,7 @@ export class Reproductive {
   responsible: string;
 
   @Column()
-  procedure_name: string;
+  procedure: string;
 
   @Column()
   mare_type: string;
@@ -47,14 +53,17 @@ export class Reproductive {
   @Column({ nullable: true })
   observation: string;
 
-  @Column({ type: 'timestamp', default: () => 'now()' })
+  @Column({ type: 'date' })
   date: Date;
+
+  @Column()
+  hour: string;
 
   @Column({ type: 'timestamp', nullable: true })
   regress_date: Date;
 
   @Column({ nullable: true })
-  regress_procedure_name: string;
+  regress_procedure: string;
 
   @Column({ nullable: true })
   regress_observation: string;
@@ -62,7 +71,7 @@ export class Reproductive {
   constructor(
     animal_id: string,
     accountable: string,
-    procedure_id: string,
+    procedure: string,
     property: string,
     mare_type: string,
     situation: string,
@@ -72,14 +81,15 @@ export class Reproductive {
     uterine_edema: string,
     observation: string,
     date: Date,
-    return_date: Date,
-    return_procedure_id: string,
-    return_observation: string,
+    hour: string,
+    regress_date: Date,
+    regress_procedure: string,
+    regress_observation: string,
   ) {
     this.id = uuidv4();
     this.animal_id = animal_id;
     this.responsible = accountable;
-    this.procedure_name = procedure_id;
+    this.procedure = procedure;
     this.property = property;
     this.mare_type = mare_type;
     this.situation = situation;
@@ -89,8 +99,9 @@ export class Reproductive {
     this.uterine_edema = uterine_edema;
     this.observation = observation;
     this.date = date;
-    this.regress_date = return_date;
-    this.regress_procedure_name = return_procedure_id;
-    this.regress_observation = return_observation;
+    this.hour = hour;
+    this.regress_date = regress_date;
+    this.regress_procedure = regress_procedure;
+    this.regress_observation = regress_observation;
   }
 }
