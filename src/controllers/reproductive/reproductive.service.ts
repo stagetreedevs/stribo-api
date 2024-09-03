@@ -1,42 +1,11 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Reproductive } from './reproductive.entity';
-import { Between, LessThan, MoreThan, Repository } from 'typeorm';
+import { Equal, LessThan, MoreThan, Repository } from 'typeorm';
 import { AnimalService } from '../animal/animal.service';
-import { Not } from 'typeorm';
-import { FilterReproductiveDto } from './reproductive.dto';
-import { Animal } from '../animal/animal.entity';
+import { FilterProcedureDto } from './reproductive.dto';
 
 export type Status = 'A realizar' | 'Realizado' | 'Em atraso';
-type AnimalInfo = {
-  name: string;
-  registerNumber: string;
-  photo: string;
-};
-
-export type ReproductiveInfo = {
-  id: string;
-  procedure_name: string;
-  situation: string;
-  animal_id: string;
-  animal_name: string;
-  register_number: string;
-  date: Date;
-  status: string;
-};
-
-export type ReproductiveSimpleInfo = {
-  id: string;
-  procedure_name: string;
-  situation: string;
-  date: Date;
-  status: string;
-  animal_id: string;
-};
-
-export type AnimalReproductives = AnimalInfo & {
-  reproductives: ReproductiveSimpleInfo[];
-};
 
 @Injectable()
 export class ReproductiveService {
@@ -47,321 +16,300 @@ export class ReproductiveService {
   ) {}
 
   async create(body: Reproductive): Promise<Reproductive> {
-    const animal = await this.animalService.findOne(body.animal_id);
-
-    const notFound = !animal;
-
-    if (notFound) {
-      throw new ForbiddenException('Animal or/and procedure not found');
-    }
-
     return await this.reproductive.save(body);
   }
 
-  async findById(
-    id: string,
-  ): Promise<Reproductive & { compatible_mares: AnimalInfo[] }> {
-    let resproductive: Reproductive | (Reproductive & { animal: AnimalInfo }) =
-      await this.reproductive.findOne({ where: { id } });
+  async findOne(id: string): Promise<Reproductive> {
+    return await this.reproductive.findOne({ where: { id } });
+  }
 
-    if (!resproductive) {
-      throw new ForbiddenException('Reproductive not found');
-    }
+  async findByAnimal(animal_id: string): Promise<Reproductive[]> {
+    return this.reproductive.find({ where: { animal_id } });
+  }
 
-    const animal = await this.animalService.findOne(resproductive.animal_id);
+  async findAll(): Promise<Reproductive[]> {
+    return this.reproductive.find();
+  }
 
-    resproductive = {
-      ...resproductive,
-      animal: {
-        name: animal.name,
-        registerNumber: animal.registerNumber,
-        photo: animal.photo,
-      },
-    };
+  async findAndProcessProcedures(animal_id: string): Promise<any[]> {
+    const procedures: Reproductive[] = await this.findByAnimal(animal_id);
+    return await this.formattedDate(procedures);
+  }
 
-    if (resproductive.situation) {
-      const compatible_resproductives = await this.reproductive.find({
-        where: {
-          situation: resproductive.situation,
-          id: Not(id),
-          animal_id: Not(resproductive.animal_id),
-        },
-      });
+  async formattedDate(procedures: Reproductive[]): Promise<any[]> {
+    const currentDate = new Date();
+    const formattedCurrentDate = this.formatDate(currentDate);
 
-      if (compatible_resproductives.length === 0) {
-        return {
-          ...resproductive,
-          compatible_mares: [],
-        };
-      }
-
-      const compatible_mares = await Promise.all(
-        compatible_resproductives.map(
-          async (resproductive) =>
-            await this.animalService.findOne(resproductive.animal_id),
-        ),
+    const processedProcedures = procedures.reduce((acc, procedure) => {
+      const formattedProcedureDate = this.formatStringDate(
+        procedure.date.toString(),
       );
-
-      if (compatible_mares.length === 0) {
-        return {
-          ...resproductive,
-          compatible_mares: [],
-        };
-      }
-
-      return {
-        ...resproductive,
-        compatible_mares: compatible_mares.map((mare) => ({
-          id: mare.id,
-          name: mare.name,
-          registerNumber: mare.registerNumber,
-          photo: mare.photo,
-        })),
-      };
-    } else {
-      return {
-        ...resproductive,
-        compatible_mares: [],
-      };
-    }
-  }
-
-  async findAll(property: string | null = null): Promise<ReproductiveInfo[]> {
-    const reproductives = await this.reproductive.find({
-      where: {
-        property: property || undefined,
-      },
-      order: { date: 'DESC' },
-    });
-
-    if (reproductives.length == 0) {
-      return [];
-    }
-
-    return await this.getAnimalsAndFormatResponse(reproductives);
-  }
-
-  async update(id: string, body: Reproductive): Promise<Reproductive> {
-    const reproductive = await this.reproductive.findOne({ where: { id } });
-
-    if (!reproductive) {
-      throw new ForbiddenException('Reproductive not found');
-    }
-
-    const animal = await this.animalService.findOne(body.animal_id);
-
-    const notFound = !animal;
-
-    if (notFound) {
-      throw new ForbiddenException('Animal or/and procedure not found');
-    }
-
-    return await this.reproductive.save({
-      ...body,
-      id,
-    });
-  }
-
-  async updateStatus(id: string, status: Status): Promise<Reproductive> {
-    const reproductive = await this.reproductive.findOne({ where: { id } });
-
-    if (!reproductive) {
-      throw new ForbiddenException('Reproductive not found');
-    }
-
-    return await this.reproductive.save({
-      ...reproductive,
-      status,
-    });
-  }
-
-  async findByDate(
-    date: Date,
-    layout: 'procedures' | 'animals',
-    property: string | null = null,
-  ): Promise<AnimalReproductives[] | ReproductiveInfo[]> {
-    if (layout === 'procedures') {
-      const reproductives = await this.reproductive.find({
-        where: {
-          date: Between(
-            new Date(date.setHours(0, 0, 0, 0)),
-            new Date(date.setHours(23, 59, 59, 999)),
-          ),
-          property: property || undefined,
-        },
-        order: { date: 'DESC' },
-      });
-
-      if (reproductives.length == 0) {
-        return [];
-      }
-
-      return await this.getAnimalsAndFormatResponse(reproductives);
-    } else {
-      let reproductives: Reproductive[] | ReproductiveSimpleInfo[] =
-        await this.reproductive.find({
-          where: {
-            date: Between(
-              new Date(date.setHours(0, 0, 0, 0)),
-              new Date(date.setHours(23, 59, 59, 999)),
-            ),
-            property: property || undefined,
-          },
-          order: { date: 'DESC' },
+      const isToday = formattedProcedureDate === formattedCurrentDate;
+      const dateLabel = isToday
+        ? `${formattedCurrentDate} (HOJE)`
+        : formattedProcedureDate;
+      const existingDateIndex = acc.findIndex(
+        (item) => item.date === dateLabel,
+      );
+      if (existingDateIndex !== -1) {
+        acc[existingDateIndex].procedures.push({
+          id: procedure.id,
+          procedure: procedure.procedure,
+          obs:
+            procedure.observation !== null
+              ? procedure.observation
+              : 'Nenhuma observação',
+          hour: procedure.hour !== null ? procedure.hour : 'Nenhuma hora',
         });
-
-      if (reproductives.length == 0) {
-        return [];
+      } else {
+        acc.push({
+          date: dateLabel,
+          procedures: [
+            {
+              id: procedure.id,
+              status: procedure.status,
+              procedure: procedure.procedure,
+              obs:
+                procedure.observation !== null
+                  ? procedure.observation
+                  : 'Nenhuma observação',
+              hour: procedure.hour !== null ? procedure.hour : 'Nenhuma hora',
+            },
+          ],
+        });
       }
 
-      reproductives = reproductives.map(
-        (reproductive: Reproductive | ReproductiveSimpleInfo) => ({
-          id: reproductive.id,
-          procedure_name: reproductive.procedure_name,
-          situation: reproductive.situation,
-          date: reproductive.date,
-          status: reproductive.status,
-          animal_id: reproductive.animal_id,
-        }),
-      );
+      return acc;
+    }, []);
 
-      const animals = await this.animalService.findAll();
+    return processedProcedures;
+  }
 
-      const animalsWithReproductives = animals.map((animal) => {
-        const animalReproductives = reproductives.filter(
-          (reproductive) => reproductive.animal_id === animal.id,
-        );
+  formatStringDate(dateString: string): string {
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
+  }
 
-        if (animalReproductives.length === 0) {
-          return;
-        }
+  private formatDate(date: Date): string {
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  }
 
-        return {
-          name: animal.name,
-          registerNumber: animal.registerNumber,
-          photo: animal.photo,
-          reproductives: animalReproductives,
+  async findProcedureByAnimal(property: string): Promise<any[]> {
+    const procedimentos = await this.reproductive.find({ where: { property } });
+    const result: any[] = [];
+    for (const procedimento of procedimentos) {
+      const animal = await this.animalService.findOne(procedimento.animal_id);
+      const body = { ...procedimento, animal_photo: animal.photo };
+      result.push(body);
+    }
+
+    return await this.formattedResponseAnimal(result);
+  }
+
+  async formattedResponseAnimal(procedimentos): Promise<any[]> {
+    const result: any[] = [];
+
+    const procedimentosPorAnimal = {};
+    for (const procedimento of procedimentos) {
+      if (!procedimentosPorAnimal[procedimento.animal_id]) {
+        procedimentosPorAnimal[procedimento.animal_id] = {
+          animal_name: procedimento.animal_name,
+          animal_photo: procedimento.animal_photo,
+          animal_registry: procedimento.animal_registry,
+          procedures: [],
         };
+      }
+      procedimentosPorAnimal[procedimento.animal_id].procedures.push({
+        date: procedimento.date,
+        procedure: procedimento.procedure_name,
+        status: procedimento.status,
+        obs: procedimento.observation,
+        hour: procedimento.hour,
       });
-
-      return animalsWithReproductives.filter((animal) => animal !== undefined);
     }
+
+    for (const animalId in procedimentosPorAnimal) {
+      result.push(procedimentosPorAnimal[animalId]);
+    }
+
+    return result;
   }
 
-  async filter(
-    filter: FilterReproductiveDto,
-    property: string | null = null,
-  ): Promise<ReproductiveInfo[]> {
-    const {
-      procedure_name,
-      status,
-      responsible,
-      start_date,
-      end_date,
-      order,
-      animal_id,
-    } = filter;
+  async findByProperty(property: string): Promise<any[]> {
+    const procedimentos = await this.reproductive.find({ where: { property } });
+    const result: any[] = [];
+    for (const procedimento of procedimentos) {
+      const animal = await this.animalService.findOne(procedimento.animal_id);
+      const body = { ...procedimento, animal_photo: animal.photo };
+      result.push(body);
+    }
 
-    const reproductives = await this.reproductive.find({
-      where: {
-        procedure_name: procedure_name ? procedure_name : undefined,
-        status: status ? status : undefined,
-        responsible: responsible ? responsible : undefined,
-        date:
-          start_date && end_date ? Between(start_date, end_date) : undefined,
-        animal_id: animal_id ? animal_id : undefined,
-        property: property ? property : undefined,
-      },
-      order: {
-        date: order,
-      },
+    return await this.formattedDate(result);
+  }
+
+  async findAllProcedureNames(property: string): Promise<string[]> {
+    const procedimentos = await this.reproductive.find({ where: { property } });
+    const uniqueNames = new Set<string>();
+
+    procedimentos.forEach((procedimento) => {
+      uniqueNames.add(procedimento.procedure);
     });
 
-    if (reproductives.length == 0) {
-      return [];
-    }
-
-    return await this.getAnimalsAndFormatResponse(reproductives);
+    return Array.from(uniqueNames);
   }
 
-  async findPast(property: string | null = null): Promise<ReproductiveInfo[]> {
+  async findTodayProcedure(property: string): Promise<any[]> {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
-    const reproductives = await this.reproductive.find({
+    const procedimentos = await this.reproductive.find({
       where: {
+        property,
+        date: Equal(currentDate),
+      },
+    });
+    const result: any[] = [];
+    for (const procedimento of procedimentos) {
+      const animal = await this.animalService.findOne(procedimento.animal_id);
+      const body = { ...procedimento, animal_photo: animal.photo };
+      result.push(body);
+    }
+
+    return await this.formattedDate(result);
+  }
+
+  async findPastProcedures(property: string): Promise<any[]> {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    const procedimentos = await this.reproductive.find({
+      where: {
+        property,
         date: LessThan(currentDate),
-        property: property || undefined,
       },
-      order: { date: 'DESC' },
     });
-
-    if (reproductives.length == 0) {
-      return [];
+    const result: any[] = [];
+    for (const procedimento of procedimentos) {
+      const animal = await this.animalService.findOne(procedimento.animal_id);
+      const body = { ...procedimento, animal_photo: animal.photo };
+      result.push(body);
     }
 
-    return await this.getAnimalsAndFormatResponse(reproductives);
+    return await this.formattedDate(result);
   }
 
-  async findFuture(
-    property: string | null = null,
-  ): Promise<ReproductiveInfo[]> {
+  async findFutureProcedures(property: string): Promise<any[]> {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
-    const reproductives = await this.reproductive.find({
+    const procedimentos = await this.reproductive.find({
       where: {
+        property,
         date: MoreThan(currentDate),
-        property: property || undefined,
       },
-      order: { date: 'DESC' },
     });
-
-    if (reproductives.length == 0) {
-      return [];
+    const result: any[] = [];
+    for (const procedimento of procedimentos) {
+      const animal = await this.animalService.findOne(procedimento.animal_id);
+      const body = { ...procedimento, animal_photo: animal.photo };
+      result.push(body);
     }
 
-    return await this.getAnimalsAndFormatResponse(reproductives);
+    return await this.formattedDate(result);
   }
 
-  async delete(id: string): Promise<void> {
-    const reproductive = await this.reproductive.findOne({ where: { id } });
+  async updateStatus(id: string, status: string): Promise<any> {
+    const procedimento = await this.findOne(id);
 
-    if (!reproductive) {
-      throw new ForbiddenException('Reproductive not found');
+    if (!procedimento) {
+      throw new HttpException(
+        'Procedimento nao encontrado',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
+    await this.reproductive
+      .createQueryBuilder()
+      .update(Reproductive)
+      .set({ status })
+      .where('id = :id', { id })
+      .execute();
+
+    return await this.findOne(id);
+  }
+
+  async update(id: string, body: any): Promise<Reproductive> {
+    const verify = await this.findOne(id);
+
+    if (!verify) {
+      throw new HttpException(
+        'Procedimento nao encontrado',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    body.property = verify.property;
+
+    await this.reproductive.update(id, body);
+    return this.findOne(id);
+  }
+
+  async removeProcedure(id: string): Promise<void> {
+    const verify = await this.findOne(id);
+    if (!verify) {
+      throw new HttpException(
+        'Procedimento nao encontrado',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     await this.reproductive.delete(id);
   }
 
-  async getAnimalsAndFormatResponse(
-    reproductives: Reproductive[],
-  ): Promise<ReproductiveInfo[]> {
-    const animais: Animal[] = [];
+  async findFiltered(body: FilterProcedureDto): Promise<Reproductive[]> {
+    const queryBuilder = this.reproductive.createQueryBuilder('procedure');
 
-    return await Promise.all(
-      reproductives.map(async (reproductive) => {
-        if (!animais.find((animal) => animal.id === reproductive.animal_id)) {
-          animais.push(
-            await this.animalService.findOne(reproductive.animal_id),
-          );
-        }
+    if (body.initialDate) {
+      queryBuilder.andWhere('procedure.date >= :initialDate', {
+        initialDate: body.initialDate,
+      });
+    }
 
-        const animal = animais.find(
-          (animal) => animal.id === reproductive.animal_id,
-        );
+    if (body.lastDate) {
+      queryBuilder.andWhere('procedure.date <= :lastDate', {
+        lastDate: body.lastDate,
+      });
+    }
 
-        return {
-          id: reproductive.id,
-          procedure_name: reproductive.procedure_name,
-          situation: reproductive.situation,
-          animal_id: reproductive.animal_id,
-          animal_name: animal.name,
-          register_number: animal.registerNumber,
-          date: reproductive.date,
-          status: reproductive.status,
-        };
-      }),
-    );
+    if (body.procedure) {
+      queryBuilder.andWhere('procedure.procedure ILIKE :procedure', {
+        procedure: `%${body.procedure}%`,
+      });
+    }
+
+    if (body.responsible) {
+      queryBuilder.andWhere('procedure.responsible = :responsible', {
+        responsible: body.responsible,
+      });
+    }
+
+    if (body.status) {
+      queryBuilder.andWhere('procedure.status = :status', {
+        status: body.status,
+      });
+    }
+
+    if (
+      body.order &&
+      (body.order.toUpperCase() === 'ASC' ||
+        body.order.toUpperCase() === 'DESC')
+    ) {
+      queryBuilder.addOrderBy('procedure.date', body.order as 'ASC' | 'DESC');
+    }
+
+    return queryBuilder.getMany();
   }
 }

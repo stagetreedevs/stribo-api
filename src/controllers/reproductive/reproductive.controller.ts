@@ -7,21 +7,14 @@ import {
   Patch,
   Post,
   Put,
-  Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  AnimalReproductives,
-  ReproductiveInfo,
-  ReproductiveService,
-  Status,
-} from './reproductive.service';
+import { ReproductiveService } from './reproductive.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
-  FilterReproductiveDto,
+  ProcedureStatusDto,
   ReproductiveDto,
-  SearchByDateDto,
   UpdateReproductiveDto,
 } from './reproductive.dto';
 import { Reproductive } from './reproductive.entity';
@@ -32,132 +25,135 @@ import { Reproductive } from './reproductive.entity';
 export class ReproductiveController {
   constructor(private readonly reproductiveService: ReproductiveService) {}
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Post()
-  @ApiOperation({ summary: 'CRIAR REPRODUTIVO' })
+  @ApiOperation({ summary: 'CRIAR PROCEDIMENTO CLÍNICO' })
   @ApiBody({ type: ReproductiveDto })
   async create(@Body() body: Reproductive): Promise<Reproductive> {
     return this.reproductiveService.create(body);
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
+  @Post('filter')
+  @ApiOperation({ summary: 'FILTRO PARA PROCEDIMENTOS' })
+  @ApiBody({ type: ReproductiveDto })
+  async findFiltered(@Body() body: ReproductiveDto): Promise<Reproductive[]> {
+    const procedures: Reproductive[] =
+      await this.reproductiveService.findFiltered(body);
+    return await this.reproductiveService.formattedDate(procedures);
+  }
+
   @Get()
-  @ApiOperation({ summary: 'TODOS REPRODUTIVOS' })
-  async findAll(): Promise<ReproductiveInfo[]> {
+  @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS' })
+  async findAll(): Promise<Reproductive[]> {
     return this.reproductiveService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
+  @Get('animals/:property_id')
+  @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
+  async findProcedureByAnimal(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.findProcedureByAnimal(property_id);
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Get(':animal_id')
+  @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DE UM ANIMAL' })
+  async findByAnimal(
+    @Param('animal_id') animal_id: string,
+  ): Promise<Reproductive[]> {
+    return this.reproductiveService.findAndProcessProcedures(animal_id);
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Get('details/:procedure_id')
+  @ApiOperation({ summary: 'DETALHES DE UM PROCEDIMENTO CLÍNICO' })
+  async findOne(
+    @Param('procedure_id') procedure_id: string,
+  ): Promise<Reproductive> {
+    return this.reproductiveService.findOne(procedure_id);
+  }
+
+  //@UseGuards(JwtAuthGuard)
+  @Get('names/:property_id')
+  @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DE UMA PROPRIEDADE' })
+  async findAllProcedureNames(
+    @Param('property_id') property_id: string,
+  ): Promise<string[]> {
+    return this.reproductiveService.findAllProcedureNames(property_id);
+  }
+
+  //@UseGuards(JwtAuthGuard)
   @Get('property/:property_id')
-  @ApiOperation({ summary: 'TODOS REPRODUTIVOS POR PROPRIEDADE' })
+  @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE' })
   async findByProperty(
-    @Param('property_id') property,
-  ): Promise<ReproductiveInfo[]> {
-    return this.reproductiveService.findAll(property);
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.findByProperty(property_id);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('filter')
-  @ApiOperation({ summary: 'FILTRAR REPRODUTIVOS' })
-  async filter(
-    @Query() query: FilterReproductiveDto,
-  ): Promise<ReproductiveInfo[]> {
-    return this.reproductiveService.filter(query);
+  //@UseGuards(JwtAuthGuard)
+  @Get('today/:property_id')
+  @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE HOJE' })
+  async findTodayProcedure(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.findTodayProcedure(property_id);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('filter/property/:property_id')
-  @ApiOperation({ summary: 'FILTRAR REPRODUTIVOS POR PROPRIEDADE' })
-  async filterByProperty(
-    @Param('property_id') property,
-  ): Promise<ReproductiveInfo[]> {
-    return this.reproductiveService.filter(property);
+  //@UseGuards(JwtAuthGuard)
+  @Get('past/:property_id')
+  @ApiOperation({
+    summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE ANTERIORES',
+  })
+  async findPastProcedures(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.findPastProcedures(property_id);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('past')
-  @ApiOperation({ summary: 'REPRODUTIVOS PASSADOS' })
-  async findPast(): Promise<ReproductiveInfo[]> {
-    return this.reproductiveService.findPast();
+  //@UseGuards(JwtAuthGuard)
+  @Get('future/:property_id')
+  @ApiOperation({
+    summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE FUTUROS',
+  })
+  async findFutureProcedures(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.findFutureProcedures(property_id);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('past/property/:property_id')
-  @ApiOperation({ summary: 'REPRODUTIVOS PASSADOS POR PROPRIEDADE' })
-  async findPastByProperty(
-    @Param('property_id') property,
-  ): Promise<ReproductiveInfo[]> {
-    return this.reproductiveService.findPast(property);
+  //@UseGuards(JwtAuthGuard)
+  @Patch(':procedure_id')
+  @ApiOperation({ summary: 'ATUALIZAR STATUS DO PROCEDIMENTO CLÍNICO' })
+  @ApiBody({ type: ProcedureStatusDto })
+  async updateStatus(
+    @Param('procedure_id') procedure_id: string,
+    @Body() body: ProcedureStatusDto,
+  ): Promise<Reproductive> {
+    const { status } = body;
+    return this.reproductiveService.updateStatus(procedure_id, status);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('future')
-  @ApiOperation({ summary: 'REPRODUTIVOS FUTUROS' })
-  async findFuture(): Promise<ReproductiveInfo[]> {
-    return this.reproductiveService.findFuture();
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('future/property/:property_id')
-  @ApiOperation({ summary: 'REPRODUTIVOS FUTUROS POR PROPRIEDADE' })
-  async findFutureByProperty(
-    @Param('property_id') property,
-  ): Promise<ReproductiveInfo[]> {
-    return this.reproductiveService.findFuture(property);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('search-date/:date')
-  @ApiOperation({ summary: 'BUSCAR POR DATA' })
-  async searchByDate(
-    @Param('date') date: Date,
-    @Query() query: SearchByDateDto,
-  ): Promise<AnimalReproductives[] | ReproductiveInfo[]> {
-    return this.reproductiveService.findByDate(new Date(date), query.layout);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('search-date/:date/property/:property_id')
-  @ApiOperation({ summary: 'BUSCAR POR DATA E PROPRIEDADE' })
-  async searchByDateAndProperty(
-    @Param('date') date: Date,
-    @Param('property_id') property,
-  ): Promise<AnimalReproductives[] | ReproductiveInfo[]> {
-    return this.reproductiveService.findByDate(new Date(date), property);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('details/:id')
-  @ApiOperation({ summary: 'REPRODUTIVO POR ID' })
-  async findById(@Param('id') id: string): Promise<Reproductive> {
-    return this.reproductiveService.findById(id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Put(':id')
-  @ApiOperation({ summary: 'ATUALIZAR REPRODUTIVO' })
+  //@UseGuards(JwtAuthGuard)
+  @Put(':procedure_id')
+  @ApiOperation({ summary: 'EDITAR PROCEDIMENTO CLÍNICO' })
   @ApiBody({ type: UpdateReproductiveDto })
   async update(
-    @Param('id') id: string,
-    @Body() body: Reproductive,
+    @Param('procedure_id') procedure_id: string,
+    @Body() body: UpdateReproductiveDto,
   ): Promise<Reproductive> {
-    return this.reproductiveService.update(id, body);
+    return this.reproductiveService.update(procedure_id, body);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Patch(':id/status')
-  @ApiOperation({ summary: 'ATUALIZAR STATUS REPRODUTIVO' })
-  async updateStatus(
-    @Param('id') id: string,
-    @Body('status') status: Status,
-  ): Promise<Reproductive> {
-    return this.reproductiveService.updateStatus(id, status);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Delete(':id')
-  @ApiOperation({ summary: 'DELETAR REPRODUTIVO' })
-  async delete(@Param('id') id: string): Promise<void> {
-    return this.reproductiveService.delete(id);
+  //@UseGuards(JwtAuthGuard)
+  @Delete(':procedure_id')
+  @ApiOperation({ summary: 'DELETAR PROCEDIMENTO CLÍNICO' })
+  async removeProcedure(
+    @Param('procedure_id') procedure_id: string,
+  ): Promise<void> {
+    return this.reproductiveService.removeProcedure(procedure_id);
   }
 }
