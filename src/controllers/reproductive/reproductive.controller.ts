@@ -25,7 +25,7 @@ import { Reproductive } from './reproductive.entity';
 export class ReproductiveController {
   constructor(private readonly reproductiveService: ReproductiveService) {}
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'CRIAR PROCEDIMENTO CLÍNICO' })
   @ApiBody({ type: ReproductiveDto })
@@ -33,7 +33,7 @@ export class ReproductiveController {
     return this.reproductiveService.create(body);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('filter')
   @ApiOperation({ summary: 'FILTRO PARA PROCEDIMENTOS' })
   @ApiBody({ type: ReproductiveDto })
@@ -49,7 +49,7 @@ export class ReproductiveController {
     return this.reproductiveService.findAll();
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('animals/:property_id')
   @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
   async findProcedureByAnimal(
@@ -58,7 +58,7 @@ export class ReproductiveController {
     return this.reproductiveService.findProcedureByAnimal(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get(':animal_id')
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DE UM ANIMAL' })
   async findByAnimal(
@@ -67,7 +67,7 @@ export class ReproductiveController {
     return this.reproductiveService.findAndProcessProcedures(animal_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('details/:procedure_id')
   @ApiOperation({ summary: 'DETALHES DE UM PROCEDIMENTO CLÍNICO' })
   async findOne(
@@ -76,7 +76,7 @@ export class ReproductiveController {
     return this.reproductiveService.findOne(procedure_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('names/:property_id')
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DE UMA PROPRIEDADE' })
   async findAllProcedureNames(
@@ -85,7 +85,7 @@ export class ReproductiveController {
     return this.reproductiveService.findAllProcedureNames(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('property/:property_id')
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE' })
   async findByProperty(
@@ -94,7 +94,7 @@ export class ReproductiveController {
     return this.reproductiveService.findByProperty(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('today/:property_id')
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE HOJE' })
   async findTodayProcedure(
@@ -103,7 +103,7 @@ export class ReproductiveController {
     return this.reproductiveService.findTodayProcedure(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('past/:property_id')
   @ApiOperation({
     summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE ANTERIORES',
@@ -114,7 +114,7 @@ export class ReproductiveController {
     return this.reproductiveService.findPastProcedures(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('future/:property_id')
   @ApiOperation({
     summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE FUTUROS',
@@ -125,7 +125,7 @@ export class ReproductiveController {
     return this.reproductiveService.findFutureProcedures(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Patch(':procedure_id')
   @ApiOperation({ summary: 'ATUALIZAR STATUS DO PROCEDIMENTO CLÍNICO' })
   @ApiBody({ type: ProcedureStatusDto })
@@ -137,7 +137,7 @@ export class ReproductiveController {
     return this.reproductiveService.updateStatus(procedure_id, status);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Put(':procedure_id')
   @ApiOperation({ summary: 'EDITAR PROCEDIMENTO CLÍNICO' })
   @ApiBody({ type: UpdateReproductiveDto })
@@ -148,7 +148,7 @@ export class ReproductiveController {
     return this.reproductiveService.update(procedure_id, body);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Delete(':procedure_id')
   @ApiOperation({ summary: 'DELETAR PROCEDIMENTO CLÍNICO' })
   async removeProcedure(
