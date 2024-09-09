@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CompetitionService } from './competition.service';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   CreateCompetitionDto,
   FilterCompetitionDto,
@@ -22,6 +22,7 @@ import { Competition } from './competition.entity';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 @ApiTags('COMPETIÇÃO')
+@ApiBearerAuth()
 @Controller('competition')
 export class CompetitionController {
   constructor(private readonly competitionService: CompetitionService) {}
