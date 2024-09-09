@@ -10,11 +10,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { SemenFrozenService } from './semen-frozen.service';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FilterSemenFrozen, SemenFrozenDto } from './semen-frozen.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @ApiTags('SEMEM CONGELADO')
+@ApiBearerAuth()
 @Controller('semen-frozen')
 export class SemenFrozenController {
   constructor(private readonly semenFrozenService: SemenFrozenService) {}
