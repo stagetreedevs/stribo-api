@@ -51,7 +51,7 @@ export class CylinderController {
   @UseGuards(JwtAuthGuard)
   @Get('detail/:id')
   @ApiOperation({ summary: 'DETALHES BOTIJÃO' })
-  async findById(@Body('id') id: string): Promise<any> {
+  async findById(@Param('id') id: string): Promise<any> {
     return this.cylinderService.findById(id);
   }
 
