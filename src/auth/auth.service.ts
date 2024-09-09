@@ -7,8 +7,8 @@ import { AdminService } from 'src/controllers/admin/admin.service';
 export class AuthService {
   constructor(
     private userService: UserService,
-    private adminService: AdminService
-  ) { }
+    private adminService: AdminService,
+  ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
     const admin = await this.adminService.findEmail(email);
@@ -16,9 +16,7 @@ export class AuthService {
 
     if (admin && pass === admin.password) {
       return { type: 'admin', ...admin };
-    }
-    
-    else if (user && pass === user.password) {
+    } else if (user && pass === user.password) {
       return { type: 'user', ...user };
     }
 

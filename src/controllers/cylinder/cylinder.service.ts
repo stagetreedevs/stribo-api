@@ -27,27 +27,6 @@ export class CylinderService {
       throw new Error('Cylinder already exists');
     }
 
-    const { property_id, animal_id } = data;
-    if (property_id) {
-      const property = await this.propertyService.findOne(property_id);
-
-      if (!property) {
-        throw new Error('Property not found');
-      }
-
-      data.property_name = property.name;
-    }
-
-    if (animal_id) {
-      const animal = await this.animalService.findOne(animal_id);
-
-      if (!animal) {
-        throw new Error('Animal not found');
-      }
-
-      data.animal_name = animal.name;
-    }
-
     return await this.cylinder.save(data);
   }
 
@@ -55,6 +34,15 @@ export class CylinderService {
     return await this.cylinder.find({
       where: {
         property: property || undefined,
+      },
+    });
+  }
+
+  async findAllNames() {
+    return await this.cylinder.find({
+      select: {
+        identifier: true,
+        id: true,
       },
     });
   }
@@ -80,16 +68,6 @@ export class CylinderService {
       }
 
       data.animal_name = animal.name;
-    }
-
-    if (data.property_id) {
-      const property = await this.propertyService.findOne(data.property_id);
-
-      if (!property) {
-        throw new Error('Property not found');
-      }
-
-      data.property_name = property.name;
     }
 
     if (!cylinder) {

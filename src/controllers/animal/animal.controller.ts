@@ -56,7 +56,7 @@ export class AnimalController {
     return this.animalService.findFiltered(body);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS ANIMAIS' })
   async findAll(): Promise<Animal[]> {
