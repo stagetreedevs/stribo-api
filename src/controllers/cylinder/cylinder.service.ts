@@ -39,12 +39,17 @@ export class CylinderService {
   }
 
   async findAllNames() {
-    return await this.cylinder.find({
+    const cylinders = await this.cylinder.find({
       select: {
         identifier: true,
         id: true,
       },
     });
+
+    return cylinders.map((cylinder) => ({
+      label: cylinder.identifier,
+      value: cylinder.id,
+    }));
   }
 
   async findById(id: string): Promise<Cylinder> {
