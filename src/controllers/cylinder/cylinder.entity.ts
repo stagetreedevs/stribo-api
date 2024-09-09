@@ -15,6 +15,9 @@ export class Cylinder {
   @Column({ default: '' })
   property: string;
 
+  @Column({ default: '' })
+  property_name: string;
+
   @Column({ default: 0 })
   stored: number;
 
