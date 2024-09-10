@@ -38,6 +38,9 @@ export class SemenReceiptController {
   @Get()
   @ApiOperation({ summary: 'TODOS RECEBIMENTO DE SÊMEN' })
   async findAll(@Query() query: FilterSemenReceiptDto): Promise<any> {
+    query.start_date = query.start_date ? new Date(query.start_date) : null;
+    query.end_date = query.end_date ? new Date(query.end_date) : null;
+
     return this.semenReceiptService.findAll(query);
   }
 
@@ -48,6 +51,9 @@ export class SemenReceiptController {
     @Query() query: FilterSemenReceiptDto,
     @Param('property_id') property: string,
   ): Promise<any> {
+    query.start_date = query.start_date ? new Date(query.start_date) : null;
+    query.end_date = query.end_date ? new Date(query.end_date) : null;
+
     return this.semenReceiptService.findAll(query, property);
   }
 
