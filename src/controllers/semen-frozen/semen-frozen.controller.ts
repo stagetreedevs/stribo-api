@@ -32,6 +32,9 @@ export class SemenFrozenController {
   @Get()
   @ApiOperation({ summary: 'TODOS SÊMEN CONGELADO' })
   async findAll(@Query() query: FilterSemenFrozen): Promise<any> {
+    query.start_date = query.start_date ? new Date(query.start_date) : null;
+    query.end_date = query.end_date ? new Date(query.end_date) : null;
+
     return this.semenFrozenService.findAll(query);
   }
 
@@ -41,6 +44,9 @@ export class SemenFrozenController {
     @Query() query: FilterSemenFrozen,
     @Param('property_id') property: string,
   ): Promise<any> {
+    query.start_date = query.start_date ? new Date(query.start_date) : null;
+    query.end_date = query.end_date ? new Date(query.end_date) : null;
+
     return this.semenFrozenService.findAll(query, property);
   }
 
