@@ -34,7 +34,7 @@ export class SemenFrozenController {
     return this.semenFrozenService.create(body);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS SÊMEN CONGELADO' })
   async findAll(@Query() query: FilterSemenFrozen): Promise<any> {
@@ -96,7 +96,7 @@ export class SemenFrozenController {
     return this.semenFrozenService.updateStatus(params.id, params.status);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'DELETAR SÊMEN CONGELADO' })
   async delete(@Param('id') id: string): Promise<any> {
