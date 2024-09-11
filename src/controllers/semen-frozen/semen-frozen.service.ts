@@ -101,6 +101,7 @@ export class SemenFrozenService {
 
     storages = storages.map((storage: SemenFrozen) => {
       return {
+        id: storage.id,
         collection_date: storage.collection_date,
         animal_id: storage.animal_id,
         animal_name: storage.animal_name,

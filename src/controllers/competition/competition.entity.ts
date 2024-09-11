@@ -22,7 +22,10 @@ export class Competition {
   name: string;
 
   @Column({ type: 'date' })
-  date: Date;
+  start_date: Date;
+
+  @Column({ type: 'date' })
+  end_date: Date;
 
   @Column()
   modality: string;
@@ -47,7 +50,8 @@ export class Competition {
     animal_id: string,
     animal_name: string,
     animal_registry: string,
-    date: Date,
+    start_date: Date,
+    end_date: Date,
     modality: string,
     category: string,
     description: string,
@@ -60,7 +64,8 @@ export class Competition {
     this.animal_id = animal_id;
     this.animal_name = animal_name;
     this.animal_registry = animal_registry;
-    this.date = date;
+    this.start_date = start_date;
+    this.end_date = end_date;
     this.modality = modality;
     this.category = category;
     this.description = description;
