@@ -14,6 +14,9 @@ export class SemenFrozenDto {
   animal_name: string;
 
   @ApiProperty()
+  animal_registry: string;
+
+  @ApiProperty()
   cylinder_id: string;
 
   @ApiProperty()
@@ -66,4 +69,12 @@ export class FilterSemenFrozen {
     default: 'storages',
   })
   layout?: 'storages' | 'animals' | null;
+}
+
+export class UpdateStatusDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty({ enum: ['Não enviado', 'Enviado', 'Prenhez confirmada'] })
+  status: 'Não enviado' | 'Enviado' | 'Prenhez confirmada';
 }

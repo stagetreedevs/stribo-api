@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -11,8 +12,13 @@ import {
 } from '@nestjs/common';
 import { SemenFrozenService } from './semen-frozen.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { FilterSemenFrozen, SemenFrozenDto } from './semen-frozen.dto';
+import {
+  FilterSemenFrozen,
+  SemenFrozenDto,
+  UpdateStatusDto,
+} from './semen-frozen.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { SemenFrozen } from './semen-frozen.entity';
 
 @ApiTags('SEMEM CONGELADO')
 @ApiBearerAuth()
@@ -28,7 +34,7 @@ export class SemenFrozenController {
     return this.semenFrozenService.create(body);
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS SÊMEN CONGELADO' })
   async findAll(@Query() query: FilterSemenFrozen): Promise<any> {
@@ -38,6 +44,7 @@ export class SemenFrozenController {
     return this.semenFrozenService.findAll(query);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('property/:property_id')
   @ApiOperation({ summary: 'TODOS SÊMEN CONGELADO POR PROPRIEDADE' })
   async findByProperty(
@@ -64,6 +71,7 @@ export class SemenFrozenController {
     return this.semenFrozenService.getStock();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('stock/:property_id')
   @ApiOperation({ summary: 'ESTOQUE SÊMEN CONGELADO POR PROPRIEDADE' })
   async stockByProperty(@Param('property_id') property: string): Promise<any> {
@@ -82,6 +90,13 @@ export class SemenFrozenController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Patch(':id/status/:status')
+  @ApiOperation({ summary: 'ALTERAR STATUS' })
+  async updateStatus(@Param() params: UpdateStatusDto): Promise<SemenFrozen> {
+    return this.semenFrozenService.updateStatus(params.id, params.status);
+  }
+
+  //@UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'DELETAR SÊMEN CONGELADO' })
   async delete(@Param('id') id: string): Promise<any> {
