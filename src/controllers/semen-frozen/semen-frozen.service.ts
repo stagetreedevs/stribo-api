@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SemenFrozen } from './semen-frozen.entity';
 import { Between, Repository } from 'typeorm';
@@ -11,13 +15,15 @@ type SemenFrozenInfo = {
   animal_id: string;
   animal_name: string;
   number_reeds: number;
+  animal_registry: string;
+  status: string;
 };
 
 type AnimalSemenFrozen = {
   animal_id: string;
   animal_name: string;
-  photo: string;
-  registerNumber: string;
+  animal_photo: string;
+  animal_registry: string;
   semensFrozen: SemenFrozenInfo[];
 };
 
@@ -59,7 +65,10 @@ export class SemenFrozenService {
 
     body.animal_name = animal.name;
 
-    return await this.semenFrozen.save(body);
+    return await this.semenFrozen.save({
+      ...body,
+      match_number: String(new Date().getTime()),
+    });
   }
 
   async findById(id: string): Promise<SemenFrozen> {
@@ -104,8 +113,10 @@ export class SemenFrozenService {
         id: storage.id,
         collection_date: storage.collection_date,
         animal_id: storage.animal_id,
+        animal_registry: storage.animal_registry,
         animal_name: storage.animal_name,
         number_reeds: storage.number_reeds,
+        status: storage.status,
       };
     });
 
@@ -128,8 +139,8 @@ export class SemenFrozenService {
         return {
           animal_id: animal.id,
           animal_name: animal.name,
-          photo: animal.photo,
-          registerNumber: animal.registerNumber,
+          animal_photo: animal.photo,
+          animal_registry: animal.registerNumber,
           semensFrozen: animalSemensFrozen,
         };
       },
@@ -188,6 +199,25 @@ export class SemenFrozenService {
     return await this.semenFrozen.save({ ...storage, ...body });
   }
 
+  async updateStatus(
+    id: string,
+    status: 'Não enviado' | 'Enviado' | 'Prenhez confirmada',
+  ): Promise<SemenFrozen> {
+    const semenShipping = await this.semenFrozen.findOne({ where: { id } });
+
+    if (!semenShipping) {
+      throw new NotFoundException('Semen shipping not found');
+    }
+
+    const now = new Date();
+
+    return await this.semenFrozen.save({
+      ...semenShipping,
+      status,
+      shipping_date: status == 'Enviado' ? now : null,
+    });
+  }
+
   async delete(id: string): Promise<void> {
     const storage = await this.semenFrozen.findOne({ where: { id } });
 
@@ -195,6 +225,6 @@ export class SemenFrozenService {
       throw new ForbiddenException('Storage not found');
     }
 
-    await this.semenFrozen.delete(storage);
+    await this.semenFrozen.delete(storage.id);
   }
 }

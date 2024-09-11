@@ -9,6 +9,9 @@ export class SemenFrozen {
   @Column({ type: 'timestamp', default: () => 'now()' })
   collection_date: Date;
 
+  @Column()
+  match_number: string;
+
   @Column({ default: '' })
   property: string;
 
@@ -17,6 +20,9 @@ export class SemenFrozen {
 
   @Column()
   animal_name: string;
+
+  @Column()
+  animal_registry: string;
 
   @Column()
   cylinder_id: string;
@@ -47,6 +53,15 @@ export class SemenFrozen {
 
   @Column({ nullable: true })
   visual_assessment: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  shipping_date: Date;
+
+  @Column({
+    enum: ['Não enviado', 'Enviado', 'Prenhez confirmada'],
+    default: 'Não enviado',
+  })
+  status: 'Não enviado' | 'Enviado' | 'Prenhez confirmada';
 
   constructor(
     collection_date: Date,
