@@ -14,5 +14,6 @@ import { CylinderModule } from '../cylinder/cylinder.module';
   ],
   controllers: [SemenFrozenController],
   providers: [SemenFrozenService],
+  exports: [SemenFrozenService],
 })
 export class SemenFrozenModule {}

@@ -38,6 +38,14 @@ export class CylinderService {
     });
   }
 
+  async getQuantity(property: string): Promise<number> {
+    const cylinder = await this.cylinder.find({
+      where: { property },
+    });
+
+    return cylinder.length;
+  }
+
   async findAllNames() {
     const cylinders = await this.cylinder.find({
       select: {
