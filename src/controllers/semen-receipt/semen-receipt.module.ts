@@ -9,5 +9,6 @@ import { AnimalModule } from '../animal/animal.module';
   imports: [TypeOrmModule.forFeature([SemenReceipt]), AnimalModule],
   controllers: [SemenReceiptController],
   providers: [SemenReceiptService],
+  exports: [SemenReceiptService],
 })
 export class SemenReceiptModule {}

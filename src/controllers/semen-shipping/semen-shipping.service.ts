@@ -54,6 +54,14 @@ export class SemenShippingService {
     return semenShipping;
   }
 
+  async getQuantity(property: string): Promise<number> {
+    const semenShipping = await this.semenShipping.find({
+      where: { property },
+    });
+
+    return semenShipping.length;
+  }
+
   async findAll(
     filter: FilterSemenShippingDto | null,
     property: string | null = null,

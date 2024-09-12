@@ -107,6 +107,14 @@ export class SemenReceiptService {
     });
   }
 
+  async getQuantity(property: string): Promise<number> {
+    const semenReceipt = await this.semenReceipt.find({
+      where: { property },
+    });
+
+    return semenReceipt.length;
+  }
+
   async update(id: string, body: SemenReceiptDto): Promise<SemenReceipt> {
     const semenReceipt = await this.semenReceipt.findOne({ where: { id } });
 

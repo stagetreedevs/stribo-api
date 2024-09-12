@@ -84,6 +84,20 @@ export class SemenFrozenService {
     return storages.reduce((acc, storage) => acc + storage.number_reeds, 0);
   }
 
+  async getQuantity(property: string): Promise<number> {
+    const semenFrozen = await this.semenFrozen.find({
+      where: { property },
+    });
+
+    let amount_reeds = 0;
+
+    semenFrozen.forEach((semen) => {
+      amount_reeds += semen.number_reeds;
+    });
+
+    return amount_reeds;
+  }
+
   async findAll(
     filter: FilterSemenFrozen | null,
     property: string | null = null,

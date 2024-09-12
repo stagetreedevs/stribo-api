@@ -43,6 +43,16 @@ export class ReproductiveController {
     return await this.reproductiveService.formattedDate(procedures);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('management-list/:property_id')
+  @ApiOperation({ summary: 'LISTA DE GERENCIAMENTO POR PROPRIEDADE' })
+  async managementList(
+    @Param('property_id') property_id: string,
+  ): Promise<any> {
+    return this.reproductiveService.getManagementList(property_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS' })
   async findAll(): Promise<Reproductive[]> {

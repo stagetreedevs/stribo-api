@@ -4,6 +4,10 @@ import { Reproductive } from './reproductive.entity';
 import { Equal, LessThan, MoreThan, Repository } from 'typeorm';
 import { AnimalService } from '../animal/animal.service';
 import { FilterProcedureDto } from './reproductive.dto';
+import { SemenShippingService } from '../semen-shipping/semen-shipping.service';
+import { SemenFrozenService } from '../semen-frozen/semen-frozen.service';
+import { SemenReceiptService } from '../semen-receipt/semen-receipt.service';
+import { CylinderService } from '../cylinder/cylinder.service';
 
 export type Status = 'A realizar' | 'Realizado' | 'Em atraso';
 
@@ -13,6 +17,10 @@ export class ReproductiveService {
     @InjectRepository(Reproductive)
     private readonly reproductive: Repository<Reproductive>,
     private readonly animalService: AnimalService,
+    private readonly semenShippingService: SemenShippingService,
+    private readonly semenFrozenService: SemenFrozenService,
+    private readonly semenReceiptService: SemenReceiptService,
+    private readonly cylinderService: CylinderService,
   ) {}
 
   async create(body: Reproductive): Promise<Reproductive> {
@@ -25,6 +33,27 @@ export class ReproductiveService {
 
   async findByAnimal(animal_id: string): Promise<Reproductive[]> {
     return this.reproductive.find({ where: { animal_id } });
+  }
+
+  async getManagementList(property: string): Promise<any> {
+    const quantityReceipt = await this.semenReceiptService.getQuantity(
+      property,
+    );
+
+    const quantityFrozen = await this.semenFrozenService.getQuantity(property);
+
+    const quantityShipping = await this.semenShippingService.getQuantity(
+      property,
+    );
+
+    const quantityCylinder = await this.cylinderService.getQuantity(property);
+
+    return {
+      quantityReceipt,
+      quantityFrozen,
+      quantityShipping,
+      quantityCylinder,
+    };
   }
 
   async findAll(): Promise<Reproductive[]> {
