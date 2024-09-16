@@ -67,8 +67,7 @@ export class CompetitionService {
     return competitions.map((competition) => {
       return {
         id: competition.id,
-        start_date: competition.start_date,
-        end_date: competition.end_date,
+        date: competition.date,
         name: competition.name,
         modality: competition.modality,
         category: competition.category,
@@ -112,8 +111,7 @@ export class CompetitionService {
 
       competitionsByAnimal[competition.animal_id].competitions.push({
         id: competition.id,
-        start_date: competition.start_date,
-        end_date: competition.end_date,
+        date: competition.date,
         name: competition.name,
         modality: competition.modality,
         category: competition.category,
@@ -137,8 +135,7 @@ export class CompetitionService {
       .map((competition) => {
         return {
           id: competition.id,
-          start_date: competition.start_date,
-          end_date: competition.end_date,
+          date: competition.date,
           name: competition.name,
           animal_id: competition.animal_id,
           animal_name: competition.animal_name,
@@ -156,7 +153,7 @@ export class CompetitionService {
     return await this.competition.find({
       where: {
         property,
-        start_date:
+        date:
           filter.initialDate && filter.lastDate
             ? Between(
                 new Date(filter.initialDate.setHours(0, 0, 0, 0)),
@@ -171,7 +168,7 @@ export class CompetitionService {
         modality: filter.modality || undefined,
         category: filter.category || undefined,
       },
-      order: { start_date: filter.order || 'ASC' },
+      order: { date: filter.order || 'ASC' },
     });
   }
 

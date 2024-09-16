@@ -17,10 +17,7 @@ export class CreateCompetitionDto {
   name: string;
 
   @ApiProperty()
-  start_date: Date;
-
-  @ApiProperty()
-  end_date: Date;
+  date: Date;
 
   @ApiProperty()
   modality: string;
@@ -46,10 +43,7 @@ export class UpdateCompetitionDto {
   name: string;
 
   @ApiProperty({ required: false })
-  start_date: Date;
-
-  @ApiProperty({ required: false })
-  end_date: Date;
+  date: Date;
 
   @ApiProperty({ required: false })
   modality: string;
