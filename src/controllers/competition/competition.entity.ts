@@ -33,8 +33,8 @@ export class Competition {
   @Column({ nullable: true })
   description: string;
 
-  @Column({ nullable: true })
-  awarded: boolean;
+  @Column({ nullable: true, default: '' })
+  awarded: string;
 
   @Column({ nullable: true })
   position: number;
@@ -51,7 +51,7 @@ export class Competition {
     modality: string,
     category: string,
     description: string,
-    awarded: boolean,
+    awarded: string,
     position: number,
     prize_value: number,
   ) {
