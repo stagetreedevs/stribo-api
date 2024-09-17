@@ -57,7 +57,7 @@ export class UpdateCompetitionDto {
 
 export class UpdateAwardDto {
   @ApiProperty()
-  awarded: boolean;
+  awarded: string;
 
   @ApiProperty()
   position: number;
