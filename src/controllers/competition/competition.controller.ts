@@ -27,14 +27,14 @@ import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 export class CompetitionController {
   constructor(private readonly competitionService: CompetitionService) {}
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'CRIAR COMPETIÇÃO' })
   async create(@Body() body: CreateCompetitionDto): Promise<Competition> {
     return this.competitionService.create(body);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('filter/:property_id')
   @ApiOperation({ summary: 'FILTRO PARA COMPETIÇÕES' })
   async findFiltered(
@@ -44,21 +44,21 @@ export class CompetitionController {
     return this.competitionService.filter(property_id, filter);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODAS COMPETIÇÕES' })
   async findAll(): Promise<Competition[]> {
     return this.competitionService.findAll();
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('details/:id')
   @ApiOperation({ summary: 'COMPETIÇÃO POR ID' })
   async findOne(@Param('id') id: string): Promise<Competition> {
     return this.competitionService.findOne(id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('property/:property_id')
   @ApiOperation({ summary: 'COMPETIÇÕES POR PROPRIEDADE' })
   async findByProperty(
@@ -67,7 +67,7 @@ export class CompetitionController {
     return this.competitionService.findCompetitions(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('animals/:property_id')
   @ApiOperation({ summary: 'COMPETIÇÕES POR ANIMAL' })
   async findByAnimal(
@@ -76,7 +76,7 @@ export class CompetitionController {
     return this.competitionService.findCompetitionByAnimal(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('awarded/:property_id')
   @ApiOperation({ summary: 'COMPETIÇÕES PREMIADAS' })
   async findAwarded(
@@ -85,14 +85,30 @@ export class CompetitionController {
     return this.competitionService.findAwardedCompetitions(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @Get('awarded/animal/:animal_id')
+  @ApiOperation({ summary: 'COMPETIÇÕES PREMIADAS POR ANIMAL' })
+  async findAwardedAnimal(
+    @Param('animal_id') animal_id: string,
+  ): Promise<Competition[]> {
+    return this.competitionService.findAwardedCompetitionsByAnimal(animal_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('analytics/:property_id')
   @ApiOperation({ summary: 'ANÁLISE DE COMPETIÇÕES' })
   async getAnalytics(@Param('property_id') property_id: string): Promise<any> {
     return this.competitionService.getAnalytics(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @Get('analytics/animal/:animal_id')
+  @ApiOperation({ summary: 'ANÁLISE DE COMPETIÇÕES POR ANIMAL' })
+  async getAnalyticsByAnimal(
+    @Param('animal_id') animal_id: string,
+  ): Promise<any> {
+    return this.competitionService.getAnalyticsByAnimal(animal_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @ApiOperation({ summary: 'ATUALIZAR COMPETIÇÃO' })
   @ApiBody({ type: UpdateCompetitionDto })
@@ -103,7 +119,7 @@ export class CompetitionController {
     return this.competitionService.update(id, body);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Patch('award/:competition_id')
   @ApiOperation({ summary: 'ATUALIZAR PREMIAÇÃO' })
   async updatePrize(
@@ -113,7 +129,7 @@ export class CompetitionController {
     return this.competitionService.updateAwarded(competition_id, body);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'DELETAR COMPETIÇÃO' })
   async remove(@Param('id') id: string): Promise<void> {

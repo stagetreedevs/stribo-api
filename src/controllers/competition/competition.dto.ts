@@ -67,11 +67,11 @@ export class UpdateAwardDto {
 }
 
 export class FilterCompetitionDto {
-  @ApiProperty({ default: 'ASC', required: false })
+  @ApiProperty({ required: false, enum: ['ASC', 'DESC'], default: 'DESC' })
   order?: 'ASC' | 'DESC';
 
   @ApiProperty({ required: false })
-  animal_name?: string;
+  animal_id?: string;
 
   @ApiProperty({ required: false })
   initialDate?: Date;

@@ -61,6 +61,27 @@ export class CompetitionService {
     };
   }
 
+  async getAnalyticsByAnimal(animal_id: string): Promise<any> {
+    const competitions = await this.competition.find({ where: { animal_id } });
+
+    const expenses_total = 0;
+    let prize_value_total = 0;
+    let prize_quantity = 0;
+
+    for (const competition of competitions) {
+      if (competition.awarded) {
+        prize_value_total += competition.prize_value;
+        prize_quantity++;
+      }
+    }
+
+    return {
+      expenses_total,
+      prize_value_total,
+      prize_quantity,
+    };
+  }
+
   async findCompetitions(property: string): Promise<any[]> {
     const competitions = await this.competition.find({ where: { property } });
 
@@ -142,6 +163,29 @@ export class CompetitionService {
           animal_registry: competition.animal_registry,
           position: competition.position,
           prize_value: competition.prize_value,
+          awarded: competition.awarded,
+        };
+      });
+  }
+
+  async findAwardedCompetitionsByAnimal(animal_id: string): Promise<any[]> {
+    const competitions = await this.competition.find({
+      where: { animal_id },
+    });
+
+    return competitions
+      .filter((competition) => competition.awarded)
+      .map((competition) => {
+        return {
+          id: competition.id,
+          date: competition.date,
+          name: competition.name,
+          animal_id: competition.animal_id,
+          animal_name: competition.animal_name,
+          animal_registry: competition.animal_registry,
+          position: competition.position,
+          prize_value: competition.prize_value,
+          awarded: competition.awarded,
         };
       });
   }
@@ -164,11 +208,11 @@ export class CompetitionService {
             : filter.lastDate && !filter.initialDate
             ? MoreThan(new Date(filter.lastDate.setHours(23, 59, 59, 999)))
             : undefined,
-        animal_name: filter.animal_name || undefined,
+        animal_id: filter.animal_id || undefined,
         modality: filter.modality || undefined,
         category: filter.category || undefined,
       },
-      order: { date: filter.order || 'ASC' },
+      order: { date: filter.order || 'DESC' },
     });
   }
 
