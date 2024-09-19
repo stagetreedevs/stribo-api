@@ -152,7 +152,7 @@ export class CompetitionService {
     });
 
     return competitions
-      .filter((competition) => competition.awarded)
+      .filter((competition) => competition.awarded == 'Premiou')
       .map((competition) => {
         return {
           id: competition.id,
