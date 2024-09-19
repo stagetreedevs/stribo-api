@@ -152,7 +152,7 @@ export class CompetitionService {
     });
 
     return competitions
-      .filter((competition) => competition.awarded)
+      .filter((competition) => competition.awarded == 'Premiou')
       .map((competition) => {
         return {
           id: competition.id,
@@ -173,21 +173,19 @@ export class CompetitionService {
       where: { animal_id },
     });
 
-    return competitions
-      .filter((competition) => competition.awarded)
-      .map((competition) => {
-        return {
-          id: competition.id,
-          date: competition.date,
-          name: competition.name,
-          animal_id: competition.animal_id,
-          animal_name: competition.animal_name,
-          animal_registry: competition.animal_registry,
-          position: competition.position,
-          prize_value: competition.prize_value,
-          awarded: competition.awarded,
-        };
-      });
+    return competitions.map((competition) => {
+      return {
+        id: competition.id,
+        date: competition.date,
+        name: competition.name,
+        animal_id: competition.animal_id,
+        animal_name: competition.animal_name,
+        animal_registry: competition.animal_registry,
+        position: competition.position,
+        prize_value: competition.prize_value,
+        awarded: competition.awarded,
+      };
+    });
   }
 
   async filter(
