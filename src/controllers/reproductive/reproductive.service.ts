@@ -27,8 +27,12 @@ export class ReproductiveService {
     return await this.reproductive.save(body);
   }
 
-  async findOne(id: string): Promise<Reproductive> {
-    return await this.reproductive.findOne({ where: { id } });
+  async findOne(id: string): Promise<Reproductive & { animal_photo: string }> {
+    const reproductive = await this.reproductive.findOne({ where: { id } });
+
+    const animal = await this.animalService.findOne(reproductive.animal_id);
+
+    return { ...reproductive, animal_photo: animal.photo };
   }
 
   async findByAnimal(animal_id: string): Promise<Reproductive[]> {
@@ -83,6 +87,7 @@ export class ReproductiveService {
       if (existingDateIndex !== -1) {
         acc[existingDateIndex].procedures.push({
           id: procedure.id,
+          status: procedure.status,
           procedure: procedure.procedure,
           obs:
             procedure.observation !== null
@@ -129,7 +134,7 @@ export class ReproductiveService {
 
   async findProcedureByAnimal(property: string): Promise<any[]> {
     const procedimentos = await this.reproductive.find({ where: { property } });
-    const result: any[] = [];
+    const result: Array<Reproductive & { animal_photo: string }> = [];
     for (const procedimento of procedimentos) {
       const animal = await this.animalService.findOne(procedimento.animal_id);
       const body = { ...procedimento, animal_photo: animal.photo };
@@ -139,7 +144,9 @@ export class ReproductiveService {
     return await this.formattedResponseAnimal(result);
   }
 
-  async formattedResponseAnimal(procedimentos): Promise<any[]> {
+  async formattedResponseAnimal(
+    procedimentos: Array<Reproductive & { animal_photo: string }>,
+  ): Promise<any[]> {
     const result: any[] = [];
 
     const procedimentosPorAnimal = {};
@@ -153,8 +160,9 @@ export class ReproductiveService {
         };
       }
       procedimentosPorAnimal[procedimento.animal_id].procedures.push({
+        id: procedimento.id,
         date: procedimento.date,
-        procedure: procedimento.procedure_name,
+        procedure: procedimento.procedure,
         status: procedimento.status,
         obs: procedimento.observation,
         hour: procedimento.hour,
