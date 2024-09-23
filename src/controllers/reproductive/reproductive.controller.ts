@@ -52,7 +52,7 @@ export class ReproductiveController {
     return this.reproductiveService.getManagementList(property_id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS' })
   async findAll(): Promise<Reproductive[]> {
@@ -104,7 +104,7 @@ export class ReproductiveController {
     return this.reproductiveService.findByProperty(property_id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get('today/:property_id')
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE HOJE' })
   async findTodayProcedure(

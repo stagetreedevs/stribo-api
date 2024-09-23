@@ -87,6 +87,7 @@ export class ReproductiveService {
       if (existingDateIndex !== -1) {
         acc[existingDateIndex].procedures.push({
           id: procedure.id,
+          status: procedure.status,
           procedure: procedure.procedure,
           obs:
             procedure.observation !== null
