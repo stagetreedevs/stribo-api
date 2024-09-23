@@ -136,14 +136,13 @@ export class ReproductiveController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':procedure_id')
+  @Patch(':procedure_id/status/:status')
   @ApiOperation({ summary: 'ATUALIZAR STATUS DO PROCEDIMENTO CLÍNICO' })
   @ApiBody({ type: ProcedureStatusDto })
   async updateStatus(
     @Param('procedure_id') procedure_id: string,
-    @Body() body: ProcedureStatusDto,
+    @Param('status') status: string,
   ): Promise<Reproductive> {
-    const { status } = body;
     return this.reproductiveService.updateStatus(procedure_id, status);
   }
 
