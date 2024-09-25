@@ -132,8 +132,46 @@ export class ReproductiveService {
     });
   }
 
-  async findProcedureByAnimal(property: string): Promise<any[]> {
-    const procedimentos = await this.reproductive.find({ where: { property } });
+  async findProcedureByAnimal(
+    property: string,
+    time: 'today' | 'past' | 'future' | 'all',
+  ): Promise<any[]> {
+    let procedimentos: Reproductive[] = [];
+
+    if (time === 'today') {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
+      procedimentos = await this.reproductive.find({
+        where: {
+          property,
+          date: Equal(currentDate),
+        },
+      });
+    } else if (time === 'past') {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
+      procedimentos = await this.reproductive.find({
+        where: {
+          property,
+          date: LessThan(currentDate),
+        },
+      });
+    } else if (time === 'future') {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
+      procedimentos = await this.reproductive.find({
+        where: {
+          property,
+          date: MoreThan(currentDate),
+        },
+      });
+    } else {
+      procedimentos = await this.reproductive.find({ where: { property } });
+    }
+
     const result: Array<Reproductive & { animal_photo: string }> = [];
     for (const procedimento of procedimentos) {
       const animal = await this.animalService.findOne(procedimento.animal_id);

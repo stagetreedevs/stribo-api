@@ -26,7 +26,7 @@ import { Procedure } from './procedure.entity';
 export class ProcedureController {
   constructor(private readonly procedService: ProcedureService) {}
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'CRIAR PROCEDIMENTO CLÍNICO' })
   @ApiBody({ type: ProcedureDto })
@@ -43,7 +43,7 @@ export class ProcedureController {
     return await this.procedService.formattedDate(procedures);
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS' })
   async findAll(): Promise<Procedure[]> {
@@ -56,7 +56,34 @@ export class ProcedureController {
   async findProcedureByAnimal(
     @Param('property_id') property_id: string,
   ): Promise<any[]> {
-    return this.procedService.findProcedureByAnimal(property_id);
+    return this.procedService.findProcedureByAnimal(property_id, 'all');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('animals/:property_id/today')
+  @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
+  async findProcedureByAnimalToday(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.procedService.findProcedureByAnimal(property_id, 'today');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('animals/:property_id/past')
+  @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
+  async findProcedureByAnimalPast(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.procedService.findProcedureByAnimal(property_id, 'past');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('animals/:property_id/future')
+  @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
+  async findProcedureByAnimalFuture(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.procedService.findProcedureByAnimal(property_id, 'future');
   }
 
   @UseGuards(JwtAuthGuard)
@@ -86,7 +113,7 @@ export class ProcedureController {
     return this.procedService.findAllProcedureNames(property_id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get('property/:property_id')
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE' })
   async findByProperty(

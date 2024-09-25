@@ -13,6 +13,7 @@ import { ReproductiveService } from './reproductive.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
+  FilterProcedureDto,
   ProcedureStatusDto,
   ReproductiveDto,
   UpdateReproductiveDto,
@@ -36,8 +37,10 @@ export class ReproductiveController {
   @UseGuards(JwtAuthGuard)
   @Post('filter')
   @ApiOperation({ summary: 'FILTRO PARA PROCEDIMENTOS' })
-  @ApiBody({ type: ReproductiveDto })
-  async findFiltered(@Body() body: ReproductiveDto): Promise<Reproductive[]> {
+  @ApiBody({ type: FilterProcedureDto })
+  async findFiltered(
+    @Body() body: FilterProcedureDto,
+  ): Promise<Reproductive[]> {
     const procedures: Reproductive[] =
       await this.reproductiveService.findFiltered(body);
     return await this.reproductiveService.formattedDate(procedures);
@@ -52,7 +55,7 @@ export class ReproductiveController {
     return this.reproductiveService.getManagementList(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS' })
   async findAll(): Promise<Reproductive[]> {
@@ -65,7 +68,37 @@ export class ReproductiveController {
   async findProcedureByAnimal(
     @Param('property_id') property_id: string,
   ): Promise<any[]> {
-    return this.reproductiveService.findProcedureByAnimal(property_id);
+    return this.reproductiveService.findProcedureByAnimal(property_id, 'all');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('animals/:property_id/today')
+  @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
+  async findProcedureByAnimalToday(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.findProcedureByAnimal(property_id, 'today');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('animals/:property_id/past')
+  @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
+  async findProcedureByAnimalPast(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.findProcedureByAnimal(property_id, 'past');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('animals/:property_id/future')
+  @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
+  async findProcedureByAnimalFuture(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.findProcedureByAnimal(
+      property_id,
+      'future',
+    );
   }
 
   @UseGuards(JwtAuthGuard)
