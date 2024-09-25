@@ -68,7 +68,37 @@ export class ReproductiveController {
   async findProcedureByAnimal(
     @Param('property_id') property_id: string,
   ): Promise<any[]> {
-    return this.reproductiveService.findProcedureByAnimal(property_id);
+    return this.reproductiveService.findProcedureByAnimal(property_id, 'all');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('animals/:property_id/today')
+  @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
+  async findProcedureByAnimalToday(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.findProcedureByAnimal(property_id, 'today');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('animals/:property_id/past')
+  @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
+  async findProcedureByAnimalPast(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.findProcedureByAnimal(property_id, 'past');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('animals/:property_id/future')
+  @ApiOperation({ summary: 'PROCEDIMENTOS CLÍNICOS POR ANIMAL' })
+  async findProcedureByAnimalFuture(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.findProcedureByAnimal(
+      property_id,
+      'future',
+    );
   }
 
   @UseGuards(JwtAuthGuard)
