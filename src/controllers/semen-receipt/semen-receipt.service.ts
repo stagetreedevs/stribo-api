@@ -127,7 +127,7 @@ export class SemenReceiptService {
 
   async updateStatus(
     id: string,
-    status: 'Não enviado' | 'Enviado' | 'Prenhez confirmada',
+    status: 'Não recebido' | 'Recebido' | 'Prenhez confirmada',
   ): Promise<SemenReceipt> {
     const semenReceipt = await this.semenReceipt.findOne({ where: { id } });
 
