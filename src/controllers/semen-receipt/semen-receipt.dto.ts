@@ -49,8 +49,8 @@ export class SemenReceiptDto {
   @ApiProperty({ enum: ['Pedido confirmado', 'Coleta Paga'] })
   commercial_status: 'Pedido confirmado' | 'Coleta Paga';
 
-  @ApiProperty({ enum: ['Não enviado', 'Enviado', 'Prenhez confirmada'] })
-  status: 'Não enviado' | 'Enviado' | 'Prenhez confirmada';
+  @ApiProperty({ enum: ['Não recebido', 'Recebido', 'Prenhez confirmada'] })
+  status: 'Não recebido' | 'Recebido' | 'Prenhez confirmada';
 }
 
 export class FilterSemenReceiptDto {

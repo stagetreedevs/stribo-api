@@ -58,10 +58,10 @@ export class SemenReceipt {
   commercial_status: 'Pedido confirmado' | 'Coleta Paga';
 
   @Column({
-    enum: ['Não enviado', 'Enviado', 'Prenhez confirmada'],
+    enum: ['Não recebido', 'Recebido', 'Prenhez confirmada'],
     default: 'Não enviado',
   })
-  status: 'Não enviado' | 'Enviado' | 'Prenhez confirmada';
+  status: 'Não recebido' | 'Recebido' | 'Prenhez confirmada';
 
   constructor(
     order_date: Date,
@@ -80,7 +80,7 @@ export class SemenReceipt {
     company: string,
     observation: string,
     commercial_status: 'Pedido confirmado' | 'Coleta Paga',
-    status: 'Não enviado' | 'Enviado' | 'Prenhez confirmada',
+    status: 'Não recebido' | 'Recebido' | 'Prenhez confirmada',
   ) {
     this.id = uuidv4();
     this.order_date = order_date;

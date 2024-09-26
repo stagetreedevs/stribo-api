@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ReproductiveService } from './reproductive.service';
@@ -35,18 +36,6 @@ export class ReproductiveController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('filter')
-  @ApiOperation({ summary: 'FILTRO PARA PROCEDIMENTOS' })
-  @ApiBody({ type: FilterProcedureDto })
-  async findFiltered(
-    @Body() body: FilterProcedureDto,
-  ): Promise<Reproductive[]> {
-    const procedures: Reproductive[] =
-      await this.reproductiveService.findFiltered(body);
-    return await this.reproductiveService.formattedDate(procedures);
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Get('management-list/:property_id')
   @ApiOperation({ summary: 'LISTA DE GERENCIAMENTO POR PROPRIEDADE' })
   async managementList(
@@ -58,8 +47,8 @@ export class ReproductiveController {
   @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS' })
-  async findAll(): Promise<Reproductive[]> {
-    return this.reproductiveService.findAll();
+  async findAll(@Query() query: FilterProcedureDto): Promise<Reproductive[]> {
+    return this.reproductiveService.findAll(query);
   }
 
   @UseGuards(JwtAuthGuard)

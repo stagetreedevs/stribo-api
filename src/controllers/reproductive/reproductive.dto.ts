@@ -126,7 +126,7 @@ export class UpdateReproductiveDto {
 
 export class FilterProcedureDto {
   @ApiProperty({ default: 'ASC' })
-  order?: string;
+  order?: 'ASC' | 'DESC';
 
   @ApiProperty({ required: false })
   procedure?: string;

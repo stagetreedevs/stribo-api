@@ -1,13 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Reproductive } from './reproductive.entity';
-import { Equal, LessThan, MoreThan, Repository } from 'typeorm';
+import { Between, Equal, LessThan, MoreThan, Repository } from 'typeorm';
 import { AnimalService } from '../animal/animal.service';
-import { FilterProcedureDto } from './reproductive.dto';
 import { SemenShippingService } from '../semen-shipping/semen-shipping.service';
 import { SemenFrozenService } from '../semen-frozen/semen-frozen.service';
 import { SemenReceiptService } from '../semen-receipt/semen-receipt.service';
 import { CylinderService } from '../cylinder/cylinder.service';
+import { FilterProcedureDto } from './reproductive.dto';
 
 export type Status = 'A realizar' | 'Realizado' | 'Em atraso';
 
@@ -60,8 +60,24 @@ export class ReproductiveService {
     };
   }
 
-  async findAll(): Promise<Reproductive[]> {
-    return this.reproductive.find();
+  async findAll(query: FilterProcedureDto): Promise<Reproductive[]> {
+    return this.reproductive.find({
+      where: {
+        procedure: query.procedure || undefined,
+        date:
+          query.initialDate && query.lastDate
+            ? Between(
+                new Date(query.initialDate.setHours(0, 0, 0, 0)),
+                new Date(query.lastDate.setHours(23, 59, 59, 999)),
+              )
+            : undefined,
+        responsible: query.responsible || undefined,
+        status: query.status || undefined,
+      },
+      order: {
+        date: query.order || 'DESC',
+      },
+    });
   }
 
   async findAndProcessProcedures(animal_id: string): Promise<any[]> {
@@ -342,49 +358,5 @@ export class ReproductiveService {
       );
     }
     await this.reproductive.delete(id);
-  }
-
-  async findFiltered(body: FilterProcedureDto): Promise<Reproductive[]> {
-    const queryBuilder = this.reproductive.createQueryBuilder('procedure');
-
-    if (body.initialDate) {
-      queryBuilder.andWhere('procedure.date >= :initialDate', {
-        initialDate: body.initialDate,
-      });
-    }
-
-    if (body.lastDate) {
-      queryBuilder.andWhere('procedure.date <= :lastDate', {
-        lastDate: body.lastDate,
-      });
-    }
-
-    if (body.procedure) {
-      queryBuilder.andWhere('procedure.procedure ILIKE :procedure', {
-        procedure: `%${body.procedure}%`,
-      });
-    }
-
-    if (body.responsible) {
-      queryBuilder.andWhere('procedure.responsible = :responsible', {
-        responsible: body.responsible,
-      });
-    }
-
-    if (body.status) {
-      queryBuilder.andWhere('procedure.status = :status', {
-        status: body.status,
-      });
-    }
-
-    if (
-      body.order &&
-      (body.order.toUpperCase() === 'ASC' ||
-        body.order.toUpperCase() === 'DESC')
-    ) {
-      queryBuilder.addOrderBy('procedure.date', body.order as 'ASC' | 'DESC');
-    }
-
-    return queryBuilder.getMany();
   }
 }
