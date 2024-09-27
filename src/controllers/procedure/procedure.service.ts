@@ -164,6 +164,7 @@ export class ProcedureService {
         };
       }
       procedimentosPorAnimal[procedimento.animal_id].procedures.push({
+        id: procedimento.id,
         date: procedimento.date,
         procedure: procedimento.procedure,
         status: procedimento.status,
