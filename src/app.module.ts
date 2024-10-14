@@ -58,6 +58,8 @@ import { CylinderModule } from './controllers/cylinder/cylinder.module';
 import { SemenFrozen } from './controllers/semen-frozen/semen-frozen.entity';
 import { CompetitionModule } from './controllers/competition/competition.module';
 import { Competition } from './controllers/competition/competition.entity';
+import { FinancialModule } from './controllers/financial/financial.module';
+import { BankAccount } from './controllers/financial/entity/bank-account.entity';
 dotenv.config();
 @Module({
   imports: [
@@ -108,6 +110,7 @@ dotenv.config();
         SemenFrozen,
         Cylinder,
         Competition,
+        BankAccount,
       ],
       autoLoadEntities: true,
       synchronize: true,
@@ -140,6 +143,7 @@ dotenv.config();
     SemenFrozenModule,
     CylinderModule,
     CompetitionModule,
+    FinancialModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService],
