@@ -60,6 +60,7 @@ import { CompetitionModule } from './controllers/competition/competition.module'
 import { Competition } from './controllers/competition/competition.entity';
 import { FinancialModule } from './controllers/financial/financial.module';
 import { BankAccount } from './controllers/financial/entity/bank-account.entity';
+import { Category } from './controllers/financial/entity/category.entity';
 dotenv.config();
 @Module({
   imports: [
@@ -111,6 +112,7 @@ dotenv.config();
         Cylinder,
         Competition,
         BankAccount,
+        Category,
       ],
       autoLoadEntities: true,
       synchronize: true,
