@@ -30,10 +30,10 @@ export class Reproductive {
   @Column()
   situation: string;
 
-  // status / enum "A realizar", "Realizado", "Em atraso"
+  // status / enum "A Realizar", "Realizado", "Em atraso"
   @Column({
-    enum: ['A realizar', 'Realizado', 'Em atraso'],
-    default: 'A realizar',
+    enum: ['A Realizar', 'Realizado', 'Em atraso'],
+    default: 'A Realizar',
     nullable: true,
   })
   status: string;

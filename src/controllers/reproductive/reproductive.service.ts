@@ -1,7 +1,16 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Reproductive } from './reproductive.entity';
-import { Between, Equal, LessThan, MoreThan, Repository } from 'typeorm';
+import {
+  And,
+  Between,
+  Equal,
+  FindOperator,
+  LessThan,
+  Like,
+  MoreThan,
+  Repository,
+} from 'typeorm';
 import { AnimalService } from '../animal/animal.service';
 import { SemenShippingService } from '../semen-shipping/semen-shipping.service';
 import { SemenFrozenService } from '../semen-frozen/semen-frozen.service';
@@ -9,7 +18,7 @@ import { SemenReceiptService } from '../semen-receipt/semen-receipt.service';
 import { CylinderService } from '../cylinder/cylinder.service';
 import { FilterProcedureDto } from './reproductive.dto';
 
-export type Status = 'A realizar' | 'Realizado' | 'Em atraso';
+export type Status = 'A Realizar' | 'Realizado' | 'Em atraso';
 
 @Injectable()
 export class ReproductiveService {
@@ -267,17 +276,23 @@ export class ReproductiveService {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
+    const dateCondition: FindOperator<Date> =
+      query.initialDate && query.lastDate
+        ? And(
+            Between(
+              new Date(query.initialDate.setHours(0, 0, 0, 0)),
+              new Date(query.lastDate.setHours(23, 59, 59, 999)),
+            ),
+            Equal(currentDate),
+          )
+        : Equal(currentDate);
+
     const procedimentos = await this.reproductive.find({
       where: {
         property,
+        animal_name: query.search ? Like(`%${query.search}%`) : undefined,
         procedure: query.procedure || undefined,
-        date:
-          query.initialDate && query.lastDate
-            ? Between(
-                new Date(query.initialDate.setHours(0, 0, 0, 0)),
-                new Date(query.lastDate.setHours(23, 59, 59, 999)),
-              )
-            : Equal(currentDate),
+        date: dateCondition,
         responsible: query.responsible || undefined,
         status: query.status || undefined,
       },
@@ -302,17 +317,23 @@ export class ReproductiveService {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
+    const dateCondition: FindOperator<Date> =
+      query.initialDate && query.lastDate
+        ? And(
+            Between(
+              new Date(query.initialDate.setHours(0, 0, 0, 0)),
+              new Date(query.lastDate.setHours(23, 59, 59, 999)),
+            ),
+            LessThan(currentDate),
+          )
+        : LessThan(currentDate);
+
     const procedimentos = await this.reproductive.find({
       where: {
         property,
+        animal_name: query.search ? Like(`%${query.search}%`) : undefined,
         procedure: query.procedure || undefined,
-        date:
-          query.initialDate && query.lastDate
-            ? Between(
-                new Date(query.initialDate.setHours(0, 0, 0, 0)),
-                new Date(query.lastDate.setHours(23, 59, 59, 999)),
-              )
-            : LessThan(currentDate),
+        date: dateCondition,
         responsible: query.responsible || undefined,
         status: query.status || undefined,
       },
@@ -337,17 +358,23 @@ export class ReproductiveService {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
+    const dateCondition: FindOperator<Date> =
+      query.initialDate && query.lastDate
+        ? And(
+            Between(
+              new Date(query.initialDate.setHours(0, 0, 0, 0)),
+              new Date(query.lastDate.setHours(23, 59, 59, 999)),
+            ),
+            MoreThan(currentDate),
+          )
+        : MoreThan(currentDate);
+
     const procedimentos = await this.reproductive.find({
       where: {
         property,
+        animal_name: query.search ? Like(`%${query.search}%`) : undefined,
         procedure: query.procedure || undefined,
-        date:
-          query.initialDate && query.lastDate
-            ? Between(
-                new Date(query.initialDate.setHours(0, 0, 0, 0)),
-                new Date(query.lastDate.setHours(23, 59, 59, 999)),
-              )
-            : MoreThan(currentDate),
+        date: dateCondition,
         responsible: query.responsible || undefined,
         status: query.status || undefined,
       },
@@ -410,5 +437,9 @@ export class ReproductiveService {
       );
     }
     await this.reproductive.delete(id);
+  }
+
+  async deleteAll(): Promise<void> {
+    await this.reproductive.delete({});
   }
 }

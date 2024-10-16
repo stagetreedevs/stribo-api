@@ -32,7 +32,7 @@ export class ReproductiveDto {
   situation: string;
 
   @ApiProperty({
-    enum: ['A realizar', 'Realizado', 'Em atraso'],
+    enum: ['A Realizar', 'Realizado', 'Em atraso'],
     required: false,
   })
   status: string;
@@ -88,7 +88,7 @@ export class UpdateReproductiveDto {
   situation: string;
 
   @ApiProperty({
-    enum: ['A realizar', 'Realizado', 'Em atraso'],
+    enum: ['A Realizar', 'Realizado', 'Em atraso'],
     required: false,
   })
   status: string;
@@ -125,6 +125,9 @@ export class UpdateReproductiveDto {
 }
 
 export class FilterProcedureDto {
+  @ApiProperty({ default: 1 })
+  search?: string;
+
   @ApiProperty({ default: 'ASC' })
   order?: 'ASC' | 'DESC';
 

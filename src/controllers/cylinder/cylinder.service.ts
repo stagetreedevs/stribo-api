@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cylinder } from './cylinder.entity';
-import { Repository } from 'typeorm';
+import { And, Equal, IsNull, Or, Repository } from 'typeorm';
 import { AnimalService } from '../animal/animal.service';
 import { PropertyService } from '../property/property.service';
 import { CylinderDto } from './cylinder.dto';
@@ -30,27 +30,30 @@ export class CylinderService {
     return await this.cylinder.save(data);
   }
 
-  async findAll(property: string | null = null) {
-    return await this.cylinder.find({
-      where: {
-        property: property || undefined,
-      },
+  async findAll(property?: string) {
+    const cylinders = await this.cylinder.find();
+
+    return cylinders.filter((cylinder) => {
+      if (property) {
+        return cylinder.property === property || !cylinder.property;
+      }
+
+      return true;
     });
   }
 
   async getQuantity(property: string): Promise<number> {
-    const cylinder = await this.cylinder.find({
-      where: [
-        {
-          property,
-        },
-        {
-          property: null,
-        },
-      ],
+    let cylinders = await this.cylinder.find();
+
+    cylinders = cylinders.filter((cylinder) => {
+      if (property) {
+        return cylinder.property === property || !cylinder.property;
+      }
+
+      return true;
     });
 
-    return cylinder.length;
+    return cylinders.length;
   }
 
   async findAllNames() {

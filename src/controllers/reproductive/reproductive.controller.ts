@@ -51,6 +51,8 @@ export class ReproductiveController {
     @Param('property_id') property_id: string,
     @Query() query: FilterProcedureDto,
   ): Promise<Reproductive[]> {
+    query.initialDate = query.initialDate ? new Date(query.initialDate) : null;
+    query.lastDate = query.lastDate ? new Date(query.lastDate) : null;
     return this.reproductiveService.findAll(property_id, query);
   }
 
@@ -138,7 +140,7 @@ export class ReproductiveController {
     return this.reproductiveService.findTodayProcedure(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('past/:property_id')
   @ApiOperation({
     summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE ANTERIORES',
@@ -149,7 +151,7 @@ export class ReproductiveController {
     return this.reproductiveService.findPastProcedures(property_id);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('future/:property_id')
   @ApiOperation({
     summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE FUTUROS',
@@ -190,4 +192,11 @@ export class ReproductiveController {
   ): Promise<void> {
     return this.reproductiveService.removeProcedure(procedure_id);
   }
+
+  //@UseGuards(JwtAuthGuard)
+  // @Delete()
+  // @ApiOperation({ summary: 'DELETAR TODOS PROCEDIMENTOS' })
+  // async removeAll(): Promise<void> {
+  //   return this.reproductiveService.deleteAll();
+  // }
 }

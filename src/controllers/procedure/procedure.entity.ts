@@ -36,7 +36,7 @@ export class Procedure {
   @Column({ default: '', nullable: true })
   observation: string;
 
-  @Column({ default: 'A realizar' })
+  @Column({ default: 'A Realizar' })
   status: string;
 
   @Column()
@@ -53,7 +53,7 @@ export class Procedure {
 
   @Column({ default: '', nullable: true })
   regress_procedure: string;
-  
+
   @Column({ default: '', nullable: true })
   regress_observation: string;
 
