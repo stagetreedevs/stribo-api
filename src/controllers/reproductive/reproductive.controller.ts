@@ -48,7 +48,7 @@ export class ReproductiveController {
   @Get('order-date/:property_id')
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS' })
   async findAll(
-    @Param(':property_id') property_id: string,
+    @Param('property_id') property_id: string,
     @Query() query: FilterProcedureDto,
   ): Promise<Reproductive[]> {
     return this.reproductiveService.findAll(property_id, query);
