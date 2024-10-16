@@ -60,24 +60,22 @@ export class ReproductiveService {
     };
   }
 
-  async findAll(query: FilterProcedureDto): Promise<Reproductive[]> {
-    return this.reproductive.find({
-      where: {
-        procedure: query.procedure || undefined,
-        date:
-          query.initialDate && query.lastDate
-            ? Between(
-                new Date(query.initialDate.setHours(0, 0, 0, 0)),
-                new Date(query.lastDate.setHours(23, 59, 59, 999)),
-              )
-            : undefined,
-        responsible: query.responsible || undefined,
-        status: query.status || undefined,
-      },
-      order: {
-        date: query.order || 'DESC',
-      },
-    });
+  async findAll(property_id: string, query?: FilterProcedureDto): Promise<any> {
+    const reproductivesToday = await this.findTodayProcedure(
+      property_id,
+      query,
+    );
+    const reproductivesPast = await this.findPastProcedures(property_id, query);
+    const reproductivesFuture = await this.findFutureProcedures(
+      property_id,
+      query,
+    );
+
+    return {
+      today: reproductivesToday,
+      past: reproductivesPast,
+      future: reproductivesFuture,
+    };
   }
 
   async findAndProcessProcedures(animal_id: string): Promise<any[]> {
@@ -110,6 +108,9 @@ export class ReproductiveService {
               ? procedure.observation
               : 'Nenhuma observação',
           hour: procedure.hour !== null ? procedure.hour : 'Nenhuma hora',
+          animal_id: procedure.animal_id,
+          animal_registry: procedure.animal_registry,
+          animal_name: procedure.animal_name,
         });
       } else {
         acc.push({
@@ -124,6 +125,9 @@ export class ReproductiveService {
                   ? procedure.observation
                   : 'Nenhuma observação',
               hour: procedure.hour !== null ? procedure.hour : 'Nenhuma hora',
+              animal_id: procedure.animal_id,
+              animal_registry: procedure.animal_registry,
+              animal_name: procedure.animal_name,
             },
           ],
         });
@@ -147,6 +151,9 @@ export class ReproductiveService {
       year: 'numeric',
     });
   }
+
+  // TODO: Implementar
+  //async findAnimalsCompatible() {}
 
   async findProcedureByAnimal(
     property: string,
@@ -253,14 +260,29 @@ export class ReproductiveService {
     return Array.from(uniqueNames);
   }
 
-  async findTodayProcedure(property: string): Promise<any[]> {
+  async findTodayProcedure(
+    property: string,
+    query?: FilterProcedureDto,
+  ): Promise<any[]> {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
     const procedimentos = await this.reproductive.find({
       where: {
         property,
-        date: Equal(currentDate),
+        procedure: query.procedure || undefined,
+        date:
+          query.initialDate && query.lastDate
+            ? Between(
+                new Date(query.initialDate.setHours(0, 0, 0, 0)),
+                new Date(query.lastDate.setHours(23, 59, 59, 999)),
+              )
+            : Equal(currentDate),
+        responsible: query.responsible || undefined,
+        status: query.status || undefined,
+      },
+      order: {
+        date: query.order || 'DESC',
       },
     });
     const result: any[] = [];
@@ -273,14 +295,29 @@ export class ReproductiveService {
     return await this.formattedDate(result);
   }
 
-  async findPastProcedures(property: string): Promise<any[]> {
+  async findPastProcedures(
+    property: string,
+    query?: FilterProcedureDto,
+  ): Promise<any[]> {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
     const procedimentos = await this.reproductive.find({
       where: {
         property,
-        date: LessThan(currentDate),
+        procedure: query.procedure || undefined,
+        date:
+          query.initialDate && query.lastDate
+            ? Between(
+                new Date(query.initialDate.setHours(0, 0, 0, 0)),
+                new Date(query.lastDate.setHours(23, 59, 59, 999)),
+              )
+            : LessThan(currentDate),
+        responsible: query.responsible || undefined,
+        status: query.status || undefined,
+      },
+      order: {
+        date: query.order || 'DESC',
       },
     });
     const result: any[] = [];
@@ -293,14 +330,29 @@ export class ReproductiveService {
     return await this.formattedDate(result);
   }
 
-  async findFutureProcedures(property: string): Promise<any[]> {
+  async findFutureProcedures(
+    property: string,
+    query?: FilterProcedureDto,
+  ): Promise<any[]> {
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
     const procedimentos = await this.reproductive.find({
       where: {
         property,
-        date: MoreThan(currentDate),
+        procedure: query.procedure || undefined,
+        date:
+          query.initialDate && query.lastDate
+            ? Between(
+                new Date(query.initialDate.setHours(0, 0, 0, 0)),
+                new Date(query.lastDate.setHours(23, 59, 59, 999)),
+              )
+            : MoreThan(currentDate),
+        responsible: query.responsible || undefined,
+        status: query.status || undefined,
+      },
+      order: {
+        date: query.order || 'DESC',
       },
     });
     const result: any[] = [];

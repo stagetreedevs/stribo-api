@@ -45,10 +45,13 @@ export class ReproductiveController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get()
+  @Get('order-date/:property_id')
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS' })
-  async findAll(@Query() query: FilterProcedureDto): Promise<Reproductive[]> {
-    return this.reproductiveService.findAll(query);
+  async findAll(
+    @Param(':property_id') property_id: string,
+    @Query() query: FilterProcedureDto,
+  ): Promise<Reproductive[]> {
+    return this.reproductiveService.findAll(property_id, query);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -135,7 +138,7 @@ export class ReproductiveController {
     return this.reproductiveService.findTodayProcedure(property_id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get('past/:property_id')
   @ApiOperation({
     summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE ANTERIORES',
@@ -146,7 +149,7 @@ export class ReproductiveController {
     return this.reproductiveService.findPastProcedures(property_id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get('future/:property_id')
   @ApiOperation({
     summary: 'TODOS PROCEDIMENTOS CLÍNICOS DA PROPRIEDADE FUTUROS',
