@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cylinder } from './cylinder.entity';
-import { And, Equal, IsNull, Or, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AnimalService } from '../animal/animal.service';
 import { PropertyService } from '../property/property.service';
 import { CylinderDto } from './cylinder.dto';
