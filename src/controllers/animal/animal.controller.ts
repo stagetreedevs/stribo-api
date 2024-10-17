@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -80,8 +81,8 @@ export class AnimalController {
   @UseGuards(JwtAuthGuard)
   @Get('names')
   @ApiOperation({ summary: 'TODAS OS NOMES' })
-  async findAllNamesWithId(): Promise<string[]> {
-    return this.animalService.findAllNamesWithId();
+  async findAllNamesWithId(@Query('sex') sex: string): Promise<string[]> {
+    return this.animalService.findAllNamesWithId(sex);
   }
 
   @UseGuards(JwtAuthGuard)
