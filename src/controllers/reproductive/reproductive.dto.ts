@@ -44,6 +44,9 @@ export class ReproductiveDto {
   left_ovary: string;
 
   @ApiProperty({ required: false })
+  corpus_luteum: string;
+
+  @ApiProperty({ required: false })
   uterine_tone: string;
 
   @ApiProperty({ required: false })
