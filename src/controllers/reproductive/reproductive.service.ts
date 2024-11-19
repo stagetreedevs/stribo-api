@@ -9,6 +9,7 @@ import {
   LessThan,
   Like,
   MoreThan,
+  Not,
   Repository,
 } from 'typeorm';
 import { AnimalService } from '../animal/animal.service';
@@ -422,6 +423,8 @@ export class ReproductiveService {
       if (numInvalid > 1) {
         return false;
       }
+
+      return true;
     });
 
     const animals: Animal[] = [];
