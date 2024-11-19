@@ -96,6 +96,15 @@ export class ReproductiveController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('animals/compatibility/:property_id')
+  @ApiOperation({ summary: 'ÉGUAS COMPATIVEIS' })
+  async findMaresCompatibility(
+    @Param('property_id') property_id: string,
+  ): Promise<any[]> {
+    return this.reproductiveService.getMaresCompatible(property_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':animal_id')
   @ApiOperation({ summary: 'TODOS PROCEDIMENTOS CLÍNICOS DE UM ANIMAL' })
   async findByAnimal(

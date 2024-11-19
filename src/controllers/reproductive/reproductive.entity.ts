@@ -45,6 +45,9 @@ export class Reproductive {
   left_ovary: string;
 
   @Column({ nullable: true })
+  corpus_luteum: string;
+
+  @Column({ nullable: true })
   uterine_tone: string;
 
   @Column({ nullable: true })

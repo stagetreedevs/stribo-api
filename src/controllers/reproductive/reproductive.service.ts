@@ -17,6 +17,7 @@ import { SemenFrozenService } from '../semen-frozen/semen-frozen.service';
 import { SemenReceiptService } from '../semen-receipt/semen-receipt.service';
 import { CylinderService } from '../cylinder/cylinder.service';
 import { FilterProcedureDto } from './reproductive.dto';
+import { Animal } from '../animal/animal.entity';
 
 export type Status = 'A Realizar' | 'Realizado' | 'Em atraso';
 
@@ -390,6 +391,53 @@ export class ReproductiveService {
     }
 
     return await this.formattedDate(result);
+  }
+
+  async getMaresCompatible(property_id: string) {
+    let reproductives = await this.reproductive.find({
+      where: {
+        mare_type: 'Receptora',
+        property: property_id,
+      },
+      order: {
+        date: 'DESC',
+      },
+    });
+
+    reproductives = reproductives.filter((reproductive) => {
+      let numInvalid = 0;
+
+      if (reproductive.corpus_luteum === 'Não favorável') {
+        numInvalid += 1;
+      }
+
+      if (reproductive.uterine_edema === 'Não favorável') {
+        numInvalid += 1;
+      }
+
+      if (reproductive.uterine_tone === 'Não favorável') {
+        numInvalid += 1;
+      }
+
+      if (numInvalid > 1) {
+        return false;
+      }
+    });
+
+    const animals: Animal[] = [];
+
+    for (const reproductive of reproductives) {
+      const isAddAnimal = animals.find(
+        (animal) => animal.id === reproductive.animal_id,
+      );
+
+      if (!isAddAnimal) {
+        const animal = await this.animalService.findOne(reproductive.animal_id);
+        animals.push(animal);
+      }
+    }
+
+    return animals;
   }
 
   async updateStatus(id: string, status: string): Promise<any> {
