@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
+import { Between, Like, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { Competition } from './competition.entity';
 import {
   CreateCompetitionDto,
@@ -82,8 +82,15 @@ export class CompetitionService {
     };
   }
 
-  async findCompetitions(property: string): Promise<any[]> {
-    const competitions = await this.competition.find({ where: { property } });
+  async findCompetitions(
+    property: string,
+    filter: FilterCompetitionDto,
+  ): Promise<any[]> {
+    const { search } = filter;
+
+    const competitions = await this.competition.find({
+      where: { property, name: Like(`%${search}%`) },
+    });
 
     return competitions.map((competition) => {
       return {
@@ -99,8 +106,15 @@ export class CompetitionService {
     });
   }
 
-  async findCompetitionByAnimal(property: string): Promise<any[]> {
-    const competitions = await this.competition.find({ where: { property } });
+  async findCompetitionByAnimal(
+    property: string,
+    filter: FilterCompetitionDto,
+  ): Promise<any[]> {
+    const { search } = filter;
+
+    const competitions = await this.competition.find({
+      where: { property, name: Like(`%${search}%`) },
+    });
 
     const result: CompetitionByAnimal[] = [];
 
@@ -146,9 +160,14 @@ export class CompetitionService {
     return result;
   }
 
-  async findAwardedCompetitions(property: string): Promise<any[]> {
+  async findAwardedCompetitions(
+    property: string,
+    filter: FilterCompetitionDto,
+  ): Promise<any[]> {
+    const { search } = filter;
+
     const competitions = await this.competition.find({
-      where: { property },
+      where: { property, name: Like(`%${search}%`) },
     });
 
     return competitions

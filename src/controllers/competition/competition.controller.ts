@@ -20,6 +20,7 @@ import {
 } from './competition.dto';
 import { Competition } from './competition.entity';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { filter } from 'rxjs';
 
 @ApiTags('COMPETIÇÃO')
 @ApiBearerAuth()
@@ -63,8 +64,9 @@ export class CompetitionController {
   @ApiOperation({ summary: 'COMPETIÇÕES POR PROPRIEDADE' })
   async findByProperty(
     @Param('property_id') property_id: string,
+    @Query() filter: FilterCompetitionDto,
   ): Promise<Competition[]> {
-    return this.competitionService.findCompetitions(property_id);
+    return this.competitionService.findCompetitions(property_id, filter);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -72,8 +74,9 @@ export class CompetitionController {
   @ApiOperation({ summary: 'COMPETIÇÕES POR ANIMAL' })
   async findByAnimal(
     @Param('property_id') property_id: string,
+    @Query() filter: FilterCompetitionDto,
   ): Promise<Competition[]> {
-    return this.competitionService.findCompetitionByAnimal(property_id);
+    return this.competitionService.findCompetitionByAnimal(property_id, filter);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -81,8 +84,9 @@ export class CompetitionController {
   @ApiOperation({ summary: 'COMPETIÇÕES PREMIADAS' })
   async findAwarded(
     @Param('property_id') property_id: string,
+    @Query() filter: FilterCompetitionDto,
   ): Promise<Competition[]> {
-    return this.competitionService.findAwardedCompetitions(property_id);
+    return this.competitionService.findAwardedCompetitions(property_id, filter);
   }
 
   @Get('awarded/animal/:animal_id')

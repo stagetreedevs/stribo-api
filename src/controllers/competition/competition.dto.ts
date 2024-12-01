@@ -84,4 +84,7 @@ export class FilterCompetitionDto {
 
   @ApiProperty({ required: false })
   category?: string;
+
+  @ApiProperty({ required: false })
+  search?: string;
 }
