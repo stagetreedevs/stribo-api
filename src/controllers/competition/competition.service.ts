@@ -89,7 +89,7 @@ export class CompetitionService {
     const { search } = filter;
 
     const competitions = await this.competition.find({
-      where: { property, name: Like(`%${search}%`) },
+      where: { property, name: search ? Like(`%${search}%`) : undefined },
     });
 
     return competitions.map((competition) => {
@@ -113,7 +113,7 @@ export class CompetitionService {
     const { search } = filter;
 
     const competitions = await this.competition.find({
-      where: { property, name: Like(`%${search}%`) },
+      where: { property, name: search ? Like(`%${search}%`) : undefined },
     });
 
     const result: CompetitionByAnimal[] = [];
@@ -167,7 +167,7 @@ export class CompetitionService {
     const { search } = filter;
 
     const competitions = await this.competition.find({
-      where: { property, name: Like(`%${search}%`) },
+      where: { property, name: search ? Like(`%${search}%`) : undefined },
     });
 
     return competitions
