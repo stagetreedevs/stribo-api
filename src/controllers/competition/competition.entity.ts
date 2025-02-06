@@ -27,6 +27,9 @@ export class Competition {
   @Column()
   modality: string;
 
+  @Column({ nullable: true, default: '' })
+  competitor: string;
+
   @Column({ nullable: true })
   category: string;
 

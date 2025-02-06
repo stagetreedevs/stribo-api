@@ -14,6 +14,7 @@ import { CompetitionService } from './competition.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   CreateCompetitionDto,
+  CreateCompetitorDto,
   FilterCompetitionDto,
   UpdateAwardDto,
   UpdateCompetitionDto,
@@ -145,7 +146,7 @@ export class CompetitionController {
   @ApiOperation({ summary: 'CRIAR COMPETIDOR' })
   async createCompetitor(
     @Param('property_id') property_id: string,
-    @Body() body: { name: string },
+    @Body() body: CreateCompetitorDto,
   ): Promise<any> {
     return this.competitionService.createCompetitor(body.name, property_id);
   }
@@ -180,7 +181,7 @@ export class CompetitionController {
   @ApiOperation({ summary: 'ATUALIZAR COMPETIDOR' })
   async updateCompetitor(
     @Param('id') id: string,
-    @Body() body: { name: string },
+    @Body() body: CreateCompetitorDto,
   ): Promise<any> {
     return this.competitionService.updateCompetitor(id, body.name);
   }

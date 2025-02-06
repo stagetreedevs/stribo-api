@@ -23,6 +23,9 @@ export class CreateCompetitionDto {
   modality: string;
 
   @ApiProperty({ required: false })
+  competitor: string;
+
+  @ApiProperty({ required: false })
   category: string;
 
   @ApiProperty({ required: false })
@@ -47,6 +50,9 @@ export class UpdateCompetitionDto {
 
   @ApiProperty({ required: false })
   modality: string;
+
+  @ApiProperty({ required: false })
+  competitor: string;
 
   @ApiProperty({ required: false })
   category: string;
@@ -83,8 +89,17 @@ export class FilterCompetitionDto {
   modality?: string;
 
   @ApiProperty({ required: false })
+  competitor?: string;
+
+  @ApiProperty({ required: false })
   category?: string;
 
   @ApiProperty({ required: false })
   search?: string;
+}
+
+//  * Competitor
+export class CreateCompetitorDto {
+  @ApiProperty()
+  name: string;
 }

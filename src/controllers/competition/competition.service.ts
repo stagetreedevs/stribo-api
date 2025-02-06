@@ -101,6 +101,7 @@ export class CompetitionService {
         date: competition.date,
         name: competition.name,
         modality: competition.modality,
+        competitor: competition.competitor,
         category: competition.category,
         animal_id: competition.animal_id,
         animal_name: competition.animal_name,
@@ -152,6 +153,7 @@ export class CompetitionService {
         date: competition.date,
         name: competition.name,
         modality: competition.modality,
+        competitor: competition.competitor,
         category: competition.category,
       });
     }
@@ -230,6 +232,7 @@ export class CompetitionService {
             : undefined,
         animal_id: filter.animal_id || undefined,
         modality: filter.modality || undefined,
+        competitor: filter.competitor || undefined,
         category: filter.category || undefined,
       },
       order: { date: filter.order || 'DESC' },
