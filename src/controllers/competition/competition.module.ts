@@ -4,9 +4,10 @@ import { CompetitionService } from './competition.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Competition } from './competition.entity';
 import { AnimalModule } from '../animal/animal.module';
+import { Competitor } from './competitor.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Competition]), AnimalModule],
+  imports: [TypeOrmModule.forFeature([Competition, Competitor]), AnimalModule],
   controllers: [CompetitionController],
   providers: [CompetitionService],
 })

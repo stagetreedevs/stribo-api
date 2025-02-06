@@ -9,6 +9,7 @@ import {
   UpdateCompetitionDto,
 } from './competition.dto';
 import { AnimalService } from '../animal/animal.service';
+import { Competitor } from './competitor.entity';
 
 class CompetitionByAnimal extends Competition {
   animal_photo: string;
@@ -21,6 +22,8 @@ export class CompetitionService {
   constructor(
     @InjectRepository(Competition)
     private competition: Repository<Competition>,
+    @InjectRepository(Competitor)
+    private competitor: Repository<Competitor>,
     private animalService: AnimalService,
   ) {}
 
@@ -261,5 +264,58 @@ export class CompetitionService {
     }
 
     await this.competition.delete(id);
+  }
+
+  // * Competitor
+  async createCompetitor(
+    name: string,
+    property_id: string,
+  ): Promise<Competitor> {
+    return await this.competitor.save({ name, property_id });
+  }
+
+  async findAllCompetitors(property_id: string): Promise<Competitor[]> {
+    return await this.competitor.find({
+      where: { property_id },
+    });
+  }
+
+  async findNamesAllCompetitors(
+    property_id: string,
+  ): Promise<{ label: string; value: string }[]> {
+    const competitors = await this.competitor.find({
+      where: { property_id },
+    });
+
+    return competitors.map((competitor) => {
+      return {
+        label: competitor.name,
+        value: competitor.id,
+      };
+    });
+  }
+
+  async findCompetitor(id: string): Promise<Competitor> {
+    return await this.competitor.findOne({ where: { id } });
+  }
+
+  async updateCompetitor(id: string, name: string): Promise<Competitor> {
+    const competitor = await this.competitor.findOne({ where: { id } });
+
+    if (!competitor) {
+      throw new NotFoundException('Competitor not found');
+    }
+
+    return await this.competitor.save({ id, name });
+  }
+
+  async deleteCompetitor(id: string): Promise<void> {
+    const competitor = await this.competitor.findOne({ where: { id } });
+
+    if (!competitor) {
+      throw new NotFoundException('Competitor not found');
+    }
+
+    await this.competitor.delete(id);
   }
 }

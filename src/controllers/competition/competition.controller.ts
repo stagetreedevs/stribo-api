@@ -20,7 +20,6 @@ import {
 } from './competition.dto';
 import { Competition } from './competition.entity';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
-import { filter } from 'rxjs';
 
 @ApiTags('COMPETIÇÃO')
 @ApiBearerAuth()
@@ -138,5 +137,58 @@ export class CompetitionController {
   @ApiOperation({ summary: 'DELETAR COMPETIÇÃO' })
   async remove(@Param('id') id: string): Promise<void> {
     return this.competitionService.delete(id);
+  }
+
+  // * Competitor
+  @UseGuards(JwtAuthGuard)
+  @Post('competitor/:property_id')
+  @ApiOperation({ summary: 'CRIAR COMPETIDOR' })
+  async createCompetitor(
+    @Param('property_id') property_id: string,
+    @Body() body: { name: string },
+  ): Promise<any> {
+    return this.competitionService.createCompetitor(body.name, property_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('competitor/:property_id')
+  @ApiOperation({ summary: 'TODOS COMPETIDORES' })
+  async findAllCompetitors(
+    @Param('property_id') property_id: string,
+  ): Promise<any> {
+    return this.competitionService.findAllCompetitors(property_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('competitor/names/:property_id')
+  @ApiOperation({ summary: 'NOMES DE COMPETIDORES' })
+  async findNamesAllCompetitors(
+    @Param('property_id') property_id: string,
+  ): Promise<any> {
+    return this.competitionService.findNamesAllCompetitors(property_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('competitor/:id')
+  @ApiOperation({ summary: 'COMPETIDOR POR ID' })
+  async findOneCompetitor(@Param('id') id: string): Promise<any> {
+    return this.competitionService.findCompetitor(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('competitor/:id')
+  @ApiOperation({ summary: 'ATUALIZAR COMPETIDOR' })
+  async updateCompetitor(
+    @Param('id') id: string,
+    @Body() body: { name: string },
+  ): Promise<any> {
+    return this.competitionService.updateCompetitor(id, body.name);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('competitor/:id')
+  @ApiOperation({ summary: 'DELETAR COMPETIDOR' })
+  async removeCompetitor(@Param('id') id: string): Promise<void> {
+    return this.competitionService.deleteCompetitor(id);
   }
 }

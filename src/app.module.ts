@@ -61,6 +61,7 @@ import { Competition } from './controllers/competition/competition.entity';
 import { FinancialModule } from './controllers/financial/financial.module';
 import { BankAccount } from './controllers/financial/entity/bank-account.entity';
 import { Category } from './controllers/financial/entity/category.entity';
+import { Competitor } from './controllers/competition/competitor.entity';
 dotenv.config();
 @Module({
   imports: [
@@ -111,6 +112,7 @@ dotenv.config();
         SemenFrozen,
         Cylinder,
         Competition,
+        Competitor,
         BankAccount,
         Category,
       ],
