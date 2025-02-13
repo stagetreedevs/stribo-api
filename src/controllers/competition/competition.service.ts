@@ -28,7 +28,14 @@ export class CompetitionService {
   ) {}
 
   async create(data: CreateCompetitionDto): Promise<Competition> {
-    return await this.competition.save(data);
+    const competitor = await this.competitor.findOne({
+      where: { id: data.competitor },
+    });
+
+    return await this.competition.save({
+      ...data,
+      competitor: competitor ? competitor.name : '',
+    });
   }
 
   async findAll(): Promise<Competition[]> {
