@@ -62,6 +62,9 @@ import { FinancialModule } from './controllers/financial/financial.module';
 import { BankAccount } from './controllers/financial/entity/bank-account.entity';
 import { Category } from './controllers/financial/entity/category.entity';
 import { Competitor } from './controllers/competition/competitor.entity';
+import { PropertiesModule } from './controllers/properties/properties.module';
+import { ProductsEntity } from './controllers/properties/entity/products.entity';
+import { MovementsEntity } from './controllers/properties/entity/movements.entity';
 dotenv.config();
 @Module({
   imports: [
@@ -115,6 +118,8 @@ dotenv.config();
         Competitor,
         BankAccount,
         Category,
+        ProductsEntity,
+        MovementsEntity,
       ],
       autoLoadEntities: true,
       synchronize: true,
@@ -148,6 +153,7 @@ dotenv.config();
     CylinderModule,
     CompetitionModule,
     FinancialModule,
+    PropertiesModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService],
