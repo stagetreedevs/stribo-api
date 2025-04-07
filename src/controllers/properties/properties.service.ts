@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ProductsEntity } from './entity/products.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, LessThan, MoreThan, Repository } from 'typeorm';
 import { ProductsDTO, ProductsQueryDTO } from './dto/products.dto';
 import { MovementsEntity } from './entity/movements.entity';
-import { MovementsDTO } from './dto/movements.dto';
+import { MovementsDTO, MovementsQueryDTO } from './dto/movements.dto';
 
 @Injectable()
 export class PropertiesService {
@@ -83,7 +83,7 @@ export class PropertiesService {
     }));
   }
 
-  async updateProduct(id: string, data: Partial<ProductsDTO>) {
+  async updateProduct(id: string, data: ProductsDTO) {
     return await this.productsRepository.save({
       id,
       ...data,
@@ -104,12 +104,59 @@ export class PropertiesService {
     return await this.movementsRepository.save(movement);
   }
 
-  async getAllMovements() {
+  async getAllMovements(query: MovementsQueryDTO) {
     return await this.movementsRepository.find({
+      where: {
+        datetime:
+          query.start_date && query.end_date
+            ? Between(query.start_date, query.end_date)
+            : query.start_date
+            ? MoreThan(query.start_date)
+            : query.end_date
+            ? LessThan(query.end_date)
+            : undefined,
+        type: query.type || undefined,
+        product: query.category ? { category: query.category } : undefined,
+        quantity:
+          query.start_quantity && query.end_quantity
+            ? Between(query.start_quantity, query.end_quantity)
+            : query.start_quantity
+            ? MoreThan(query.start_quantity)
+            : query.end_quantity
+            ? LessThan(query.end_quantity)
+            : undefined,
+      },
+      order: {
+        [query.order_by || 'datetime']: query.order === 'ASC' ? 'ASC' : 'DESC',
+      },
       relations: {
         product: true,
         animal: true,
       },
     });
+  }
+
+  async getMovementById(id: string) {
+    return await this.movementsRepository.findOne({
+      where: { id },
+      relations: {
+        product: true,
+        animal: true,
+      },
+    });
+  }
+
+  async updateMovement(id: string, data: MovementsDTO) {
+    return await this.movementsRepository.save({
+      id,
+      ...data,
+      product: { id: data.product_id },
+      animal: { id: data.animal_id },
+      datetime: new Date(data.datetime),
+    });
+  }
+
+  async deleteMovement(id: string) {
+    return await this.movementsRepository.delete(id);
   }
 }
