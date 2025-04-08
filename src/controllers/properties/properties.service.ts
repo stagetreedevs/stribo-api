@@ -33,7 +33,18 @@ export class PropertiesService {
       },
     });
 
+    if (!products.length) {
+      return [];
+    }
+
     return products.map((product) => {
+      if (!product.movements) {
+        return {
+          ...product,
+          quantity: 0,
+        };
+      }
+
       const quantity = product.movements.reduce((acc: number, movement) => {
         if (movement.type === 'IN') {
           return acc + Number(movement.quantity);
@@ -54,6 +65,13 @@ export class PropertiesService {
 
     if (!product) {
       return null;
+    }
+
+    if (!product.movements) {
+      return {
+        ...product,
+        quantity: 0,
+      };
     }
 
     const quantity = product.movements.reduce((acc: number, movement) => {
