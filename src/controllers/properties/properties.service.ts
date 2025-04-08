@@ -20,9 +20,10 @@ export class PropertiesService {
     return await this.productsRepository.save(product);
   }
 
-  async getAllProducts(query: ProductsQueryDTO) {
+  async getAllProducts(query: ProductsQueryDTO, property_id?: string) {
     const products = await this.productsRepository.find({
       where: {
+        property_id: property_id || undefined,
         category: query.category || undefined,
         name: query.name || undefined,
         measurement_unit: query.measurement_unit || undefined,
@@ -69,8 +70,11 @@ export class PropertiesService {
     };
   }
 
-  async getAllProductsNames() {
+  async getAllProductsNames(property_id?: string) {
     const products = await this.productsRepository.find({
+      where: {
+        property_id: property_id || undefined,
+      },
       select: {
         name: true,
         id: true,
@@ -104,7 +108,7 @@ export class PropertiesService {
     return await this.movementsRepository.save(movement);
   }
 
-  async getAllMovements(query: MovementsQueryDTO) {
+  async getAllMovements(query: MovementsQueryDTO, property_id?: string) {
     return await this.movementsRepository.find({
       where: {
         datetime:
@@ -116,6 +120,7 @@ export class PropertiesService {
             ? LessThan(query.end_date)
             : undefined,
         type: query.type || undefined,
+        property_id: property_id || undefined,
         product: query.category ? { category: query.category } : undefined,
         quantity:
           query.start_quantity && query.end_quantity

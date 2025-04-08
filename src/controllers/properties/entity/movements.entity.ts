@@ -12,6 +12,9 @@ export class MovementsEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
+  property_id: string;
+
   @Column({ type: 'enum', enum: MovementType })
   type: MovementType;
 

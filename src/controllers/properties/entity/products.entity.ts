@@ -14,6 +14,9 @@ export class ProductsEntity {
   id: string;
 
   @Column()
+  property_id: string;
+
+  @Column()
   name: string;
 
   @Column()
