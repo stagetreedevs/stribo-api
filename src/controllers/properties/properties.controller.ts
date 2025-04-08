@@ -10,11 +10,18 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PropertiesService } from './properties.service';
-import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProductsDTO, ProductsQueryDTO } from './dto/products.dto';
 import { MovementsDTO, MovementsQueryDTO } from './dto/movements.dto';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
+@ApiBearerAuth()
 @ApiTags('Properties')
 @Controller('properties')
 export class PropertiesController {
