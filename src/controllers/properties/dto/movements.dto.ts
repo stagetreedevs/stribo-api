@@ -5,7 +5,7 @@ export class MovementsDTO {
   @ApiProperty()
   property_id: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: MovementType })
   type: MovementType;
 
   @ApiProperty()

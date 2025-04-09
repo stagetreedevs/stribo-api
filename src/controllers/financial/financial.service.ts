@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BankAccount } from './entity/bank-account.entity';
 import { Repository } from 'typeorm';
 import { BankAccountDTO } from './dto/bank-account.dto';
-import { Category } from './entity/category.entity';
+import { Category, FieldEntity, FieldType } from './entity/category.entity';
 import { CategoryDTO, FilterCategoryDTO } from './dto/category.dto';
+import { AnimalService } from '../animal/animal.service';
 
 @Injectable()
 export class FinancialService {
@@ -13,6 +14,7 @@ export class FinancialService {
     private bankAccountRepository: Repository<BankAccount>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    private readonly animalService: AnimalService,
   ) {}
 
   // ** Bank Account ** //
@@ -80,6 +82,33 @@ export class FinancialService {
       label: category.name,
       value: category.id,
     }));
+  }
+
+  async getFieldsByCategoryId(id: string) {
+    const category = await this.categoryRepository.findOne({
+      where: { id },
+      select: {
+        fields: true,
+      },
+    });
+
+    return category.fields.map(async (field) => {
+      if (field.type === FieldType.ENTITY) {
+        if (field.entity === FieldEntity.ANIMAL) {
+          field.items.push(...(await this.animalService.findAllNamesWithId()));
+        } else if (field.entity === FieldEntity.ANIMAL_MALE) {
+          field.items.push(
+            ...(await this.animalService.findAllNamesWithId('male')),
+          );
+        } else {
+          field.items.push(
+            ...(await this.animalService.findAllNamesWithId('female')),
+          );
+        }
+      }
+
+      return field;
+    });
   }
 
   async findOneCategory(id: string): Promise<Category> {

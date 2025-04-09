@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CategoryType } from '../entity/category.entity';
+import { CategoryType, Field } from '../entity/category.entity';
 
 export class CategoryDTO {
   @ApiProperty()
@@ -10,6 +10,9 @@ export class CategoryDTO {
 
   @ApiProperty()
   name: string;
+
+  @ApiProperty({ type: Field, isArray: true })
+  fields: Field[];
 }
 
 export class FilterCategoryDTO {

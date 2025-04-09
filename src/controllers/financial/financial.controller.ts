@@ -121,6 +121,14 @@ export class FinancialController {
 
   @ApiTags('CATEGORIA')
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'CAMPOS DA CATEGORIA' })
+  @Get('category/:id/fields')
+  async getFieldsByCategoryId(@Param('id') id: string) {
+    return this.financialService.getFieldsByCategoryId(id);
+  }
+
+  @ApiTags('CATEGORIA')
+  @UseGuards(JwtAuthGuard)
   @Put('category/:id')
   @ApiOperation({ summary: 'ATUALIZA UMA CATEGORIA' })
   @ApiBody({ type: CategoryDTO })
