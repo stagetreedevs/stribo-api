@@ -31,6 +31,9 @@ export class PropertiesService {
       order: {
         [query.order_by || 'name']: query.order === 'ASC' ? 'ASC' : 'DESC',
       },
+      relations: {
+        movements: true,
+      },
     });
 
     if (!products.length) {
@@ -61,7 +64,12 @@ export class PropertiesService {
   }
 
   async getProductById(id: string) {
-    const product = await this.productsRepository.findOne({ where: { id } });
+    const product = await this.productsRepository.findOne({
+      where: { id },
+      relations: {
+        movements: true,
+      },
+    });
 
     if (!product) {
       return null;
