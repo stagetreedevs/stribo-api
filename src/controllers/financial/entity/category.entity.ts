@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -26,11 +27,20 @@ export enum FieldEntity {
 }
 
 export class Field {
+  @ApiProperty()
   label: string;
+
+  @ApiProperty({ enum: FieldType })
   type: FieldType;
+
+  @ApiProperty({ required: false, enum: FieldEntity })
   entity?: FieldEntity;
+
+  @ApiProperty({ required: false, type: 'string', isArray: true })
   items?: string[];
-  is_default: boolean;
+
+  @ApiProperty({ required: false, default: false })
+  is_default?: boolean;
 }
 
 @Entity()
