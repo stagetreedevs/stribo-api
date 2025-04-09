@@ -87,8 +87,8 @@ export class PropertiesController {
   @ApiOperation({ summary: 'Get all movements' })
   @ApiQuery({ type: MovementsQueryDTO })
   async getAllMovements(@Query() query: MovementsQueryDTO) {
-    query.start_date = new Date(query.start_date);
-    query.end_date = new Date(query.end_date);
+    query.start_date = query.start_date ? new Date(query.start_date) : null;
+    query.end_date = query.end_date ? new Date(query.end_date) : null;
 
     return await this.propertiesService.getAllMovements(query);
   }
