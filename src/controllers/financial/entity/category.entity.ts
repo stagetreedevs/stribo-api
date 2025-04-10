@@ -3,9 +3,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Transaction } from './transaction.entity';
 
 export enum CategoryType {
   REVENUE = 'revenue',
@@ -59,6 +61,9 @@ export class Category {
 
   @Column({ type: 'jsonb' })
   fields: Field[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.category)
+  transactions: Transaction[];
 
   @CreateDateColumn()
   createdAt: Date;
