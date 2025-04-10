@@ -9,6 +9,7 @@ import { AnimalService } from '../animal/animal.service';
 import { Transaction } from './entity/transaction.entity';
 import { Period, TransactionDTO } from './dto/transaction.dto';
 import { Installment } from './entity/installment.entity';
+import { S3Service } from '../s3/s3.service';
 
 @Injectable()
 export class FinancialService {
@@ -22,6 +23,7 @@ export class FinancialService {
     @InjectRepository(Installment)
     private installmentRepository: Repository<Installment>,
     private readonly animalService: AnimalService,
+    private readonly s3Service: S3Service,
   ) {}
 
   // ** Bank Account ** //
@@ -152,24 +154,24 @@ export class FinancialService {
       throw new NotFoundException('Category not found');
     }
 
-    const transaction = this.transactionRepository.create({
-      bankAccount: { id: bank_account_id },
-      category: { id: category_id },
-      beneficiary_name: data.beneficiary_name,
-      client_name: data.client_name,
-      commission_type: data.commission_type,
-      commission_value: data.commission_value,
-      datetime: data.datetime,
-      description: data.description,
-      extra_fields: data.extra_fields,
-      original_value: data.original_value,
-      property_id: data.property_id,
-      type: data.type,
-    });
-
-    const newTransaction = await this.transactionRepository.save(transaction);
-
     if (!data.is_installment && !data.is_periodically) {
+      const transaction = this.transactionRepository.create({
+        bankAccount: { id: bank_account_id },
+        category: { id: category_id },
+        beneficiary_name: data.beneficiary_name,
+        client_name: data.client_name,
+        commission_type: data.commission_type,
+        commission_value: data.commission_value,
+        datetime: data.datetime,
+        description: data.description,
+        extra_fields: data.extra_fields,
+        original_value: data.original_value,
+        property_id: data.property_id,
+        type: data.type,
+      });
+
+      const newTransaction = await this.transactionRepository.save(transaction);
+
       const installment = this.installmentRepository.create({
         due_date: data.datetime,
         value: data.original_value,
@@ -177,117 +179,245 @@ export class FinancialService {
       });
 
       await this.installmentRepository.save(installment);
+
+      return await this.transactionRepository.findOne({
+        where: { id: newTransaction.id },
+        relations: {
+          bankAccount: true,
+          category: true,
+          installments: true,
+        },
+      });
     } else if (!data.is_installment && data.is_periodically) {
       if (data.max_date_period) {
         throw new NotFoundException('Max date period not found');
       }
 
-      const installments = [];
+      let transaction: Transaction | undefined = undefined;
 
       switch (data.period) {
         case Period.WEEKLY:
           for (
-            let i = newTransaction.datetime;
+            let i = data.datetime;
             i <= data.max_date_period;
             i.setDate(i.getDate() + 7)
           ) {
-            installments.push({
-              due_date: new Date(i),
-              value: data.original_value,
-              transaction: { id: newTransaction.id },
+            const newTransaction = this.transactionRepository.create({
+              bankAccount: { id: bank_account_id },
+              category: { id: category_id },
+              beneficiary_name: data.beneficiary_name,
+              client_name: data.client_name,
+              commission_type: data.commission_type,
+              commission_value: data.commission_value,
+              datetime: new Date(i),
+              description: data.description,
+              extra_fields: data.extra_fields,
+              original_value: data.original_value,
+              property_id: data.property_id,
+              type: data.type,
             });
+
+            if (!transaction) {
+              transaction = await this.transactionRepository.save(
+                newTransaction,
+              );
+            }
           }
           break;
         case Period.MONTHLY:
           for (
-            let i = newTransaction.datetime;
+            let i = data.datetime;
             i <= data.max_date_period;
             i.setMonth(i.getMonth() + 1)
           ) {
-            installments.push({
-              due_date: new Date(i),
-              value: data.original_value,
-              transaction: { id: newTransaction.id },
+            const newTransaction = this.transactionRepository.create({
+              bankAccount: { id: bank_account_id },
+              category: { id: category_id },
+              beneficiary_name: data.beneficiary_name,
+              client_name: data.client_name,
+              commission_type: data.commission_type,
+              commission_value: data.commission_value,
+              datetime: new Date(i),
+              description: data.description,
+              extra_fields: data.extra_fields,
+              original_value: data.original_value,
+              property_id: data.property_id,
+              type: data.type,
             });
+
+            if (!transaction) {
+              transaction = await this.transactionRepository.save(
+                newTransaction,
+              );
+            }
           }
           break;
         case Period.BIWEEKLY:
           for (
-            let i = newTransaction.datetime;
+            let i = data.datetime;
             i <= data.max_date_period;
             i.setDate(i.getDate() + 14)
           ) {
-            installments.push({
-              due_date: new Date(i),
-              value: data.original_value,
-              transaction: { id: newTransaction.id },
+            const newTransaction = this.transactionRepository.create({
+              bankAccount: { id: bank_account_id },
+              category: { id: category_id },
+              beneficiary_name: data.beneficiary_name,
+              client_name: data.client_name,
+              commission_type: data.commission_type,
+              commission_value: data.commission_value,
+              datetime: new Date(i),
+              description: data.description,
+              extra_fields: data.extra_fields,
+              original_value: data.original_value,
+              property_id: data.property_id,
+              type: data.type,
             });
+
+            if (!transaction) {
+              transaction = await this.transactionRepository.save(
+                newTransaction,
+              );
+            }
           }
           break;
         case Period.BIMONTHLY:
           for (
-            let i = newTransaction.datetime;
+            let i = data.datetime;
             i <= data.max_date_period;
             i.setMonth(i.getMonth() + 2)
           ) {
-            installments.push({
-              due_date: new Date(i),
-              value: data.original_value,
-              transaction: { id: newTransaction.id },
+            const newTransaction = this.transactionRepository.create({
+              bankAccount: { id: bank_account_id },
+              category: { id: category_id },
+              beneficiary_name: data.beneficiary_name,
+              client_name: data.client_name,
+              commission_type: data.commission_type,
+              commission_value: data.commission_value,
+              datetime: new Date(i),
+              description: data.description,
+              extra_fields: data.extra_fields,
+              original_value: data.original_value,
+              property_id: data.property_id,
+              type: data.type,
             });
+
+            if (!transaction) {
+              transaction = await this.transactionRepository.save(
+                newTransaction,
+              );
+            }
           }
           break;
         case Period.QUARTERLY:
           for (
-            let i = newTransaction.datetime;
+            let i = data.datetime;
             i <= data.max_date_period;
             i.setMonth(i.getMonth() + 3)
           ) {
-            installments.push({
-              due_date: new Date(i),
-              value: data.original_value,
-              transaction: { id: newTransaction.id },
+            const newTransaction = this.transactionRepository.create({
+              bankAccount: { id: bank_account_id },
+              category: { id: category_id },
+              beneficiary_name: data.beneficiary_name,
+              client_name: data.client_name,
+              commission_type: data.commission_type,
+              commission_value: data.commission_value,
+              datetime: new Date(i),
+              description: data.description,
+              extra_fields: data.extra_fields,
+              original_value: data.original_value,
+              property_id: data.property_id,
+              type: data.type,
             });
+
+            if (!transaction) {
+              transaction = await this.transactionRepository.save(
+                newTransaction,
+              );
+            }
           }
           break;
         case Period.SEMIANNUALLY:
           for (
-            let i = newTransaction.datetime;
+            let i = data.datetime;
             i <= data.max_date_period;
             i.setMonth(i.getMonth() + 6)
           ) {
-            installments.push({
-              due_date: new Date(i),
-              value: data.original_value,
-              transaction: { id: newTransaction.id },
+            const newTransaction = this.transactionRepository.create({
+              bankAccount: { id: bank_account_id },
+              category: { id: category_id },
+              beneficiary_name: data.beneficiary_name,
+              client_name: data.client_name,
+              commission_type: data.commission_type,
+              commission_value: data.commission_value,
+              datetime: new Date(i),
+              description: data.description,
+              extra_fields: data.extra_fields,
+              original_value: data.original_value,
+              property_id: data.property_id,
+              type: data.type,
             });
+
+            if (!transaction) {
+              transaction = await this.transactionRepository.save(
+                newTransaction,
+              );
+            }
           }
           break;
         case Period.ANNUALLY:
           for (
-            let i = newTransaction.datetime;
+            let i = data.datetime;
             i <= data.max_date_period;
             i.setFullYear(i.getFullYear() + 1)
           ) {
-            installments.push({
-              due_date: new Date(i),
-              value: data.original_value,
-              transaction: { id: newTransaction.id },
+            const newTransaction = this.transactionRepository.create({
+              bankAccount: { id: bank_account_id },
+              category: { id: category_id },
+              beneficiary_name: data.beneficiary_name,
+              client_name: data.client_name,
+              commission_type: data.commission_type,
+              commission_value: data.commission_value,
+              datetime: new Date(i),
+              description: data.description,
+              extra_fields: data.extra_fields,
+              original_value: data.original_value,
+              property_id: data.property_id,
+              type: data.type,
             });
+
+            if (!transaction) {
+              transaction = await this.transactionRepository.save(
+                newTransaction,
+              );
+            }
           }
           break;
         default:
           throw new NotFoundException('Period not found');
       }
 
-      installments.map(async (installment) => {
-        const newInstallment = this.installmentRepository.create(installment);
-        await this.installmentRepository.save(newInstallment);
-      });
+      return transaction;
     } else {
       if (!data.installments) {
         throw new NotFoundException('Installments not found');
       }
+
+      const transaction = this.transactionRepository.create({
+        bankAccount: { id: bank_account_id },
+        category: { id: category_id },
+        beneficiary_name: data.beneficiary_name,
+        client_name: data.client_name,
+        commission_type: data.commission_type,
+        commission_value: data.commission_value,
+        datetime: data.datetime,
+        description: data.description,
+        extra_fields: data.extra_fields,
+        original_value: data.original_value,
+        property_id: data.property_id,
+        type: data.type,
+      });
+
+      const newTransaction = await this.transactionRepository.save(transaction);
 
       const installments = [];
 
@@ -306,15 +436,59 @@ export class FinancialService {
         const newInstallment = this.installmentRepository.create(installment);
         await this.installmentRepository.save(newInstallment);
       });
+
+      return await this.transactionRepository.findOne({
+        where: { id: newTransaction.id },
+        relations: {
+          bankAccount: true,
+          category: true,
+          installments: true,
+        },
+      });
+    }
+  }
+
+  async updateDocuments(id: string, files: Array<Express.Multer.File>) {
+    const transaction = await this.transactionRepository.findOne({
+      where: { id },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
     }
 
-    return await this.transactionRepository.findOne({
-      where: { id: newTransaction.id },
-      relations: {
-        bankAccount: true,
-        category: true,
-        installments: true,
-      },
-    });
+    if (files) {
+      if (files['contract_file'] && files['contract_file'].length > 0) {
+        transaction.contract_file = await this.s3Service.upload(
+          files['contract_file'][0],
+          'contract_file',
+        );
+      }
+
+      if (files['invoice_file'] && files['invoice_file'].length > 0) {
+        transaction.invoice_file = await this.s3Service.upload(
+          files['invoice_file'][0],
+          'invoice_file',
+        );
+      }
+
+      if (files['receipt_file'] && files['receipt_file'].length > 0) {
+        transaction.receipt_file = await this.s3Service.upload(
+          files['receipt_file'][0],
+          'receipt_file',
+        );
+      }
+
+      if (files['attachments_files'] && files['attachments_files'].length > 0) {
+        transaction.attachments_files = [];
+
+        for (const file of files['attachments_files']) {
+          const url = await this.s3Service.upload(file, 'attachments_files');
+          transaction.attachments_files.push(url);
+        }
+      }
+    }
+
+    return await this.transactionRepository.save(transaction);
   }
 }

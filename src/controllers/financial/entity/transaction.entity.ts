@@ -79,6 +79,18 @@ export class Transaction {
   })
   installments: Installment[];
 
+  @Column({ nullable: true })
+  contract_file: string;
+
+  @Column({ nullable: true })
+  invoice_file: string;
+
+  @Column({ nullable: true })
+  receipt_file: string;
+
+  @Column({ nullable: true, type: 'simple-array' })
+  attachments_files: string[];
+
   @CreateDateColumn()
   createdAt: Date;
 
