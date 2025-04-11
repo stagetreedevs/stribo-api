@@ -96,28 +96,33 @@ export class FinancialService {
   async getFieldsByCategoryId(id: string) {
     const category = await this.categoryRepository.findOne({
       where: { id },
-      select: {
-        fields: true,
-      },
     });
 
-    return category.fields.map(async (field) => {
-      if (field.type === FieldType.ENTITY) {
-        if (field.entity === FieldEntity.ANIMAL) {
-          field.items.push(...(await this.animalService.findAllNamesWithId()));
-        } else if (field.entity === FieldEntity.ANIMAL_MALE) {
-          field.items.push(
-            ...(await this.animalService.findAllNamesWithId('male')),
-          );
-        } else {
-          field.items.push(
-            ...(await this.animalService.findAllNamesWithId('female')),
-          );
+    return await Promise.all(
+      category.fields.map(async (field) => {
+        if (!field.items || field.items.length === 0) {
+          field.items = [];
         }
-      }
 
-      return field;
-    });
+        if (field.type === FieldType.ENTITY) {
+          if (field.entity === FieldEntity.ANIMAL) {
+            field.items.push(
+              ...(await this.animalService.findAllNamesWithId()),
+            );
+          } else if (field.entity === FieldEntity.ANIMAL_MALE) {
+            field.items.push(
+              ...(await this.animalService.findAllNamesWithId('male')),
+            );
+          } else {
+            field.items.push(
+              ...(await this.animalService.findAllNamesWithId('female')),
+            );
+          }
+        }
+
+        return field;
+      }),
+    );
   }
 
   async findOneCategory(id: string): Promise<Category> {
@@ -427,7 +432,7 @@ export class FinancialService {
 
         installments.push({
           due_date: dueDate,
-          value: data.original_value,
+          value: (data.original_value / data.installments).toFixed(2),
           transaction: { id: newTransaction.id },
         });
       }

@@ -16,6 +16,8 @@ import { BankAccountDTO, FilterBankAccountDTO } from './dto/bank-account.dto';
 import { BankAccount } from './entity/bank-account.entity';
 import { CategoryDTO, FilterCategoryDTO } from './dto/category.dto';
 import { Category } from './entity/category.entity';
+import { TransactionDTO } from './dto/transaction.dto';
+import { Transaction } from './entity/transaction.entity';
 @ApiBearerAuth()
 @Controller('financial')
 export class FinancialController {
@@ -110,7 +112,7 @@ export class FinancialController {
   }
 
   @ApiTags('CATEGORIA')
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get('category/names')
   @ApiOperation({ summary: 'NOMES DAS CATEGORIAS' })
   async findCategoryNames(
@@ -120,7 +122,7 @@ export class FinancialController {
   }
 
   @ApiTags('CATEGORIA')
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'CAMPOS DA CATEGORIA' })
   @Get('category/:id/fields')
   async getFieldsByCategoryId(@Param('id') id: string) {
@@ -145,5 +147,15 @@ export class FinancialController {
   @ApiOperation({ summary: 'REMOVE UMA CATEGORIA' })
   async removeCategory(@Param('id') id: string): Promise<{ message: string }> {
     return this.financialService.removeCategory(id);
+  }
+
+  // ** Transaction **
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Post('transaction')
+  @ApiOperation({ summary: 'CRIA UMA TRANSAÇÃO' })
+  @ApiBody({ type: TransactionDTO })
+  async createTransaction(@Body() body: TransactionDTO): Promise<Transaction> {
+    return this.financialService.createTransaction(body);
   }
 }

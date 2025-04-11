@@ -20,6 +20,7 @@ export enum FieldType {
   DECIMAL = 'decimal',
   SELECT = 'select',
   ENTITY = 'entity',
+  DATE = 'date',
 }
 
 export enum FieldEntity {
@@ -40,9 +41,6 @@ export class Field {
 
   @ApiProperty({ required: false, type: 'string', isArray: true })
   items?: string[];
-
-  @ApiProperty({ required: false, default: false })
-  is_default?: boolean;
 }
 
 @Entity()
@@ -50,7 +48,7 @@ export class Category {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
   property_id: string;
 
   @Column({ type: 'enum', enum: CategoryType })
@@ -61,6 +59,9 @@ export class Category {
 
   @Column({ type: 'jsonb' })
   fields: Field[];
+
+  @Column({ default: false })
+  is_default: boolean;
 
   @OneToMany(() => Transaction, (transaction) => transaction.category)
   transactions: Transaction[];

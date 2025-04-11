@@ -5,9 +5,16 @@ import { BankAccount } from './entity/bank-account.entity';
 import { FinancialController } from './financial.controller';
 import { Category } from './entity/category.entity';
 import { AnimalModule } from '../animal/animal.module';
+import { Transaction } from './entity/transaction.entity';
+import { Installment } from './entity/installment.entity';
+import { S3Module } from '../s3/s3.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BankAccount, Category]), AnimalModule],
+  imports: [
+    TypeOrmModule.forFeature([BankAccount, Category, Transaction, Installment]),
+    AnimalModule,
+    S3Module,
+  ],
   providers: [FinancialService],
   controllers: [FinancialController],
 })

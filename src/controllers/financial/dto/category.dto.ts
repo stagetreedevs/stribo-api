@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { CategoryType, Field } from '../entity/category.entity';
 
 export class CategoryDTO {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   property_id: string;
 
   @ApiProperty({ enum: CategoryType })
@@ -13,6 +13,9 @@ export class CategoryDTO {
 
   @ApiProperty({ type: Field, isArray: true })
   fields: Field[];
+
+  @ApiProperty({ required: false, default: false })
+  is_default: boolean;
 }
 
 export class FilterCategoryDTO {

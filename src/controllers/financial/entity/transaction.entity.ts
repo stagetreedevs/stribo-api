@@ -17,7 +17,7 @@ export class ExtraField {
   label: string;
 
   @ApiProperty()
-  value: string;
+  value: string | number;
 }
 
 export enum CommissionType {
@@ -26,7 +26,7 @@ export enum CommissionType {
 }
 
 export enum TransactionType {
-  INCOME = 'income',
+  REVENUE = 'revenue',
   EXPENSE = 'expense',
 }
 
