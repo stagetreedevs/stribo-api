@@ -496,4 +496,31 @@ export class FinancialService {
 
     return await this.transactionRepository.save(transaction);
   }
+
+  async getAllTransactions() {
+    return await this.transactionRepository.find({
+      relations: {
+        bankAccount: true,
+        category: true,
+        installments: true,
+      },
+    });
+  }
+
+  async getTransactionById(id: string) {
+    const transaction = await this.transactionRepository.findOne({
+      where: { id },
+      relations: {
+        bankAccount: true,
+        category: true,
+        installments: true,
+      },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    return transaction;
+  }
 }

@@ -158,4 +158,20 @@ export class FinancialController {
   async createTransaction(@Body() body: TransactionDTO): Promise<Transaction> {
     return this.financialService.createTransaction(body);
   }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Get('transaction')
+  @ApiOperation({ summary: 'TODAS TRANSAÇÕES' })
+  async findAllTransactions(): Promise<Transaction[]> {
+    return this.financialService.getAllTransactions();
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Get('transaction/details/:id')
+  @ApiOperation({ summary: 'BUSCA UMA TRANSAÇÃO' })
+  async findOneTransaction(@Param('id') id: string): Promise<Transaction> {
+    return this.financialService.getTransactionById(id);
+  }
 }
