@@ -38,9 +38,6 @@ export class TransactionDTO {
   extra_fields: ExtraField[];
 
   @ApiProperty()
-  client_name: string;
-
-  @ApiProperty()
   original_value: number;
 
   @ApiProperty({ required: false, enum: CommissionType })

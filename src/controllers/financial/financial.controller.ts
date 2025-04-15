@@ -151,7 +151,7 @@ export class FinancialController {
 
   // ** Transaction **
   @ApiTags('TRANSAÇÃO')
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Post('transaction')
   @ApiOperation({ summary: 'CRIA UMA TRANSAÇÃO' })
   @ApiBody({ type: TransactionDTO })

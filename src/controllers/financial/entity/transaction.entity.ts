@@ -57,9 +57,6 @@ export class Transaction {
   extra_fields: ExtraField[];
 
   @Column()
-  client_name: string;
-
-  @Column()
   original_value: number;
 
   @Column({ enum: CommissionType, nullable: true, default: null })

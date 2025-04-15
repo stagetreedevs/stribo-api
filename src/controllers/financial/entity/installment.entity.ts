@@ -12,7 +12,7 @@ export class Installment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'float' })
   value: number;
 
   @Column({ type: 'timestamp' })
