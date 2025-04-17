@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -17,7 +18,8 @@ import { BankAccount } from './entity/bank-account.entity';
 import { CategoryDTO, FilterCategoryDTO } from './dto/category.dto';
 import { Category } from './entity/category.entity';
 import { TransactionDTO } from './dto/transaction.dto';
-import { Transaction } from './entity/transaction.entity';
+import { QueryTransaction, Transaction } from './entity/transaction.entity';
+import { InstallmentStatus } from './entity/installment.entity';
 @ApiBearerAuth()
 @Controller('financial')
 export class FinancialController {
@@ -169,9 +171,28 @@ export class FinancialController {
 
   @ApiTags('TRANSAÇÃO')
   @UseGuards(JwtAuthGuard)
+  @Get('transaction/grouped')
+  @ApiOperation({ summary: 'TRANSAÇÕES AGRUPADAS' })
+  async findGroupedTransactions(@Query() query: QueryTransaction) {
+    return this.financialService.getAllTransactionsGroupedByDate(query);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
   @Get('transaction/details/:id')
   @ApiOperation({ summary: 'BUSCA UMA TRANSAÇÃO' })
   async findOneTransaction(@Param('id') id: string): Promise<Transaction> {
     return this.financialService.getTransactionById(id);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Patch('transaction/installments/:id/status/:status')
+  @ApiOperation({ summary: 'ATUALIZA O STATUS DE UMA TRANSAÇÃO' })
+  async updateInstallmentStatus(
+    @Param('id') id: string,
+    @Param('status') status: InstallmentStatus,
+  ) {
+    return this.financialService.updateStatusInstallment(id, status);
   }
 }

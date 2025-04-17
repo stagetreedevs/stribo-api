@@ -94,3 +94,32 @@ export class Transaction {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+
+export enum FilterPeriodDate {
+  TODAY = 'today',
+  SEVEN_DAYS = 'seven_days',
+  THIRTY_DAYS = 'thirty_days',
+}
+
+export class QueryTransaction {
+  @ApiProperty({ enum: FilterPeriodDate, required: false })
+  period_date?: FilterPeriodDate;
+
+  @ApiProperty({ required: false })
+  start_date?: Date;
+
+  @ApiProperty({ required: false })
+  end_date?: Date;
+
+  @ApiProperty({ required: false })
+  bank_account_id?: string;
+
+  @ApiProperty({ required: false })
+  category_id?: string;
+
+  @ApiProperty({ required: false })
+  type?: TransactionType;
+
+  @ApiProperty({ required: false })
+  property_id?: string;
+}

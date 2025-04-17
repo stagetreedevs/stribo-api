@@ -1,14 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BankAccount } from './entity/bank-account.entity';
-import { Repository } from 'typeorm';
+import {
+  Between,
+  LessThan,
+  MoreThan,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { BankAccountDTO } from './dto/bank-account.dto';
 import { Category, FieldEntity, FieldType } from './entity/category.entity';
 import { CategoryDTO, FilterCategoryDTO } from './dto/category.dto';
 import { AnimalService } from '../animal/animal.service';
-import { Transaction } from './entity/transaction.entity';
+import {
+  FilterPeriodDate,
+  QueryTransaction,
+  Transaction,
+} from './entity/transaction.entity';
 import { Period, TransactionDTO } from './dto/transaction.dto';
-import { Installment } from './entity/installment.entity';
+import { Installment, InstallmentStatus } from './entity/installment.entity';
 import { S3Service } from '../s3/s3.service';
 
 @Injectable()
@@ -488,14 +498,111 @@ export class FinancialService {
     return await this.transactionRepository.save(transaction);
   }
 
-  async getAllTransactions() {
+  async getAllTransactions(property_id?: string) {
     return await this.transactionRepository.find({
+      where: {
+        property_id: property_id || undefined,
+      },
       relations: {
         bankAccount: true,
         category: true,
         installments: true,
       },
     });
+  }
+
+  async getAllTransactionsGroupedByDate(query: QueryTransaction) {
+    const {
+      property_id,
+      period_date,
+      bank_account_id,
+      category_id,
+      end_date,
+      start_date,
+      type,
+    } = query;
+
+    const transactions = await this.transactionRepository.find({
+      where: {
+        property_id: property_id || undefined,
+        bankAccount: {
+          id: bank_account_id || undefined,
+        },
+        category: {
+          id: category_id || undefined,
+        },
+        type: type || undefined,
+        datetime: period_date
+          ? period_date === FilterPeriodDate.TODAY
+            ? Between(
+                new Date(new Date().setHours(0, 0, 0, 0)),
+                new Date(new Date().setHours(23, 59, 59, 999)),
+              )
+            : period_date === FilterPeriodDate.SEVEN_DAYS
+            ? Between(
+                new Date(new Date().setDate(new Date().getDate() - 7)),
+                new Date(),
+              )
+            : period_date === FilterPeriodDate.THIRTY_DAYS
+            ? Between(
+                new Date(new Date().setDate(new Date().getDate() - 30)),
+                new Date(),
+              )
+            : undefined
+          : start_date && end_date
+          ? Between(new Date(start_date), new Date(end_date))
+          : start_date
+          ? MoreThanOrEqual(new Date(start_date))
+          : end_date
+          ? LessThan(new Date(end_date))
+          : undefined,
+      },
+      relations: {
+        bankAccount: true,
+        category: true,
+        installments: true,
+      },
+    });
+
+    const groups: {
+      date: string;
+      total: number;
+      transactions: Transaction[];
+    }[] = [];
+
+    transactions.forEach((transaction) => {
+      const date = new Date(transaction.datetime).toLocaleDateString('pt-BR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+
+      const group = groups.find((group) => group.date === date);
+
+      if (group) {
+        group.transactions.push(transaction);
+        group.total += transaction.original_value;
+      } else {
+        groups.push({
+          date,
+          total: transaction.original_value,
+          transactions: [transaction],
+        });
+      }
+    });
+
+    groups.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+
+    groups.forEach((group) => {
+      group.transactions.sort(
+        (a, b) =>
+          new Date(b.datetime).getTime() - new Date(a.datetime).getTime(),
+      );
+    });
+
+    return groups;
   }
 
   async getTransactionById(id: string) {
@@ -513,5 +620,15 @@ export class FinancialService {
     }
 
     return transaction;
+  }
+
+  updateStatusInstallment(
+    id: string,
+    status: InstallmentStatus,
+  ): Promise<Installment> {
+    return this.installmentRepository.save({
+      id,
+      status,
+    });
   }
 }
