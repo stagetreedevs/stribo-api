@@ -3,9 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BankAccount } from './entity/bank-account.entity';
 import {
   Between,
+  Equal,
+  IsNull,
   LessThan,
   MoreThan,
   MoreThanOrEqual,
+  Or,
   Repository,
 } from 'typeorm';
 import { BankAccountDTO } from './dto/bank-account.dto';
@@ -85,7 +88,10 @@ export class FinancialService {
     const { property_id, type } = query;
 
     return await this.categoryRepository.find({
-      where: { property_id: property_id || undefined, type: type || undefined },
+      where: {
+        property_id: property_id ? Or(Equal(property_id), IsNull()) : undefined,
+        type: type || undefined,
+      },
     });
   }
 
@@ -95,7 +101,10 @@ export class FinancialService {
     const { property_id, type } = query;
 
     const categories = await this.categoryRepository.find({
-      where: { property_id: property_id || undefined, type: type || undefined },
+      where: {
+        property_id: property_id ? Or(Equal(property_id), IsNull()) : undefined,
+        type: type || undefined,
+      },
     });
     return categories.map((category) => ({
       label: category.name,
@@ -524,7 +533,7 @@ export class FinancialService {
 
     const transactions = await this.transactionRepository.find({
       where: {
-        property_id: property_id || undefined,
+        property_id: property_id ? Or(Equal(property_id), IsNull()) : undefined,
         bankAccount: {
           id: bank_account_id || undefined,
         },

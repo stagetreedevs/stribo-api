@@ -60,9 +60,6 @@ export class Category {
   @Column({ type: 'jsonb' })
   fields: Field[];
 
-  @Column({ default: false })
-  is_default: boolean;
-
   @OneToMany(() => Transaction, (transaction) => transaction.category)
   transactions: Transaction[];
 

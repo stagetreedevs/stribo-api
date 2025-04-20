@@ -8,7 +8,9 @@ import {
   Post,
   Put,
   Query,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FinancialService } from './financial.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
@@ -20,6 +22,7 @@ import { Category } from './entity/category.entity';
 import { TransactionDTO } from './dto/transaction.dto';
 import { QueryTransaction, Transaction } from './entity/transaction.entity';
 import { InstallmentStatus } from './entity/installment.entity';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 @ApiBearerAuth()
 @Controller('financial')
 export class FinancialController {
@@ -175,6 +178,39 @@ export class FinancialController {
   @ApiOperation({ summary: 'TRANSAÇÕES AGRUPADAS' })
   async findGroupedTransactions(@Query() query: QueryTransaction) {
     return this.financialService.getAllTransactionsGroupedByDate(query);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Post('transaction/:id/documents')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      {
+        name: 'contract_file',
+        maxCount: 1,
+      },
+      {
+        name: 'invoice_file',
+        maxCount: 1,
+      },
+      {
+        name: 'receipt_file',
+        maxCount: 1,
+      },
+      {
+        name: 'attachments_files',
+        maxCount: 1,
+      },
+    ]),
+  )
+  @ApiOperation({ summary: 'ADICIONA DOCUMENTOS A TRANSAÇÃO' })
+  @ApiBody({ type: TransactionDTO })
+  async addDocuments(
+    @Param('id') id: string,
+    @UploadedFiles()
+    files: Array<Express.Multer.File>,
+  ): Promise<Transaction> {
+    return this.financialService.updateDocuments(id, files);
   }
 
   @ApiTags('TRANSAÇÃO')

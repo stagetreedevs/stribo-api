@@ -13,9 +13,6 @@ export class CategoryDTO {
 
   @ApiProperty({ type: Field, isArray: true })
   fields: Field[];
-
-  @ApiProperty({ required: false, default: false })
-  is_default: boolean;
 }
 
 export class FilterCategoryDTO {
