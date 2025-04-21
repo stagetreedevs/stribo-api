@@ -158,6 +158,11 @@ export class FinancialService {
     return { message: 'Category removed successfully' };
   }
 
+  async deleteAllCategories(): Promise<{ message: string }> {
+    await this.categoryRepository.delete({});
+    return { message: 'Categories removed successfully' };
+  }
+
   // ** Transaction ** //
   async createTransaction(data: TransactionDTO) {
     const { bank_account_id, category_id } = data;
@@ -171,10 +176,12 @@ export class FinancialService {
     });
 
     if (!bankAccount) {
+      console.error('Bank account not found');
       throw new NotFoundException('Bank account not found');
     }
 
     if (!category) {
+      console.error('Category not found');
       throw new NotFoundException('Category not found');
     }
 
@@ -212,7 +219,7 @@ export class FinancialService {
         },
       });
     } else if (!data.is_installment && data.is_periodically) {
-      if (data.max_date_period) {
+      if (!data.max_date_period) {
         throw new NotFoundException('Max date period not found');
       }
 
@@ -221,8 +228,8 @@ export class FinancialService {
       switch (data.period) {
         case Period.WEEKLY:
           for (
-            let i = data.datetime;
-            i <= data.max_date_period;
+            let i = new Date(data.datetime);
+            i.getTime() <= new Date(data.max_date_period).getTime();
             i.setDate(i.getDate() + 7)
           ) {
             const newTransaction = this.transactionRepository.create({
@@ -248,8 +255,8 @@ export class FinancialService {
           break;
         case Period.MONTHLY:
           for (
-            let i = data.datetime;
-            i <= data.max_date_period;
+            let i = new Date(data.datetime);
+            i.getTime() <= new Date(data.max_date_period).getTime();
             i.setMonth(i.getMonth() + 1)
           ) {
             const newTransaction = this.transactionRepository.create({
@@ -275,8 +282,8 @@ export class FinancialService {
           break;
         case Period.BIWEEKLY:
           for (
-            let i = data.datetime;
-            i <= data.max_date_period;
+            let i = new Date(data.datetime);
+            i.getTime() <= new Date(data.max_date_period).getTime();
             i.setDate(i.getDate() + 14)
           ) {
             const newTransaction = this.transactionRepository.create({
@@ -302,8 +309,8 @@ export class FinancialService {
           break;
         case Period.BIMONTHLY:
           for (
-            let i = data.datetime;
-            i <= data.max_date_period;
+            let i = new Date(data.datetime);
+            i.getTime() <= new Date(data.max_date_period).getTime();
             i.setMonth(i.getMonth() + 2)
           ) {
             const newTransaction = this.transactionRepository.create({
@@ -329,8 +336,8 @@ export class FinancialService {
           break;
         case Period.QUARTERLY:
           for (
-            let i = data.datetime;
-            i <= data.max_date_period;
+            let i = new Date(data.datetime);
+            i.getTime() <= new Date(data.max_date_period).getTime();
             i.setMonth(i.getMonth() + 3)
           ) {
             const newTransaction = this.transactionRepository.create({
@@ -356,8 +363,8 @@ export class FinancialService {
           break;
         case Period.SEMIANNUALLY:
           for (
-            let i = data.datetime;
-            i <= data.max_date_period;
+            let i = new Date(data.datetime);
+            i.getTime() <= new Date(data.max_date_period).getTime();
             i.setMonth(i.getMonth() + 6)
           ) {
             const newTransaction = this.transactionRepository.create({
@@ -383,8 +390,8 @@ export class FinancialService {
           break;
         case Period.ANNUALLY:
           for (
-            let i = data.datetime;
-            i <= data.max_date_period;
+            let i = new Date(data.datetime);
+            i.getTime() <= new Date(data.max_date_period).getTime();
             i.setFullYear(i.getFullYear() + 1)
           ) {
             const newTransaction = this.transactionRepository.create({
@@ -409,12 +416,14 @@ export class FinancialService {
           }
           break;
         default:
+          console.error('Period not found');
           throw new NotFoundException('Period not found');
       }
 
       return transaction;
     } else {
       if (!data.installments) {
+        console.error('Installments not found');
         throw new NotFoundException('Installments not found');
       }
 
@@ -495,7 +504,9 @@ export class FinancialService {
       }
 
       if (files['attachments_files'] && files['attachments_files'].length > 0) {
-        transaction.attachments_files = [];
+        if (!transaction.attachments_files) {
+          transaction.attachments_files = [];
+        }
 
         for (const file of files['attachments_files']) {
           const url = await this.s3Service.upload(file, 'attachments_files');
@@ -571,6 +582,12 @@ export class FinancialService {
         category: true,
         installments: true,
       },
+      order: {
+        datetime: 'DESC',
+        installments: {
+          due_date: 'ASC',
+        },
+      },
     });
 
     const groups: {
@@ -639,5 +656,11 @@ export class FinancialService {
       id,
       status,
     });
+  }
+
+  async deleteAllTransactions(): Promise<{ message: string }> {
+    await this.transactionRepository.delete({});
+    await this.deleteAllCategories();
+    return { message: 'Transactions removed successfully' };
   }
 }

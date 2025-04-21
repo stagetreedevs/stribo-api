@@ -67,3 +67,37 @@ export class TransactionDTO {
   @ApiProperty({ required: false })
   max_date_period: Date;
 }
+
+export class DocumentsDTO {
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    isArray: true,
+    required: false,
+  })
+  contract_file: Express.Multer.File[];
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    isArray: true,
+    required: false,
+  })
+  invoice_file: Express.Multer.File[];
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    isArray: true,
+    required: false,
+  })
+  receipt_file: Express.Multer.File[];
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    isArray: true,
+    required: false,
+  })
+  attachments_files: Express.Multer.File[];
+}

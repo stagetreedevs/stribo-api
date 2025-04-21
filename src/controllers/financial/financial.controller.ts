@@ -14,12 +14,18 @@ import {
 } from '@nestjs/common';
 import { FinancialService } from './financial.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { BankAccountDTO, FilterBankAccountDTO } from './dto/bank-account.dto';
 import { BankAccount } from './entity/bank-account.entity';
 import { CategoryDTO, FilterCategoryDTO } from './dto/category.dto';
 import { Category } from './entity/category.entity';
-import { TransactionDTO } from './dto/transaction.dto';
+import { DocumentsDTO, TransactionDTO } from './dto/transaction.dto';
 import { QueryTransaction, Transaction } from './entity/transaction.entity';
 import { InstallmentStatus } from './entity/installment.entity';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
@@ -204,7 +210,11 @@ export class FinancialController {
     ]),
   )
   @ApiOperation({ summary: 'ADICIONA DOCUMENTOS A TRANSAÇÃO' })
-  @ApiBody({ type: TransactionDTO })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    type: DocumentsDTO,
+    description: 'Arquivos para upload',
+  })
   async addDocuments(
     @Param('id') id: string,
     @UploadedFiles()
@@ -231,4 +241,11 @@ export class FinancialController {
   ) {
     return this.financialService.updateStatusInstallment(id, status);
   }
+
+  // @Delete('transaction')
+  // @ApiTags('TRANSAÇÃO')
+  // @ApiOperation({ summary: 'REMOVE UMA TRANSAÇÃO' })
+  // async removeTransaction(): Promise<{ message: string }> {
+  //   return this.financialService.deleteAllTransactions();
+  // }
 }
