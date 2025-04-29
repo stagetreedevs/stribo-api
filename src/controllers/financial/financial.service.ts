@@ -19,6 +19,7 @@ import {
   FilterPeriodDate,
   QueryTransaction,
   Transaction,
+  TransactionType,
 } from './entity/transaction.entity';
 import { Period, TransactionDTO } from './dto/transaction.dto';
 import { Installment, InstallmentStatus } from './entity/installment.entity';
@@ -684,7 +685,47 @@ export class FinancialService {
       }
     });
 
+    const transactionsAll = await this.transactionRepository.find({
+      where: {
+        property_id: property_id ? Or(Equal(property_id), IsNull()) : undefined,
+      },
+      relations: {
+        bankAccount: true,
+        category: true,
+        installments: true,
+      },
+      order: {
+        datetime: 'ASC',
+      },
+    });
+
+    const balance = transactionsAll.reduce((acc, transaction) => {
+      if (transaction.type === TransactionType.EXPENSE) {
+        return acc - Number(transaction.original_value);
+      } else if (transaction.type === TransactionType.REVENUE) {
+        return acc + Number(transaction.original_value);
+      }
+      return acc;
+    }, 0);
+
+    const payableValue = transactionsAll.reduce((acc, transaction) => {
+      if (transaction.type === TransactionType.EXPENSE) {
+        return acc + Number(transaction.original_value);
+      }
+      return acc;
+    }, 0);
+
+    const receivableValue = transactionsAll.reduce((acc, transaction) => {
+      if (transaction.type === TransactionType.REVENUE) {
+        return acc + Number(transaction.original_value);
+      }
+      return acc;
+    }, 0);
+
     return {
+      balance,
+      payableValue,
+      receivableValue,
       labels: analytics.map((item) =>
         new Date(item.date).toLocaleDateString('pt-BR', {
           day: '2-digit',
