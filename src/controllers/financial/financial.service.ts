@@ -223,7 +223,7 @@ export class FinancialService {
         throw new NotFoundException('Max date period not found');
       }
 
-      let transaction: Transaction | undefined = undefined;
+      let transactionReturn: Transaction | undefined = undefined;
 
       switch (data.period) {
         case Period.WEEKLY:
@@ -246,10 +246,20 @@ export class FinancialService {
               type: data.type,
             });
 
-            if (!transaction) {
-              transaction = await this.transactionRepository.save(
-                newTransaction,
-              );
+            const transaction = await this.transactionRepository.save(
+              newTransaction,
+            );
+
+            const installment = this.installmentRepository.create({
+              due_date: new Date(i),
+              value: data.original_value,
+              transaction: { id: newTransaction.id },
+            });
+
+            await this.installmentRepository.save(installment);
+
+            if (!transactionReturn) {
+              transactionReturn = transaction;
             }
           }
           break;
@@ -273,10 +283,20 @@ export class FinancialService {
               type: data.type,
             });
 
-            if (!transaction) {
-              transaction = await this.transactionRepository.save(
-                newTransaction,
-              );
+            const transaction = await this.transactionRepository.save(
+              newTransaction,
+            );
+
+            const installment = this.installmentRepository.create({
+              due_date: new Date(i),
+              value: data.original_value,
+              transaction: { id: newTransaction.id },
+            });
+
+            await this.installmentRepository.save(installment);
+
+            if (!transactionReturn) {
+              transactionReturn = transaction;
             }
           }
           break;
@@ -300,10 +320,20 @@ export class FinancialService {
               type: data.type,
             });
 
-            if (!transaction) {
-              transaction = await this.transactionRepository.save(
-                newTransaction,
-              );
+            const transaction = await this.transactionRepository.save(
+              newTransaction,
+            );
+
+            const installment = this.installmentRepository.create({
+              due_date: new Date(i),
+              value: data.original_value,
+              transaction: { id: newTransaction.id },
+            });
+
+            await this.installmentRepository.save(installment);
+
+            if (!transactionReturn) {
+              transactionReturn = transaction;
             }
           }
           break;
@@ -327,10 +357,20 @@ export class FinancialService {
               type: data.type,
             });
 
-            if (!transaction) {
-              transaction = await this.transactionRepository.save(
-                newTransaction,
-              );
+            const transaction = await this.transactionRepository.save(
+              newTransaction,
+            );
+
+            const installment = this.installmentRepository.create({
+              due_date: new Date(i),
+              value: data.original_value,
+              transaction: { id: newTransaction.id },
+            });
+
+            await this.installmentRepository.save(installment);
+
+            if (!transactionReturn) {
+              transactionReturn = transaction;
             }
           }
           break;
@@ -354,10 +394,20 @@ export class FinancialService {
               type: data.type,
             });
 
-            if (!transaction) {
-              transaction = await this.transactionRepository.save(
-                newTransaction,
-              );
+            const transaction = await this.transactionRepository.save(
+              newTransaction,
+            );
+
+            const installment = this.installmentRepository.create({
+              due_date: new Date(i),
+              value: data.original_value,
+              transaction: { id: newTransaction.id },
+            });
+
+            await this.installmentRepository.save(installment);
+
+            if (!transactionReturn) {
+              transactionReturn = transaction;
             }
           }
           break;
@@ -381,10 +431,20 @@ export class FinancialService {
               type: data.type,
             });
 
-            if (!transaction) {
-              transaction = await this.transactionRepository.save(
-                newTransaction,
-              );
+            const transaction = await this.transactionRepository.save(
+              newTransaction,
+            );
+
+            const installment = this.installmentRepository.create({
+              due_date: new Date(i),
+              value: data.original_value,
+              transaction: { id: newTransaction.id },
+            });
+
+            await this.installmentRepository.save(installment);
+
+            if (!transactionReturn) {
+              transactionReturn = transaction;
             }
           }
           break;
@@ -408,10 +468,20 @@ export class FinancialService {
               type: data.type,
             });
 
-            if (!transaction) {
-              transaction = await this.transactionRepository.save(
-                newTransaction,
-              );
+            const transaction = await this.transactionRepository.save(
+              newTransaction,
+            );
+
+            const installment = this.installmentRepository.create({
+              due_date: new Date(i),
+              value: data.original_value,
+              transaction: { id: newTransaction.id },
+            });
+
+            await this.installmentRepository.save(installment);
+
+            if (!transactionReturn) {
+              transactionReturn = transaction;
             }
           }
           break;
@@ -420,7 +490,7 @@ export class FinancialService {
           throw new NotFoundException('Period not found');
       }
 
-      return transaction;
+      return transactionReturn;
     } else {
       if (!data.installments) {
         console.error('Installments not found');
