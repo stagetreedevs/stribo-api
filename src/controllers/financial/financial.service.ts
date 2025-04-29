@@ -553,6 +553,10 @@ export class FinancialService {
 
     if (files) {
       if (files['contract_file'] && files['contract_file'].length > 0) {
+        if (transaction.contract_file) {
+          await this.s3Service.deleteFileS3(transaction.contract_file);
+        }
+
         transaction.contract_file = await this.s3Service.upload(
           files['contract_file'][0],
           'contract_file',
@@ -560,6 +564,10 @@ export class FinancialService {
       }
 
       if (files['invoice_file'] && files['invoice_file'].length > 0) {
+        if (transaction.invoice_file) {
+          await this.s3Service.deleteFileS3(transaction.invoice_file);
+        }
+
         transaction.invoice_file = await this.s3Service.upload(
           files['invoice_file'][0],
           'invoice_file',
@@ -567,6 +575,10 @@ export class FinancialService {
       }
 
       if (files['receipt_file'] && files['receipt_file'].length > 0) {
+        if (transaction.receipt_file) {
+          await this.s3Service.deleteFileS3(transaction.receipt_file);
+        }
+
         transaction.receipt_file = await this.s3Service.upload(
           files['receipt_file'][0],
           'receipt_file',
@@ -588,6 +600,29 @@ export class FinancialService {
     return await this.transactionRepository.save(transaction);
   }
 
+  async removeAttachmentFile(id: string, file: string) {
+    const transaction = await this.transactionRepository.findOne({
+      where: { id },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    if (transaction.attachments_files) {
+      transaction.attachments_files = transaction.attachments_files.filter(
+        (attachment) => attachment !== file,
+      );
+    }
+
+    const transactionUpdated = await this.transactionRepository.save(
+      transaction,
+    );
+    await this.s3Service.deleteFileS3(file);
+
+    return transactionUpdated;
+  }
+
   async getAllTransactions(property_id?: string) {
     return await this.transactionRepository.find({
       where: {
@@ -599,6 +634,69 @@ export class FinancialService {
         installments: true,
       },
     });
+  }
+
+  async getAnalyticsTransactions(property_id: string) {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const transactions = await this.transactionRepository.find({
+      where: {
+        property_id: property_id ? Or(Equal(property_id), IsNull()) : undefined,
+        datetime: Between(sevenDaysAgo, endOfToday),
+      },
+      relations: {
+        bankAccount: true,
+        category: true,
+        installments: true,
+      },
+      order: {
+        datetime: 'ASC',
+      },
+    });
+
+    const analytics: Array<{
+      date: string;
+      total: number;
+    }> = [];
+
+    transactions.forEach((transaction) => {
+      const transactionDate = new Date(transaction.datetime);
+      const date = transactionDate.toLocaleDateString('pt-BR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+
+      const existingDate = analytics.find((item) => item.date === date);
+      if (existingDate) {
+        existingDate.total += transaction.original_value;
+      } else {
+        analytics.push({
+          date,
+          total: transaction.original_value,
+        });
+      }
+    });
+
+    return {
+      labels: analytics.map((item) =>
+        new Date(item.date).toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: 'short',
+        }),
+      ),
+      datasets: [
+        {
+          data: analytics.map((item) => item.total),
+        },
+      ],
+    };
   }
 
   async getAllTransactionsGroupedByDate(query: QueryTransaction) {

@@ -225,6 +225,22 @@ export class FinancialController {
 
   @ApiTags('TRANSAÇÃO')
   @UseGuards(JwtAuthGuard)
+  @Delete('transaction/:id/attachments')
+  @ApiOperation({ summary: 'REMOVER ANEXOS DE UMA TRANSAÇÃO' })
+  async removeDocuments(@Param('id') id: string, @Query('file') file: string) {
+    return this.financialService.removeAttachmentFile(id, file);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Get('transaction/analysis/:property_id')
+  @ApiOperation({ summary: 'ANÁLISE DE TRANSAÇÕES' })
+  async getTransactionAnalysis(@Param('property_id') property_id: string) {
+    return this.financialService.getAnalyticsTransactions(property_id);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
   @Get('transaction/details/:id')
   @ApiOperation({ summary: 'BUSCA UMA TRANSAÇÃO' })
   async findOneTransaction(@Param('id') id: string): Promise<Transaction> {
