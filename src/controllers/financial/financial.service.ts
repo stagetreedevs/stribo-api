@@ -914,7 +914,6 @@ export class FinancialService {
 
   async deleteAllTransactions(): Promise<{ message: string }> {
     await this.transactionRepository.delete({});
-    await this.deleteAllCategories();
     return { message: 'Transactions removed successfully' };
   }
 }
