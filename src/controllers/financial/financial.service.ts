@@ -676,11 +676,30 @@ export class FinancialService {
 
       const existingDate = analytics.find((item) => item.date === date);
       if (existingDate) {
-        existingDate.total += transaction.original_value;
+        transaction.installments.forEach((installment) => {
+          if (installment.status === InstallmentStatus.PAID) {
+            if (transaction.type === TransactionType.EXPENSE) {
+              existingDate.total -= Number(installment.value);
+            } else if (transaction.type === TransactionType.REVENUE) {
+              existingDate.total += Number(installment.value);
+            }
+          }
+        });
       } else {
+        const total = transaction.installments.reduce((acc, installment) => {
+          if (installment.status === InstallmentStatus.PAID) {
+            if (transaction.type === TransactionType.EXPENSE) {
+              return acc - Number(installment.value);
+            } else if (transaction.type === TransactionType.REVENUE) {
+              return acc + Number(installment.value);
+            }
+          }
+          return acc;
+        }, 0);
+
         analytics.push({
           date,
-          total: transaction.original_value,
+          total,
         });
       }
     });
@@ -701,36 +720,57 @@ export class FinancialService {
 
     const balance = transactionsAll.reduce((acc, transaction) => {
       if (transaction.type === TransactionType.EXPENSE) {
-        return acc - Number(transaction.original_value);
+        transaction.installments.forEach((installment) => {
+          if (installment.status === InstallmentStatus.PAID) {
+            acc -= Number(installment.value);
+          }
+        });
       } else if (transaction.type === TransactionType.REVENUE) {
-        return acc + Number(transaction.original_value);
+        transaction.installments.forEach((installment) => {
+          if (installment.status === InstallmentStatus.PAID) {
+            acc += Number(installment.value);
+          }
+        });
       }
       return acc;
     }, 0);
 
     const payableValue = transactionsAll.reduce((acc, transaction) => {
       if (transaction.type === TransactionType.EXPENSE) {
-        return acc + Number(transaction.original_value);
+        transaction.installments.forEach((installment) => {
+          if (installment.status !== InstallmentStatus.PAID) {
+            acc += Number(installment.value);
+          }
+        });
       }
       return acc;
     }, 0);
 
     const receivableValue = transactionsAll.reduce((acc, transaction) => {
       if (transaction.type === TransactionType.REVENUE) {
-        return acc + Number(transaction.original_value);
+        transaction.installments.forEach((installment) => {
+          if (installment.status !== InstallmentStatus.PAID) {
+            acc += Number(installment.value);
+          }
+        });
       }
       return acc;
     }, 0);
+
+    console.log('Analytics:', analytics);
 
     return {
       balance,
       payableValue,
       receivableValue,
       labels: analytics.map((item) =>
-        new Date(item.date).toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: 'short',
-        }),
+        new Date(item.date.split('/').reverse().join('-')).toLocaleDateString(
+          'pt-BR',
+          {
+            day: '2-digit',
+            month: 'short',
+          },
+        ),
       ),
       datasets: [
         {

@@ -232,7 +232,7 @@ export class FinancialController {
   }
 
   @ApiTags('TRANSAÇÃO')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Get('transaction/analysis/:property_id')
   @ApiOperation({ summary: 'ANÁLISE DE TRANSAÇÕES' })
   async getTransactionAnalysis(@Param('property_id') property_id: string) {
