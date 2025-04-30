@@ -258,10 +258,10 @@ export class FinancialController {
     return this.financialService.updateStatusInstallment(id, status);
   }
 
-  // @Delete('transaction')
-  // @ApiTags('TRANSAÇÃO')
-  // @ApiOperation({ summary: 'REMOVE UMA TRANSAÇÃO' })
-  // async removeTransaction(): Promise<{ message: string }> {
-  //   return this.financialService.deleteAllTransactions();
-  // }
+  @Delete('transaction')
+  @ApiTags('TRANSAÇÃO')
+  @ApiOperation({ summary: 'REMOVE TODAS AS TRANSAÇÕES' })
+  async removeTransaction(): Promise<{ message: string }> {
+    return this.financialService.deleteAllTransactions();
+  }
 }

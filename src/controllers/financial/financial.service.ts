@@ -244,6 +244,7 @@ export class FinancialService {
               extra_fields: data.extra_fields,
               original_value: data.original_value,
               property_id: data.property_id,
+              period: data.period,
               type: data.type,
             });
 
@@ -281,6 +282,7 @@ export class FinancialService {
               extra_fields: data.extra_fields,
               original_value: data.original_value,
               property_id: data.property_id,
+              period: data.period,
               type: data.type,
             });
 
@@ -318,6 +320,7 @@ export class FinancialService {
               extra_fields: data.extra_fields,
               original_value: data.original_value,
               property_id: data.property_id,
+              period: data.period,
               type: data.type,
             });
 
@@ -355,6 +358,7 @@ export class FinancialService {
               extra_fields: data.extra_fields,
               original_value: data.original_value,
               property_id: data.property_id,
+              period: data.period,
               type: data.type,
             });
 
@@ -392,6 +396,7 @@ export class FinancialService {
               extra_fields: data.extra_fields,
               original_value: data.original_value,
               property_id: data.property_id,
+              period: data.period,
               type: data.type,
             });
 
@@ -429,6 +434,7 @@ export class FinancialService {
               extra_fields: data.extra_fields,
               original_value: data.original_value,
               property_id: data.property_id,
+              period: data.period,
               type: data.type,
             });
 
@@ -466,6 +472,7 @@ export class FinancialService {
               extra_fields: data.extra_fields,
               original_value: data.original_value,
               property_id: data.property_id,
+              period: data.period,
               type: data.type,
             });
 
@@ -756,8 +763,6 @@ export class FinancialService {
       }
       return acc;
     }, 0);
-
-    console.log('Analytics:', analytics);
 
     return {
       balance,

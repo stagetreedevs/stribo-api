@@ -11,6 +11,7 @@ import { BankAccount } from './bank-account.entity';
 import { Category } from './category.entity';
 import { Installment } from './installment.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { Period } from '../dto/transaction.dto';
 
 export class ExtraField {
   @ApiProperty()
@@ -67,6 +68,9 @@ export class Transaction {
 
   @Column({ nullable: true, default: null })
   beneficiary_name: string;
+
+  @Column({ nullable: true, default: null, enum: Period })
+  period: Period;
 
   @Column({ type: 'boolean', default: false })
   is_periodically: boolean;
