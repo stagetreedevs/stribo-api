@@ -6,7 +6,6 @@ import {
   Equal,
   IsNull,
   LessThan,
-  MoreThan,
   MoreThanOrEqual,
   Or,
   Repository,
