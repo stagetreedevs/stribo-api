@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -227,12 +228,24 @@ export class FinancialController {
   @UseGuards(JwtAuthGuard)
   @Delete('transaction/:id/attachments')
   @ApiOperation({ summary: 'REMOVER ANEXOS DE UMA TRANSAÇÃO' })
-  async removeDocuments(@Param('id') id: string, @Query('file') file: string) {
-    return this.financialService.removeAttachmentFile(id, file);
+  async removeDocuments(
+    @Param('id') id: string,
+    @Query('index') index: number,
+  ) {
+    try {
+      index = Number(index);
+      if (isNaN(index)) {
+        throw new BadRequestException('Index must be a number');
+      }
+    } catch (error) {
+      throw new BadRequestException('Index must be a number');
+    }
+
+    return this.financialService.removeAttachmentFile(id, index);
   }
 
   @ApiTags('TRANSAÇÃO')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('transaction/analysis/:property_id')
   @ApiOperation({ summary: 'ANÁLISE DE TRANSAÇÕES' })
   async getTransactionAnalysis(@Param('property_id') property_id: string) {
@@ -258,10 +271,19 @@ export class FinancialController {
     return this.financialService.updateStatusInstallment(id, status);
   }
 
+  @ApiTags('TRANSAÇÃO')
+  @Delete('transaction/:id')
+  @ApiOperation({ summary: 'REMOVE UMA TRANSAÇÃO' })
+  async removeTransaction(
+    @Param('id') id: string,
+  ): Promise<{ message: string }> {
+    return this.financialService.deleteTransaction(id);
+  }
+
   @Delete('transaction')
   @ApiTags('TRANSAÇÃO')
   @ApiOperation({ summary: 'REMOVE TODAS AS TRANSAÇÕES' })
-  async removeTransaction(): Promise<{ message: string }> {
+  async removeAllTransaction(): Promise<{ message: string }> {
     return this.financialService.deleteAllTransactions();
   }
 }

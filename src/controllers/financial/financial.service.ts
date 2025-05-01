@@ -608,7 +608,7 @@ export class FinancialService {
     return await this.transactionRepository.save(transaction);
   }
 
-  async removeAttachmentFile(id: string, file: string) {
+  async removeAttachmentFile(id: string, index: number) {
     const transaction = await this.transactionRepository.findOne({
       where: { id },
     });
@@ -619,14 +619,14 @@ export class FinancialService {
 
     if (transaction.attachments_files) {
       transaction.attachments_files = transaction.attachments_files.filter(
-        (attachment) => attachment !== file,
+        (_, i) => i !== index,
       );
     }
 
     const transactionUpdated = await this.transactionRepository.save(
       transaction,
     );
-    await this.s3Service.deleteFileS3(file);
+    await this.s3Service.deleteFileS3(transaction.attachments_files[index]);
 
     return transactionUpdated;
   }
@@ -768,15 +768,24 @@ export class FinancialService {
       balance,
       payableValue,
       receivableValue,
-      labels: analytics.map((item) =>
-        new Date(item.date.split('/').reverse().join('-')).toLocaleDateString(
-          'pt-BR',
-          {
-            day: '2-digit',
-            month: 'short',
-          },
-        ),
-      ),
+      labels: analytics.map((item) => {
+        const [day, month] = item.date.split('/'); // Extrai o dia e o mês
+        const monthNames = [
+          'Jan',
+          'Fev',
+          'Mar',
+          'Abr',
+          'Mai',
+          'Jun',
+          'Jul',
+          'Ago',
+          'Set',
+          'Out',
+          'Nov',
+          'Dez',
+        ];
+        return `${day} ${monthNames[parseInt(month, 10) - 1]}`;
+      }),
       datasets: [
         {
           data: analytics.map((item) => item.total),
@@ -910,6 +919,19 @@ export class FinancialService {
       id,
       status,
     });
+  }
+
+  async deleteTransaction(id: string): Promise<{ message: string }> {
+    const transaction = await this.transactionRepository.findOne({
+      where: { id },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    await this.transactionRepository.delete(id);
+    return { message: 'Transaction removed successfully' };
   }
 
   async deleteAllTransactions(): Promise<{ message: string }> {
