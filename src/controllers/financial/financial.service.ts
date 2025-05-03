@@ -662,6 +662,10 @@ export class FinancialService {
     } else if (file === 'receipt_file') {
       await this.s3Service.deleteFileS3(transaction.receipt_file);
       transaction.receipt_file = null;
+    } else {
+      throw new NotFoundException(
+        'File not found. file must be contract_file, invoice_file or receipt_file',
+      );
     }
 
     return await this.transactionRepository.save(transaction);
