@@ -45,6 +45,12 @@ export class Competition {
   @Column({ nullable: true })
   prize_value: number;
 
+  @Column({ nullable: true })
+  city: string;
+
+  @Column({ nullable: true })
+  uf: string;
+
   constructor(
     property: string,
     animal_id: string,

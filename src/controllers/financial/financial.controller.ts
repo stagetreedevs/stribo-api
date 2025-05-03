@@ -246,6 +246,17 @@ export class FinancialController {
 
   @ApiTags('TRANSAÇÃO')
   @UseGuards(JwtAuthGuard)
+  @Delete('transaction/:id/file')
+  @ApiOperation({ summary: 'REMOVER ARQUIVO DE UMA TRANSAÇÃO' })
+  async removeFile(
+    @Param('id') id: string,
+    @Query('file') file: string,
+  ): Promise<Transaction> {
+    return this.financialService.removeFile(id, file);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
   @Get('transaction/analysis/:property_id')
   @ApiOperation({ summary: 'ANÁLISE DE TRANSAÇÕES' })
   async getTransactionAnalysis(@Param('property_id') property_id: string) {
@@ -272,6 +283,7 @@ export class FinancialController {
   }
 
   @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
   @Delete('transaction/:id')
   @ApiOperation({ summary: 'REMOVE UMA TRANSAÇÃO' })
   async removeTransaction(
@@ -285,5 +297,13 @@ export class FinancialController {
   @ApiOperation({ summary: 'REMOVE TODAS AS TRANSAÇÕES' })
   async removeAllTransaction(): Promise<{ message: string }> {
     return this.financialService.deleteAllTransactions();
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Get('transaction/quantity-bank-account-and-category')
+  @ApiOperation({ summary: 'QUANTIDADE DE TRANSAÇÕES POR CONTA E CATEGORIA' })
+  async getTransactionQuantity(@Query('property_id') property_id: string) {
+    return this.financialService.getQuantityBankAccountAndCategory(property_id);
   }
 }

@@ -39,6 +39,20 @@ export class FinancialService {
     private readonly s3Service: S3Service,
   ) {}
 
+  async getQuantityBankAccountAndCategory(
+    property_id?: string,
+  ): Promise<{ bankAccount: number; category: number }> {
+    const bankAccount = await this.bankAccountRepository.count({
+      where: { property_id: property_id || undefined },
+    });
+
+    const category = await this.categoryRepository.count({
+      where: { property_id: property_id || undefined },
+    });
+
+    return { bankAccount, category };
+  }
+
   // ** Bank Account ** //
   async createBankAccount(bankAccount: BankAccountDTO): Promise<BankAccount> {
     return await this.bankAccountRepository.save(bankAccount);
@@ -628,6 +642,29 @@ export class FinancialService {
     await this.s3Service.deleteFileS3(transaction.attachments_files[index]);
 
     return transactionUpdated;
+  }
+
+  async removeFile(id: string, file: string) {
+    const transaction = await this.transactionRepository.findOne({
+      where: { id },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    if (file === 'contract_file') {
+      await this.s3Service.deleteFileS3(transaction.contract_file);
+      transaction.contract_file = null;
+    } else if (file === 'invoice_file') {
+      await this.s3Service.deleteFileS3(transaction.invoice_file);
+      transaction.invoice_file = null;
+    } else if (file === 'receipt_file') {
+      await this.s3Service.deleteFileS3(transaction.receipt_file);
+      transaction.receipt_file = null;
+    }
+
+    return await this.transactionRepository.save(transaction);
   }
 
   async getAllTransactions(property_id?: string) {

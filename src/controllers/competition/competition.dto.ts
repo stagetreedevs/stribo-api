@@ -30,6 +30,12 @@ export class CreateCompetitionDto {
 
   @ApiProperty({ required: false })
   description: string;
+
+  @ApiProperty({ required: false })
+  city: string;
+
+  @ApiProperty({ required: false })
+  uf: string;
 }
 
 export class UpdateCompetitionDto {
