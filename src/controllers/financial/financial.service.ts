@@ -36,9 +36,9 @@ export class FinancialService {
     private transactionRepository: Repository<Transaction>,
     @InjectRepository(Installment)
     private installmentRepository: Repository<Installment>,
+    private readonly competitionService: CompetitionService,
     private readonly animalService: AnimalService,
     private readonly s3Service: S3Service,
-    private readonly competitionService: CompetitionService,
   ) {}
 
   async getQuantityBankAccountAndCategory(

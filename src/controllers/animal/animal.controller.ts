@@ -81,7 +81,7 @@ export class AnimalController {
   @UseGuards(JwtAuthGuard)
   @Get('names')
   @ApiOperation({ summary: 'TODAS OS NOMES' })
-  async findAllNamesWithId(@Query('sex') sex: string): Promise<string[]> {
+  async findAllNamesWithId(@Query('sex') sex: string) {
     return this.animalService.findAllNamesWithId(sex);
   }
 

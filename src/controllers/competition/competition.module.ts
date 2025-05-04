@@ -10,5 +10,6 @@ import { Competitor } from './competitor.entity';
   imports: [TypeOrmModule.forFeature([Competition, Competitor]), AnimalModule],
   controllers: [CompetitionController],
   providers: [CompetitionService],
+  exports: [CompetitionService],
 })
 export class CompetitionModule {}

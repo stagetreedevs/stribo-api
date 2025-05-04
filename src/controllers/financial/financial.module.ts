@@ -8,10 +8,12 @@ import { AnimalModule } from '../animal/animal.module';
 import { Transaction } from './entity/transaction.entity';
 import { Installment } from './entity/installment.entity';
 import { S3Module } from '../s3/s3.module';
+import { CompetitionModule } from '../competition/competition.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([BankAccount, Category, Transaction, Installment]),
+    CompetitionModule,
     AnimalModule,
     S3Module,
   ],
