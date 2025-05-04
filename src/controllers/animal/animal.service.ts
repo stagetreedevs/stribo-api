@@ -228,13 +228,15 @@ export class AnimalService {
     return Array.from(uniqueNames);
   }
 
-  async findAllNamesWithId(sex?: string): Promise<any[]> {
+  async findAllNamesWithId(
+    sex?: string,
+  ): Promise<{ label: string; value: string }[]> {
     const animals = await this.animal.find({
       where: {
         sex: sex || undefined,
       },
     });
-    const uniqueNames: any[] = [];
+    const uniqueNames: { label: string; value: string }[] = [];
 
     animals.forEach((animal) => {
       uniqueNames.push({ label: animal.name, value: animal.id });

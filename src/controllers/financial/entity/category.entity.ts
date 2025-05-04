@@ -27,6 +27,7 @@ export enum FieldEntity {
   ANIMAL = 'animal',
   ANIMAL_MALE = 'animal_male',
   ANIMAL_FEMALE = 'animal_female',
+  COMPETITION = 'competition',
 }
 
 export class Field {
@@ -40,7 +41,7 @@ export class Field {
   entity?: FieldEntity;
 
   @ApiProperty({ required: false, type: 'string', isArray: true })
-  items?: string[];
+  items?: any[];
 }
 
 @Entity()

@@ -23,6 +23,7 @@ import {
 import { Period, TransactionDTO } from './dto/transaction.dto';
 import { Installment, InstallmentStatus } from './entity/installment.entity';
 import { S3Service } from '../s3/s3.service';
+import { CompetitionService } from '../competition/competition.service';
 
 @Injectable()
 export class FinancialService {
@@ -37,6 +38,7 @@ export class FinancialService {
     private installmentRepository: Repository<Installment>,
     private readonly animalService: AnimalService,
     private readonly s3Service: S3Service,
+    private readonly competitionService: CompetitionService,
   ) {}
 
   async getQuantityBankAccountAndCategory(
@@ -145,6 +147,10 @@ export class FinancialService {
           } else if (field.entity === FieldEntity.ANIMAL_MALE) {
             field.items.push(
               ...(await this.animalService.findAllNamesWithId('male')),
+            );
+          } else if (field.entity === FieldEntity.COMPETITION) {
+            field.items.push(
+              ...(await this.competitionService.findNamesAllCompetitors()),
             );
           } else {
             field.items.push(

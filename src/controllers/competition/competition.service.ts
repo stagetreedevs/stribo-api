@@ -291,10 +291,10 @@ export class CompetitionService {
   }
 
   async findNamesAllCompetitors(
-    property_id: string,
+    property_id?: string,
   ): Promise<{ label: string; value: string }[]> {
     const competitors = await this.competitor.find({
-      where: { property_id },
+      where: { property_id: property_id || undefined },
     });
 
     return competitors.map((competitor) => {
