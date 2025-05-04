@@ -273,6 +273,14 @@ export class FinancialController {
 
   @ApiTags('TRANSAÇÃO')
   @UseGuards(JwtAuthGuard)
+  @Get('transaction/competition/:id/expenses')
+  @ApiOperation({ summary: 'DESPESAS DE UMA COMPETIÇÃO' })
+  async getExpensesByCompetitionId(@Param('id') id: string) {
+    return this.financialService.getExpensesByCompetitionId(id);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
   @Patch('transaction/installments/:id/status/:status')
   @ApiOperation({ summary: 'ATUALIZA O STATUS DE UMA TRANSAÇÃO' })
   async updateInstallmentStatus(

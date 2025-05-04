@@ -19,6 +19,9 @@ export class ExtraField {
 
   @ApiProperty()
   value: string | number;
+
+  @ApiProperty()
+  id: string;
 }
 
 export enum CommissionType {

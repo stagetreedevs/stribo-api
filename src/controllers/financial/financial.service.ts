@@ -951,6 +951,23 @@ export class FinancialService {
     return transaction;
   }
 
+  async getExpensesByCompetitionId(competition_id: string) {
+    const transactions = await this.transactionRepository.find({
+      where: {
+        type: TransactionType.EXPENSE,
+        extra_fields: {
+          id: competition_id,
+        },
+      },
+    });
+
+    const total = transactions.reduce((acc, transaction) => {
+      return acc + transaction.original_value;
+    }, 0);
+
+    return { total, data: transactions };
+  }
+
   updateStatusInstallment(
     id: string,
     status: InstallmentStatus,
