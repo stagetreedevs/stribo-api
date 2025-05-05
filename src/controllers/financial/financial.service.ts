@@ -149,9 +149,7 @@ export class FinancialService {
               ...(await this.animalService.findAllNamesWithId('male')),
             );
           } else if (field.entity === FieldEntity.COMPETITION) {
-            field.items.push(
-              ...(await this.competitionService.findNamesAllCompetitors()),
-            );
+            field.items.push(...(await this.competitionService.findNames()));
           } else {
             field.items.push(
               ...(await this.animalService.findAllNamesWithId('female')),

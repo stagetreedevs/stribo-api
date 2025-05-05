@@ -305,6 +305,19 @@ export class CompetitionService {
     });
   }
 
+  async findNames(property_id?: string) {
+    const competitions = await this.competition.find({
+      where: { property: property_id || undefined },
+    });
+
+    return competitions.map((competition) => {
+      return {
+        label: competition.name,
+        value: competition.id,
+      };
+    });
+  }
+
   async findCompetitor(id: string): Promise<Competitor> {
     return await this.competitor.findOne({ where: { id } });
   }
