@@ -240,6 +240,8 @@ export class CompetitionService {
         animal_id: filter.animal_id || undefined,
         modality: filter.modality || undefined,
         competitor: filter.competitor || undefined,
+        city: filter.city || undefined,
+        uf: filter.uf || undefined,
         category: filter.category || undefined,
       },
       order: { date: filter.order || 'DESC' },

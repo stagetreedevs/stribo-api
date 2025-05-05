@@ -98,6 +98,12 @@ export class FilterCompetitionDto {
   competitor?: string;
 
   @ApiProperty({ required: false })
+  city?: string;
+
+  @ApiProperty({ required: false })
+  uf?: string;
+
+  @ApiProperty({ required: false })
   category?: string;
 
   @ApiProperty({ required: false })

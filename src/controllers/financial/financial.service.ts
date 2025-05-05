@@ -969,14 +969,23 @@ export class FinancialService {
   }
 
   async getExpensesByCompetitionId(competition_id: string) {
-    const transactions = await this.transactionRepository.find({
+    let transactions = await this.transactionRepository.find({
       where: {
         type: TransactionType.EXPENSE,
-        extra_fields: {
-          id: competition_id,
-        },
       },
     });
+
+    transactions = transactions.filter((transaction) => {
+      transaction.extra_fields.forEach((field) => {
+        if (field.id === competition_id) {
+          return true;
+        }
+
+        return false;
+      });
+    });
+
+    console.log('transactions', transactions);
 
     const total = transactions.reduce((acc, transaction) => {
       return acc + transaction.original_value;
