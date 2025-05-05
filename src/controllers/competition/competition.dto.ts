@@ -26,9 +26,6 @@ export class CreateCompetitionDto {
   competitor: string;
 
   @ApiProperty({ required: false })
-  competitor_id: string;
-
-  @ApiProperty({ required: false })
   category: string;
 
   @ApiProperty({ required: false })
@@ -62,9 +59,6 @@ export class UpdateCompetitionDto {
 
   @ApiProperty({ required: false })
   competitor: string;
-
-  @ApiProperty({ required: false })
-  competitor_id: string;
 
   @ApiProperty({ required: false })
   category: string;

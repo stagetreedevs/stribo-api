@@ -38,8 +38,21 @@ export class CompetitionService {
     });
   }
 
-  async findAll(): Promise<Competition[]> {
-    return await this.competition.find();
+  async findAll() {
+    const competitions = await this.competition.find();
+
+    return await Promise.all(
+      competitions.map(async (competition) => {
+        const competitor = await this.competitor.findOne({
+          where: { id: competition.competitor },
+        });
+
+        return {
+          ...competition,
+          competitor: competitor ? competitor : undefined,
+        };
+      }),
+    );
   }
 
   async findOne(id: string): Promise<Competition> {
@@ -219,11 +232,8 @@ export class CompetitionService {
     });
   }
 
-  async filter(
-    property: string,
-    filter: FilterCompetitionDto,
-  ): Promise<Competition[]> {
-    return await this.competition.find({
+  async filter(property: string, filter: FilterCompetitionDto) {
+    const competitions = await this.competition.find({
       where: {
         property,
         date:
@@ -246,6 +256,19 @@ export class CompetitionService {
       },
       order: { date: filter.order || 'DESC' },
     });
+
+    return await Promise.all(
+      competitions.map(async (competition) => {
+        const competitor = await this.competitor.findOne({
+          where: { id: competition.competitor },
+        });
+
+        return {
+          ...competition,
+          competitor: competitor ? competitor : undefined,
+        };
+      }),
+    );
   }
 
   async update(id: string, data: UpdateCompetitionDto): Promise<Competition> {

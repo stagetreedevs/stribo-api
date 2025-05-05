@@ -41,7 +41,7 @@ export class CompetitionController {
   async findFiltered(
     @Param('property_id') property_id: string,
     @Query() filter: FilterCompetitionDto,
-  ): Promise<Competition[]> {
+  ) {
     filter.initialDate = filter.initialDate
       ? new Date(filter.initialDate)
       : null;
@@ -53,7 +53,7 @@ export class CompetitionController {
   @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'TODAS COMPETIÇÕES' })
-  async findAll(): Promise<Competition[]> {
+  async findAll() {
     return this.competitionService.findAll();
   }
 
