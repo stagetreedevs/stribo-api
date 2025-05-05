@@ -137,8 +137,11 @@ export class FinancialController {
   //@UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'CAMPOS DA CATEGORIA' })
   @Get('category/:id/fields')
-  async getFieldsByCategoryId(@Param('id') id: string) {
-    return this.financialService.getFieldsByCategoryId(id);
+  async getFieldsByCategoryId(
+    @Param('id') id: string,
+    @Query('property_id') property_id: string,
+  ) {
+    return this.financialService.getFieldsByCategoryId(id, property_id);
   }
 
   @ApiTags('CATEGORIA')

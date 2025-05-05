@@ -128,7 +128,7 @@ export class FinancialService {
     }));
   }
 
-  async getFieldsByCategoryId(id: string) {
+  async getFieldsByCategoryId(id: string, property_id: string) {
     const category = await this.categoryRepository.findOne({
       where: { id },
     });
@@ -142,17 +142,28 @@ export class FinancialService {
         if (field.type === FieldType.ENTITY) {
           if (field.entity === FieldEntity.ANIMAL) {
             field.items.push(
-              ...(await this.animalService.findAllNamesWithId()),
+              ...(await this.animalService.findAllNamesWithId(
+                undefined,
+                property_id,
+              )),
             );
           } else if (field.entity === FieldEntity.ANIMAL_MALE) {
             field.items.push(
-              ...(await this.animalService.findAllNamesWithId('male')),
+              ...(await this.animalService.findAllNamesWithId(
+                'male',
+                property_id,
+              )),
             );
           } else if (field.entity === FieldEntity.COMPETITION) {
-            field.items.push(...(await this.competitionService.findNames()));
+            field.items.push(
+              ...(await this.competitionService.findNames(property_id)),
+            );
           } else {
             field.items.push(
-              ...(await this.animalService.findAllNamesWithId('female')),
+              ...(await this.animalService.findAllNamesWithId(
+                'female',
+                property_id,
+              )),
             );
           }
         }
@@ -183,6 +194,8 @@ export class FinancialService {
 
   // ** Transaction ** //
   async createTransaction(data: TransactionDTO) {
+    console.log('data', data.extra_fields);
+
     const { bank_account_id, category_id } = data;
 
     const bankAccount = await this.bankAccountRepository.findOne({
