@@ -275,7 +275,7 @@ export class FinancialController {
   }
 
   @ApiTags('TRANSAÇÃO')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Get('transaction/competition/:id/expenses')
   @ApiOperation({ summary: 'DESPESAS DE UMA COMPETIÇÃO' })
   async getExpensesByCompetitionId(@Param('id') id: string) {

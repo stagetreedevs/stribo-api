@@ -975,17 +975,9 @@ export class FinancialService {
       },
     });
 
-    transactions = transactions.filter((transaction) => {
-      transaction.extra_fields.forEach((field) => {
-        if (field.id === competition_id) {
-          return true;
-        }
-
-        return false;
-      });
-    });
-
-    console.log('transactions', transactions);
+    transactions = transactions.filter((transaction) =>
+      transaction.extra_fields.some((field) => field.id === competition_id),
+    );
 
     const total = transactions.reduce((acc, transaction) => {
       return acc + transaction.original_value;
