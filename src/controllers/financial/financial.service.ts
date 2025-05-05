@@ -973,6 +973,9 @@ export class FinancialService {
       where: {
         type: TransactionType.EXPENSE,
       },
+      relations: {
+        category: true,
+      },
     });
 
     transactions = transactions.filter((transaction) =>
