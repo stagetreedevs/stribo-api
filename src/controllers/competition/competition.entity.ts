@@ -30,6 +30,9 @@ export class Competition {
   @Column({ nullable: true, default: '' })
   competitor: string;
 
+  @Column({ nullable: true, default: '' })
+  competitor_id: string;
+
   @Column({ nullable: true })
   category: string;
 

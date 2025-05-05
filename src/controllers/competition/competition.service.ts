@@ -35,6 +35,7 @@ export class CompetitionService {
     return await this.competition.save({
       ...data,
       competitor: competitor ? competitor.name : '',
+      competitor_id: competitor ? competitor.id : '',
     });
   }
 
@@ -42,8 +43,17 @@ export class CompetitionService {
     return await this.competition.find();
   }
 
-  async findOne(id: string): Promise<Competition> {
-    return await this.competition.findOne({ where: { id } });
+  async findOne(id: string) {
+    const competition = await this.competition.findOne({ where: { id } });
+
+    const competitor = await this.competitor.findOne({
+      where: { id: competition.competitor_id },
+    });
+
+    return {
+      ...competition,
+      competitor_data: competitor,
+    };
   }
 
   async findByAnimal(animal_id: string): Promise<Competition[]> {
