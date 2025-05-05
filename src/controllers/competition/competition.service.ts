@@ -34,7 +34,7 @@ export class CompetitionService {
 
     return await this.competition.save({
       ...data,
-      competitor: competitor ? competitor.name : '',
+      competitor: competitor ? competitor.id : '',
     });
   }
 
