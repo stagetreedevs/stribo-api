@@ -42,8 +42,10 @@ export class CompetitionController {
     @Param('property_id') property_id: string,
     @Query() filter: FilterCompetitionDto,
   ): Promise<Competition[]> {
-    filter.initialDate = new Date(filter.initialDate);
-    filter.lastDate = new Date(filter.lastDate);
+    filter.initialDate = filter.initialDate
+      ? new Date(filter.initialDate)
+      : null;
+    filter.lastDate = filter.lastDate ? new Date(filter.lastDate) : null;
 
     return this.competitionService.filter(property_id, filter);
   }
