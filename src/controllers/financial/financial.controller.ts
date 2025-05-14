@@ -204,7 +204,7 @@ export class FinancialController {
   }
 
   @ApiTags('TRANSAÇÃO')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('transaction/grouped')
   @ApiOperation({ summary: 'TRANSAÇÕES AGRUPADAS' })
   async findGroupedTransactions(@Query() query: QueryTransaction) {
