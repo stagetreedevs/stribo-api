@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -26,10 +27,18 @@ import { BankAccountDTO, FilterBankAccountDTO } from './dto/bank-account.dto';
 import { BankAccount } from './entity/bank-account.entity';
 import { CategoryDTO, FilterCategoryDTO } from './dto/category.dto';
 import { Category } from './entity/category.entity';
-import { DocumentsDTO, TransactionDTO } from './dto/transaction.dto';
+import {
+  DocumentsDTO,
+  ImportTransactionDTO,
+  TransactionDTO,
+  TransactionUpdateDTO,
+} from './dto/transaction.dto';
 import { QueryTransaction, Transaction } from './entity/transaction.entity';
 import { InstallmentStatus } from './entity/installment.entity';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 @ApiBearerAuth()
 @Controller('financial')
 export class FinancialController {
@@ -166,12 +175,24 @@ export class FinancialController {
 
   // ** Transaction **
   @ApiTags('TRANSAÇÃO')
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('transaction')
   @ApiOperation({ summary: 'CRIA UMA TRANSAÇÃO' })
   @ApiBody({ type: TransactionDTO })
   async createTransaction(@Body() body: TransactionDTO): Promise<Transaction> {
     return this.financialService.createTransaction(body);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Put('transaction/:id')
+  @ApiOperation({ summary: 'ATUALIZA UMA TRANSAÇÃO' })
+  @ApiBody({ type: TransactionDTO })
+  async updateTransaction(
+    @Param('id') id: string,
+    @Body() body: TransactionUpdateDTO,
+  ): Promise<Transaction> {
+    return this.financialService.updateTransaction(id, body);
   }
 
   @ApiTags('TRANSAÇÃO')
@@ -183,7 +204,7 @@ export class FinancialController {
   }
 
   @ApiTags('TRANSAÇÃO')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Get('transaction/grouped')
   @ApiOperation({ summary: 'TRANSAÇÕES AGRUPADAS' })
   async findGroupedTransactions(@Query() query: QueryTransaction) {
@@ -316,5 +337,21 @@ export class FinancialController {
   @ApiOperation({ summary: 'QUANTIDADE DE TRANSAÇÕES POR CONTA E CATEGORIA' })
   async getTransactionQuantity(@Query('property_id') property_id: string) {
     return this.financialService.getQuantityBankAccountAndCategory(property_id);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  // @UseGuards(JwtAuthGuard)
+  @Post('transaction/import-ofx')
+  @ApiOperation({ summary: 'IMPORTA ARQUIVO OFX' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiBody({
+    type: ImportTransactionDTO,
+  })
+  async importOfx(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('property_id') property_id: string,
+  ) {
+    return this.financialService.importTransactionsByOfx(file, property_id);
   }
 }

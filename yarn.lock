@@ -5751,6 +5751,13 @@ object.assign@^4.1.4:
     has-symbols "^1.1.0"
     object-keys "^1.1.1"
 
+ofx-js@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/ofx-js/-/ofx-js-0.2.0.tgz#57f09b0f91bc09bdbf0110c2a009fc541f141220"
+  integrity sha512-iQ6Fecnu0/kmitoAv9Vn9drHKd3lT+uCpSISAImLvEjVXHeLyT3hPwWFKxyk+4fdBQOo4zk9csVU+pT6YEBvAA==
+  dependencies:
+    xml2js "^0.6.2"
+
 on-finished@2.4.1:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/on-finished/-/on-finished-2.4.1.tgz#58c8c44116e54845ad57f14ab10b03533184ac3f"
@@ -7780,7 +7787,7 @@ write-file-atomic@^4.0.1:
     imurmurhash "^0.1.4"
     signal-exit "^3.0.7"
 
-xml2js@0.6.2:
+xml2js@0.6.2, xml2js@^0.6.2:
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/xml2js/-/xml2js-0.6.2.tgz#dd0b630083aa09c161e25a4d0901e2b2a929b499"
   integrity sha512-T4rieHaC1EXcES0Kxxj4JWgaUQHDk+qwHcYOCFHfiwKz7tOVPLq7Hjq9dM1WCMhylqMEfP7hMcOIChvotiZegA==

@@ -54,7 +54,9 @@ export class Transaction {
   @ManyToOne(() => BankAccount, (bankAccount) => bankAccount.transactions)
   bankAccount: BankAccount;
 
-  @ManyToOne(() => Category, (category) => category.transactions)
+  @ManyToOne(() => Category, (category) => category.transactions, {
+    nullable: true,
+  })
   category: Category;
 
   @Column({ type: 'jsonb', nullable: true })
@@ -129,4 +131,67 @@ export class QueryTransaction {
 
   @ApiProperty({ required: false })
   property_id?: string;
+}
+
+export interface TOfxData {
+  OFX: {
+    SIGNONMSGSRSV1: {
+      SONRS: {
+        STATUS: {
+          CODE: string;
+          SEVERITY: string;
+        };
+        DTSERVER: string;
+        LANGUAGE: string;
+        FI: {
+          ORG: string;
+          FID: string;
+        };
+      };
+    };
+    BANKMSGSRSV1: {
+      STMTTRNRS: {
+        TRNUID: string;
+        STATUS: {
+          CODE: string;
+          SEVERITY: string;
+        };
+        STMTRS: {
+          CURDEF: string;
+          BANKACCTFROM: {
+            BANKID: string;
+            BRANCHID: string;
+            ACCTID: string;
+            ACCTTYPE: string;
+          };
+          BANKTRANLIST: {
+            DTSTART: string;
+            DTEND: string;
+            STMTTRN: {
+              TRNTYPE: string;
+              DTPOSTED: string;
+              TRNAMT: string;
+              FITID: string;
+              MEMO: string;
+            }[];
+          };
+          LEDGERBAL: {
+            BALAMT: string;
+            DTASOF: string;
+          };
+        };
+      };
+    };
+  };
+  header: {
+    OFXHEADER: string;
+    DATA: string;
+    VERSION: string;
+    ENCODING: string;
+    CHARSET: string;
+    COMPRESSION: string;
+    SECURITY: string;
+    BANKID: string;
+    CURRENCY: string;
+  };
 }

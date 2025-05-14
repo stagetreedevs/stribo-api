@@ -32,7 +32,7 @@ export class TransactionDTO {
   bank_account_id: string;
 
   @ApiProperty()
-  category_id: string;
+  category_id?: string;
 
   @ApiProperty({ type: ExtraField, isArray: true })
   extra_fields: ExtraField[];
@@ -41,31 +41,63 @@ export class TransactionDTO {
   original_value: number;
 
   @ApiProperty({ required: false, enum: CommissionType })
-  commission_type: CommissionType;
+  commission_type?: CommissionType;
 
   @ApiProperty({ required: false })
-  commission_value: number;
+  commission_value?: number;
 
   @ApiProperty({ required: false })
-  beneficiary_name: string;
+  beneficiary_name?: string;
 
   @ApiProperty({ required: false, default: false })
-  is_periodically: boolean;
+  is_periodically?: boolean;
 
   @ApiProperty({ required: false, enum: Period })
-  period: Period;
+  period?: Period;
 
   @ApiProperty({ required: false, default: false })
-  is_installment: boolean;
+  is_installment?: boolean;
 
   @ApiProperty({ required: false })
-  installments: number;
+  installments?: number;
 
   @ApiProperty({ required: false })
-  due_date: Date;
+  due_date?: Date;
 
   @ApiProperty({ required: false })
-  max_date_period: Date;
+  max_date_period?: Date;
+}
+
+export class TransactionUpdateDTO {
+  @ApiProperty()
+  type: TransactionType;
+
+  @ApiProperty()
+  datetime: Date;
+
+  @ApiProperty()
+  description: string;
+
+  @ApiProperty()
+  bank_account_id: string;
+
+  @ApiProperty()
+  category_id?: string;
+
+  @ApiProperty({ type: ExtraField, isArray: true })
+  extra_fields: ExtraField[];
+
+  @ApiProperty()
+  original_value: number;
+
+  @ApiProperty({ required: false, enum: CommissionType })
+  commission_type?: CommissionType;
+
+  @ApiProperty({ required: false })
+  commission_value?: number;
+
+  @ApiProperty({ required: false })
+  beneficiary_name?: string;
 }
 
 export class DocumentsDTO {
@@ -100,4 +132,13 @@ export class DocumentsDTO {
     required: false,
   })
   attachments_files: Express.Multer.File[];
+}
+
+export class ImportTransactionDTO {
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: true,
+  })
+  file: Express.Multer.File;
 }

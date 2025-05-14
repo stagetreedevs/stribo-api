@@ -17,13 +17,19 @@ import { AnimalService } from '../animal/animal.service';
 import {
   FilterPeriodDate,
   QueryTransaction,
+  TOfxData,
   Transaction,
   TransactionType,
 } from './entity/transaction.entity';
-import { Period, TransactionDTO } from './dto/transaction.dto';
+import {
+  Period,
+  TransactionDTO,
+  TransactionUpdateDTO,
+} from './dto/transaction.dto';
 import { Installment, InstallmentStatus } from './entity/installment.entity';
 import { S3Service } from '../s3/s3.service';
 import { CompetitionService } from '../competition/competition.service';
+import { parse as parseOFX } from 'ofx-js';
 
 @Injectable()
 export class FinancialService {
@@ -63,6 +69,20 @@ export class FinancialService {
   async findAllBankAccount(property_id?: string): Promise<BankAccount[]> {
     return await this.bankAccountRepository.find({
       where: { property_id: property_id || undefined },
+    });
+  }
+
+  async findBankByAgencyAndAccount(
+    agency: string,
+    account: string,
+    property_id?: string,
+  ): Promise<BankAccount | null> {
+    return await this.bankAccountRepository.findOne({
+      where: {
+        agency,
+        account,
+        property_id: property_id || undefined,
+      },
     });
   }
 
@@ -559,7 +579,7 @@ export class FinancialService {
 
         installments.push({
           due_date: dueDate,
-          value: (data.original_value / data.installments).toFixed(2),
+          value: data.original_value / data.installments,
           transaction: { id: newTransaction.id },
         });
       }
@@ -578,6 +598,29 @@ export class FinancialService {
         },
       });
     }
+  }
+
+  async updateTransaction(id: string, data: TransactionUpdateDTO) {
+    const transaction = await this.transactionRepository.findOne({
+      where: { id },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    return await this.transactionRepository.save({
+      type: data.type,
+      datetime: new Date(data.datetime),
+      description: data.description,
+      bankAccount: { id: data.bank_account_id },
+      category: { id: data.category_id },
+      extra_fields: data.extra_fields,
+      original_value: data.original_value,
+      commission_type: data.commission_type,
+      commission_value: data.commission_value,
+      beneficiary_name: data.beneficiary_name,
+    });
   }
 
   async updateDocuments(id: string, files: Array<Express.Multer.File>) {
@@ -1015,5 +1058,81 @@ export class FinancialService {
   async deleteAllTransactions(): Promise<{ message: string }> {
     await this.transactionRepository.delete({});
     return { message: 'Transactions removed successfully' };
+  }
+
+  async importTransactionsByOfx(
+    file: Express.Multer.File,
+    property_id: string,
+  ) {
+    const ofxString = file.buffer.toString('utf-8');
+    const ofxData: TOfxData = await parseOFX(ofxString);
+
+    const orgInfo = ofxData.OFX.SIGNONMSGSRSV1.SONRS.FI.ORG;
+    const bankAccFrom = ofxData.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKACCTFROM;
+    const bankTranList =
+      ofxData.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKTRANLIST.STMTTRN;
+
+    let bank = await this.findBankByAgencyAndAccount(
+      bankAccFrom.ACCTID,
+      bankAccFrom.BRANCHID,
+    );
+
+    if (!bank) {
+      bank = await this.createBankAccount({
+        description: orgInfo,
+        property_id,
+        bank: orgInfo,
+        agency: bankAccFrom.BRANCHID,
+        account: bankAccFrom.ACCTID,
+        keyJ: '',
+      });
+    }
+
+    const transactions: Transaction[] = [];
+
+    await Promise.all(
+      bankTranList.map(async (transaction) => {
+        const newTransaction = await this.createTransaction({
+          bank_account_id: bank.id,
+          datetime: this.parseOFXDate(transaction.DTPOSTED),
+          description: transaction.MEMO,
+          property_id: property_id,
+          original_value:
+            Number(transaction.TRNAMT) > 0
+              ? Number(transaction.TRNAMT) * 100
+              : -1 * Number(transaction.TRNAMT) * 100,
+          type:
+            Number(transaction.TRNAMT) > 0
+              ? TransactionType.REVENUE
+              : TransactionType.EXPENSE,
+          is_installment: false,
+          installments: 1,
+          extra_fields: [],
+        });
+
+        transactions.push(newTransaction);
+      }),
+    );
+
+    return {
+      message: 'Transactions imported successfully',
+      transactions,
+    };
+  }
+
+  /**<DTPOSTED>20250501000000[-3:BRT]</DTPOSTED> */
+  parseOFXDate(dateString: string) {
+    if (!/^\d{14}$/.test(dateString)) {
+      throw new Error('Formato de data inválido. Deve ser YYYYMMDDHHMMSS.');
+    }
+
+    const year = parseInt(dateString.substring(0, 4), 10);
+    const month = parseInt(dateString.substring(4, 6), 10) - 1; // Mês começa em 0 no JS
+    const day = parseInt(dateString.substring(6, 8), 10);
+    const hours = parseInt(dateString.substring(8, 10), 10);
+    const minutes = parseInt(dateString.substring(10, 12), 10);
+    const seconds = parseInt(dateString.substring(12, 14), 10);
+
+    return new Date(year, month, day, hours, minutes, seconds);
   }
 }
