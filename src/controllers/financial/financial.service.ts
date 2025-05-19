@@ -610,6 +610,7 @@ export class FinancialService {
     }
 
     return await this.transactionRepository.save({
+      id,
       type: data.type,
       datetime: new Date(data.datetime),
       description: data.description,

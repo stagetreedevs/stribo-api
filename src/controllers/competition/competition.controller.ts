@@ -145,6 +145,13 @@ export class CompetitionController {
     return this.competitionService.delete(id);
   }
 
+  // @UseGuards(JwtAuthGuard)
+  @Delete()
+  @ApiOperation({ summary: 'DELETAR COMPETIÇÕES' })
+  async removeAll(): Promise<void> {
+    return this.competitionService.deleteAll();
+  }
+
   // * Competitor
   @UseGuards(JwtAuthGuard)
   @Post('competitor/:property_id')

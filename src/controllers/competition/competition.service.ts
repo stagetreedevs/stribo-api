@@ -288,6 +288,11 @@ export class CompetitionService {
     await this.competition.delete(id);
   }
 
+  async deleteAll(): Promise<void> {
+    await this.competitor.delete({});
+    await this.competition.delete({});
+  }
+
   // * Competitor
   async createCompetitor(
     name: string,
