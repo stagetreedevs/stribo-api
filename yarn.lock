@@ -5751,6 +5751,11 @@ object.assign@^4.1.4:
     has-symbols "^1.1.0"
     object-keys "^1.1.1"
 
+ofx-data-extractor@^1.4.7:
+  version "1.4.7"
+  resolved "https://registry.yarnpkg.com/ofx-data-extractor/-/ofx-data-extractor-1.4.7.tgz#99256b728a9922b38e0fa89c1841683d4c2390b9"
+  integrity sha512-3ne16KFL8pqkKvaQUyGnjSv5UqehE4KyIgL1GEvLHqKCdful6mBt5EXRTIyy/e3wmijXlkEoidVRQY5PiQus1Q==
+
 ofx-js@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/ofx-js/-/ofx-js-0.2.0.tgz#57f09b0f91bc09bdbf0110c2a009fc541f141220"

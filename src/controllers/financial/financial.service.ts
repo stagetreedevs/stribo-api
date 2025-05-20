@@ -29,7 +29,8 @@ import {
 import { Installment, InstallmentStatus } from './entity/installment.entity';
 import { S3Service } from '../s3/s3.service';
 import { CompetitionService } from '../competition/competition.service';
-import { parse as parseOFX } from 'ofx-js';
+// import { parse as parseOFX } from 'ofx-js';
+import { Ofx } from 'ofx-data-extractor';
 
 @Injectable()
 export class FinancialService {
@@ -214,8 +215,6 @@ export class FinancialService {
 
   // ** Transaction ** //
   async createTransaction(data: TransactionDTO) {
-    console.log('data', data.extra_fields);
-
     const { bank_account_id, category_id } = data;
 
     const bankAccount = await this.bankAccountRepository.findOne({
@@ -1066,12 +1065,14 @@ export class FinancialService {
     property_id: string,
   ) {
     const ofxString = file.buffer.toString('utf-8');
-    const ofxData: TOfxData = await parseOFX(ofxString);
+    const ofxData = new Ofx(ofxString);
 
-    const orgInfo = ofxData.OFX.SIGNONMSGSRSV1.SONRS.FI.ORG;
-    const bankAccFrom = ofxData.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKACCTFROM;
-    const bankTranList =
-      ofxData.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKTRANLIST.STMTTRN;
+    const ofxContent = ofxData.getContent();
+
+    const orgInfo = ofxContent.OFX.SIGNONMSGSRSV1.SONRS.FI.ORG;
+    const bankAccFrom =
+      ofxContent.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKACCTFROM;
+    const bankTranList = ofxData.getBankTransferList();
 
     let bank = await this.findBankByAgencyAndAccount(
       bankAccFrom.ACCTID,
@@ -1095,19 +1096,19 @@ export class FinancialService {
       bankTranList.map(async (transaction) => {
         const newTransaction = await this.createTransaction({
           bank_account_id: bank.id,
-          datetime: this.parseOFXDate(transaction.DTPOSTED),
+          datetime: new Date(transaction.DTPOSTED),
           description: transaction.MEMO,
           property_id: property_id,
           original_value:
-            Number(transaction.TRNAMT) > 0
-              ? Number(transaction.TRNAMT) * 100
-              : -1 * Number(transaction.TRNAMT) * 100,
+            transaction.TRNAMT > 0
+              ? Number((transaction.TRNAMT * 100).toFixed(0))
+              : Number((-1 * transaction.TRNAMT * 100).toFixed(0)),
           type:
-            Number(transaction.TRNAMT) > 0
+            transaction.TRNAMT > 0
               ? TransactionType.REVENUE
               : TransactionType.EXPENSE,
           is_installment: false,
-          installments: 1,
+          installments: 0,
           extra_fields: [],
         });
 
@@ -1122,18 +1123,26 @@ export class FinancialService {
   }
 
   /**<DTPOSTED>20250501000000[-3:BRT]</DTPOSTED> */
-  parseOFXDate(dateString: string) {
-    if (!/^\d{14}$/.test(dateString)) {
-      throw new Error('Formato de data inválido. Deve ser YYYYMMDDHHMMSS.');
-    }
+  // parseOFXDate(dateString: string) {
+  //   console.log('dateString', dateString);
+  //   const dateRegex = /^\d{14}(\[-?\d+:[A-Z]{3}\])?$/;
 
-    const year = parseInt(dateString.substring(0, 4), 10);
-    const month = parseInt(dateString.substring(4, 6), 10) - 1; // Mês começa em 0 no JS
-    const day = parseInt(dateString.substring(6, 8), 10);
-    const hours = parseInt(dateString.substring(8, 10), 10);
-    const minutes = parseInt(dateString.substring(10, 12), 10);
-    const seconds = parseInt(dateString.substring(12, 14), 10);
+  //   if (!dateRegex.test(dateString)) {
+  //     throw new Error(
+  //       'Formato de data inválido. Deve ser YYYYMMDDHHMMSS ou YYYYMMDDHHMMSS[-3:BRT].',
+  //     );
+  //   }
 
-    return new Date(year, month, day, hours, minutes, seconds);
-  }
+  //   // Remove o timezone, se existir
+  //   const cleanDateString = dateString.split('[')[0];
+
+  //   const year = parseInt(cleanDateString.substring(0, 4), 10);
+  //   const month = parseInt(cleanDateString.substring(4, 6), 10) - 1; // Mês começa em 0 no JS
+  //   const day = parseInt(cleanDateString.substring(6, 8), 10);
+  //   const hours = parseInt(cleanDateString.substring(8, 10), 10);
+  //   const minutes = parseInt(cleanDateString.substring(10, 12), 10);
+  //   const seconds = parseInt(cleanDateString.substring(12, 14), 10);
+
+  //   return new Date(year, month, day, hours, minutes, seconds);
+  // }
 }
