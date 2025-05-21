@@ -888,7 +888,7 @@ export class FinancialService {
       }),
       datasets: [
         {
-          data: analytics.map((item) => item.total),
+          data: analytics.map((item) => item.total / 100),
         },
       ],
     };
