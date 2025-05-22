@@ -325,6 +325,7 @@ export class CompetitionService {
   async findNames(property_id?: string) {
     const competitions = await this.competition.find({
       where: { property: property_id || undefined },
+      order: { name: 'ASC' },
     });
 
     return competitions.map((competition) => {

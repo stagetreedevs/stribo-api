@@ -237,6 +237,9 @@ export class AnimalService {
         sex: sex || undefined,
         property: property_id || undefined,
       },
+      order: {
+        name: 'ASC',
+      },
     });
     const uniqueNames: { label: string; value: string }[] = [];
 

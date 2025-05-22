@@ -92,6 +92,9 @@ export class FinancialService {
   ): Promise<{ label: string; value: string }[]> {
     const bankAccounts = await this.bankAccountRepository.find({
       where: { property_id: property_id || undefined },
+      order: {
+        bank: 'ASC',
+      },
     });
     return bankAccounts.map((bankAccount) => ({
       label: `${bankAccount.bank} (${bankAccount.account})`,
@@ -141,6 +144,9 @@ export class FinancialService {
       where: {
         property_id: property_id ? Or(Equal(property_id), IsNull()) : undefined,
         type: type || undefined,
+      },
+      order: {
+        name: 'ASC',
       },
     });
     return categories.map((category) => ({
@@ -699,7 +705,10 @@ export class FinancialService {
     const transactionUpdated = await this.transactionRepository.save(
       transaction,
     );
-    await this.s3Service.deleteFileS3(transaction.attachments_files[index]);
+
+    if (transaction.attachments_files && transaction.attachments_files[index]) {
+      await this.s3Service.deleteFileS3(transaction.attachments_files[index]);
+    }
 
     return transactionUpdated;
   }
@@ -713,13 +722,13 @@ export class FinancialService {
       throw new NotFoundException('Transaction not found');
     }
 
-    if (file === 'contract_file') {
+    if (file === 'contract_file' && transaction.contract_file) {
       await this.s3Service.deleteFileS3(transaction.contract_file);
       transaction.contract_file = null;
-    } else if (file === 'invoice_file') {
+    } else if (file === 'invoice_file' && transaction.invoice_file) {
       await this.s3Service.deleteFileS3(transaction.invoice_file);
       transaction.invoice_file = null;
-    } else if (file === 'receipt_file') {
+    } else if (file === 'receipt_file' && transaction.receipt_file) {
       await this.s3Service.deleteFileS3(transaction.receipt_file);
       transaction.receipt_file = null;
     } else {
