@@ -782,43 +782,45 @@ export class FinancialService {
       total: number;
     }> = [];
 
-    transactions.forEach((transaction) => {
-      const transactionDate = new Date(transaction.datetime);
-      const date = transactionDate.toLocaleDateString('pt-BR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
+    await Promise.all(
+      transactions.map((transaction) => {
+        const transactionDate = new Date(transaction.datetime);
+        const date = transactionDate.toLocaleDateString('pt-BR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        });
 
-      const existingDate = analytics.find((item) => item.date === date);
-      if (existingDate) {
-        transaction.installments.forEach((installment) => {
-          if (installment.status === InstallmentStatus.PAID) {
+        const existingDate = analytics.find((item) => item.date === date);
+        if (existingDate) {
+          transaction.installments.forEach((installment) => {
+            // if (installment.status === InstallmentStatus.PAID) {
             if (transaction.type === TransactionType.EXPENSE) {
               existingDate.total -= Number(installment.value);
             } else if (transaction.type === TransactionType.REVENUE) {
               existingDate.total += Number(installment.value);
             }
-          }
-        });
-      } else {
-        const total = transaction.installments.reduce((acc, installment) => {
-          if (installment.status === InstallmentStatus.PAID) {
+            // }
+          });
+        } else {
+          const total = transaction.installments.reduce((acc, installment) => {
+            // if (installment.status === InstallmentStatus.PAID) {
             if (transaction.type === TransactionType.EXPENSE) {
               return acc - Number(installment.value);
             } else if (transaction.type === TransactionType.REVENUE) {
               return acc + Number(installment.value);
             }
-          }
-          return acc;
-        }, 0);
+            // }
+            return acc;
+          }, 0);
 
-        analytics.push({
-          date,
-          total,
-        });
-      }
-    });
+          analytics.push({
+            date,
+            total,
+          });
+        }
+      }),
+    );
 
     const transactionsAll = await this.transactionRepository.find({
       where: {
@@ -874,9 +876,9 @@ export class FinancialService {
     }, 0);
 
     return {
-      balance,
-      payableValue,
-      receivableValue,
+      balance: balance / 100,
+      payableValue: payableValue / 100,
+      receivableValue: receivableValue / 100,
       labels: analytics.map((item) => {
         const [day, month] = item.date.split('/'); // Extrai o dia e o mês
         const monthNames = [
