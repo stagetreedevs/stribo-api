@@ -876,9 +876,9 @@ export class FinancialService {
     }, 0);
 
     return {
-      balance: balance / 100,
-      payableValue: payableValue / 100,
-      receivableValue: receivableValue / 100,
+      balance: balance,
+      payableValue: payableValue,
+      receivableValue: receivableValue,
       labels: analytics.map((item) => {
         const [day, month] = item.date.split('/'); // Extrai o dia e o mês
         const monthNames = [
