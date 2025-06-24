@@ -19,6 +19,7 @@ import { SemenReceiptService } from '../semen-receipt/semen-receipt.service';
 import { CylinderService } from '../cylinder/cylinder.service';
 import { FilterProcedureDto } from './reproductive.dto';
 import { Animal } from '../animal/animal.entity';
+import { OneSignalService } from '../../services/one-signal/one-signal.service';
 
 export type Status = 'A Realizar' | 'Realizado' | 'Em atraso';
 
@@ -32,10 +33,47 @@ export class ReproductiveService {
     private readonly semenFrozenService: SemenFrozenService,
     private readonly semenReceiptService: SemenReceiptService,
     private readonly cylinderService: CylinderService,
+    private readonly oneSignalService: OneSignalService,
   ) {}
 
   async create(body: Reproductive): Promise<Reproductive> {
-    return await this.reproductive.save(body);
+    const procedure = await this.reproductive.save(body);
+
+    if (!procedure) {
+      throw new HttpException(
+        'Erro ao criar procedimento',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const date = procedure.date; // 2024-11-19
+    const hour = procedure.hour; // 10h00
+
+    const [hourPart, minutePart] = hour.split('h').map(Number);
+    const procedureDateTime = new Date(date);
+
+    procedureDateTime.setHours(hourPart, minutePart, 0, 0);
+
+    const notificationDate = new Date(procedureDateTime);
+    notificationDate.setHours(notificationDate.getHours() - 8);
+
+    await this.oneSignalService.sendNotification(
+      procedure.property,
+      `Procedimento de reprodução agendado para ${procedure.animal_name} (${procedure.animal_registry})`,
+      `O procedimento de reprodução ${
+        procedure.procedure
+      } está agendado para ${procedureDateTime.toLocaleDateString(
+        'pt-BR',
+      )} às ${procedureDateTime.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}.`,
+      notificationDate.getTime() < new Date().getTime()
+        ? null
+        : notificationDate,
+    );
+
+    return procedure;
   }
 
   async findOne(id: string): Promise<Reproductive & { animal_photo: string }> {
@@ -279,11 +317,11 @@ export class ReproductiveService {
     currentDate.setHours(0, 0, 0, 0);
 
     const dateCondition: FindOperator<Date> =
-      query.initialDate && query.lastDate
+      query?.initialDate && query?.lastDate
         ? And(
             Between(
-              new Date(query.initialDate.setHours(0, 0, 0, 0)),
-              new Date(query.lastDate.setHours(23, 59, 59, 999)),
+              new Date(query?.initialDate.setHours(0, 0, 0, 0)),
+              new Date(query?.lastDate.setHours(23, 59, 59, 999)),
             ),
             Equal(currentDate),
           )
@@ -292,14 +330,14 @@ export class ReproductiveService {
     const procedimentos = await this.reproductive.find({
       where: {
         property,
-        animal_name: query.search ? Like(`%${query.search}%`) : undefined,
-        procedure: query.procedure || undefined,
+        animal_name: query?.search ? Like(`%${query.search}%`) : undefined,
+        procedure: query?.procedure || undefined,
         date: dateCondition,
-        responsible: query.responsible || undefined,
-        status: query.status || undefined,
+        responsible: query?.responsible || undefined,
+        status: query?.status || undefined,
       },
       order: {
-        date: query.order || 'DESC',
+        date: query?.order || 'DESC',
       },
     });
     const result: any[] = [];
@@ -320,7 +358,7 @@ export class ReproductiveService {
     currentDate.setHours(0, 0, 0, 0);
 
     const dateCondition: FindOperator<Date> =
-      query.initialDate && query.lastDate
+      query?.initialDate && query?.lastDate
         ? And(
             Between(
               new Date(query.initialDate.setHours(0, 0, 0, 0)),
@@ -333,14 +371,14 @@ export class ReproductiveService {
     const procedimentos = await this.reproductive.find({
       where: {
         property,
-        animal_name: query.search ? Like(`%${query.search}%`) : undefined,
-        procedure: query.procedure || undefined,
+        animal_name: query?.search ? Like(`%${query.search}%`) : undefined,
+        procedure: query?.procedure || undefined,
         date: dateCondition,
-        responsible: query.responsible || undefined,
-        status: query.status || undefined,
+        responsible: query?.responsible || undefined,
+        status: query?.status || undefined,
       },
       order: {
-        date: query.order || 'DESC',
+        date: query?.order || 'DESC',
       },
     });
     const result: any[] = [];
@@ -361,11 +399,11 @@ export class ReproductiveService {
     currentDate.setHours(0, 0, 0, 0);
 
     const dateCondition: FindOperator<Date> =
-      query.initialDate && query.lastDate
+      query?.initialDate && query?.lastDate
         ? And(
             Between(
-              new Date(query.initialDate.setHours(0, 0, 0, 0)),
-              new Date(query.lastDate.setHours(23, 59, 59, 999)),
+              new Date(query?.initialDate.setHours(0, 0, 0, 0)),
+              new Date(query?.lastDate.setHours(23, 59, 59, 999)),
             ),
             MoreThan(currentDate),
           )
@@ -374,14 +412,14 @@ export class ReproductiveService {
     const procedimentos = await this.reproductive.find({
       where: {
         property,
-        animal_name: query.search ? Like(`%${query.search}%`) : undefined,
-        procedure: query.procedure || undefined,
+        animal_name: query?.search ? Like(`%${query.search}%`) : undefined,
+        procedure: query?.procedure || undefined,
         date: dateCondition,
-        responsible: query.responsible || undefined,
-        status: query.status || undefined,
+        responsible: query?.responsible || undefined,
+        status: query?.status || undefined,
       },
       order: {
-        date: query.order || 'DESC',
+        date: query?.order || 'DESC',
       },
     });
     const result: any[] = [];

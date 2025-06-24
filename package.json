@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.7.1",
+    "@nestjs/axios": "^4.0.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
@@ -32,6 +33,7 @@
     "@nestjs/typeorm": "^9.0.1",
     "@types/aws-sdk": "^2.7.0",
     "aws-sdk": "^2.1509.0",
+    "axios": "^1.10.0",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "date-fns": "^2.30.0",

@@ -65,6 +65,7 @@ import { Competitor } from './controllers/competition/competitor.entity';
 import { PropertiesModule } from './controllers/properties/properties.module';
 import { ProductsEntity } from './controllers/properties/entity/products.entity';
 import { MovementsEntity } from './controllers/properties/entity/movements.entity';
+import { OneSignalModule } from './services/one-signal/one-signal.module';
 dotenv.config();
 @Module({
   imports: [
@@ -154,6 +155,7 @@ dotenv.config();
     CompetitionModule,
     FinancialModule,
     PropertiesModule,
+    OneSignalModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService],

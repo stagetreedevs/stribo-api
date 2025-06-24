@@ -8,6 +8,7 @@ import { SemenShippingModule } from '../semen-shipping/semen-shipping.module';
 import { SemenReceiptModule } from '../semen-receipt/semen-receipt.module';
 import { SemenFrozenModule } from '../semen-frozen/semen-frozen.module';
 import { CylinderModule } from '../cylinder/cylinder.module';
+import { OneSignalModule } from '../../services/one-signal/one-signal.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CylinderModule } from '../cylinder/cylinder.module';
     SemenReceiptModule,
     SemenFrozenModule,
     CylinderModule,
+    OneSignalModule,
   ],
   providers: [ReproductiveService],
   controllers: [ReproductiveController],
