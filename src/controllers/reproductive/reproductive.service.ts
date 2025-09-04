@@ -9,7 +9,6 @@ import {
   LessThan,
   Like,
   MoreThan,
-  Not,
   Repository,
 } from 'typeorm';
 import { AnimalService } from '../animal/animal.service';
@@ -46,31 +45,52 @@ export class ReproductiveService {
       );
     }
 
-    const date = procedure.date; // 2024-11-19
-    const hour = procedure.hour; // 10h00
+    const date = procedure.date;
+    const hour = procedure.hour;
 
     const [hourPart, minutePart] = hour.split('h').map(Number);
-    const procedureDateTime = new Date(date);
 
-    procedureDateTime.setHours(hourPart, minutePart, 0, 0);
+    const baseDateUTC = new Date(date);
+    const year = baseDateUTC.getUTCFullYear();
+    const month = baseDateUTC.getUTCMonth();
+    const day = baseDateUTC.getUTCDate();
 
-    const notificationDate = new Date(procedureDateTime);
-    notificationDate.setHours(notificationDate.getHours() - 8);
+    const procedureTimestampUTC = Date.UTC(
+      year,
+      month,
+      day,
+      hourPart + 3,
+      minutePart,
+      0,
+      0,
+    );
+    const procedureDateTimeUTC = new Date(procedureTimestampUTC);
+
+    const notificationDateUTC = new Date(procedureDateTimeUTC);
+    notificationDateUTC.setDate(notificationDateUTC.getDate() - 1);
+
+    const nowUTC = new Date();
+    let sendAfterValue: string | null = null;
+
+    if (notificationDateUTC.getTime() >= nowUTC.getTime()) {
+      sendAfterValue = notificationDateUTC.toISOString();
+    } else {
+      sendAfterValue = null;
+    }
 
     await this.oneSignalService.sendNotification(
       procedure.property,
-      `Procedimento de reprodução agendado para ${procedure.animal_name} (${procedure.animal_registry})`,
-      `O procedimento de reprodução ${
+      'Alerta de Procedimento',
+      `O procedimento de ${
         procedure.procedure
-      } está agendado para ${procedureDateTime.toLocaleDateString(
-        'pt-BR',
-      )} às ${procedureDateTime.toLocaleTimeString('pt-BR', {
+      } está agendado para ${procedureDateTimeUTC.toLocaleDateString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+      })} às ${procedureDateTimeUTC.toLocaleTimeString('pt-BR', {
         hour: '2-digit',
         minute: '2-digit',
-      })}.`,
-      notificationDate.getTime() < new Date().getTime()
-        ? null
-        : notificationDate,
+        timeZone: 'America/Sao_Paulo',
+      })} para o animal ${procedure.animal_name}.`,
+      sendAfterValue,
     );
 
     return procedure;

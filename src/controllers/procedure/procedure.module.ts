@@ -5,8 +5,13 @@ import { Procedure } from './procedure.entity';
 import { ProcedureController } from './procedure.controller';
 import { ProcedureService } from './procedure.service';
 import { AnimalModule } from '../animal/animal.module';
+import { OneSignalModule } from 'src/services/one-signal/one-signal.module';
 @Module({
-  imports: [TypeOrmModule.forFeature([Procedure]), AnimalModule],
+  imports: [
+    TypeOrmModule.forFeature([Procedure]),
+    AnimalModule,
+    OneSignalModule,
+  ],
   controllers: [ProcedureController],
   providers: [ProcedureService],
   exports: [ProcedureService],

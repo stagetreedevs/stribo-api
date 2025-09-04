@@ -18,7 +18,7 @@ export class OneSignalService {
     userId: string,
     headline: string,
     message: string,
-    send_after?: Date,
+    send_after?: string,
     data?: Record<string, any>,
   ): Promise<CreateOneSignalMessageResponse> {
     const payload: CreateOneSignalMessage = {
@@ -27,7 +27,7 @@ export class OneSignalService {
       headings: { en: headline },
       contents: { en: message },
       data: data || {},
-      send_after: send_after ? send_after.toISOString() : undefined,
+      send_after: send_after || undefined,
     };
 
     try {
@@ -39,6 +39,16 @@ export class OneSignalService {
       return response.data;
     } catch (error) {
       console.error('Error sending notification:', error);
+      throw error;
+    }
+  }
+  async cancelNotification(notificationId: string): Promise<void> {
+    try {
+      await this.httpService.axiosRef.delete(
+        `/notifications/${notificationId}`,
+      );
+    } catch (error) {
+      console.error('Error canceling notification:', error);
       throw error;
     }
   }

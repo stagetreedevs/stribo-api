@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Like, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { Competition } from './competition.entity';
@@ -10,6 +15,7 @@ import {
 } from './competition.dto';
 import { AnimalService } from '../animal/animal.service';
 import { Competitor } from './competitor.entity';
+import { OneSignalService } from 'src/services/one-signal/one-signal.service';
 
 class CompetitionByAnimal extends Competition {
   animal_photo: string;
@@ -25,18 +31,75 @@ export class CompetitionService {
     @InjectRepository(Competitor)
     private competitor: Repository<Competitor>,
     private animalService: AnimalService,
+    private readonly oneSignalService: OneSignalService,
   ) {}
+
+  private getNotificationDateTimeUTC(
+    eventDate: Date,
+    daysBefore: number,
+    hourLocal: number,
+    minuteLocal: number,
+    timezoneOffsetHours = 3,
+  ): Date | undefined {
+    const targetDate = new Date(eventDate);
+    targetDate.setUTCDate(targetDate.getUTCDate() - daysBefore);
+    targetDate.setUTCHours(hourLocal + timezoneOffsetHours, minuteLocal, 0, 0);
+
+    const nowUTC = new Date();
+    return targetDate > nowUTC ? targetDate : undefined;
+  }
 
   async create(data: CreateCompetitionDto): Promise<Competition> {
     const competitor = await this.competitor.findOne({
       where: { id: data.competitor },
     });
 
-    return await this.competition.save({
+    const competition = await this.competition.save({
       ...data,
-      competitor: competitor ? competitor.name : '',
-      competitor_id: competitor ? competitor.id : '',
+      competitor: competitor?.name || '',
+      competitor_id: competitor?.id || '',
     });
+
+    if (!competition) {
+      throw new HttpException(
+        'Erro ao criar competição',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const eventDate = new Date(competition.date);
+    if (isNaN(eventDate.getTime())) {
+      throw new HttpException(
+        'Data da competição inválida.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const sendDateUTC = this.getNotificationDateTimeUTC(
+      eventDate,
+      2, // dias antes
+      12, // hora local
+      0, // minuto local
+    );
+
+    const displayDate = new Date(sendDateUTC || eventDate);
+    const formattedDate = displayDate.toLocaleDateString('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+    });
+    const formattedTime = displayDate.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Sao_Paulo',
+    });
+
+    await this.oneSignalService.sendNotification(
+      competition.property,
+      'Alerta de Competição',
+      `A competição "${competition.name}" está agendada para ${formattedDate} às ${formattedTime}. Prepare-se!`,
+      sendDateUTC?.toISOString(),
+    );
+
+    return competition;
   }
 
   async findAll(): Promise<Competition[]> {

@@ -1,5 +1,14 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Put,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ServiceOrderService } from './service-order.service';
@@ -9,72 +18,79 @@ import { FilterDocumentsDto } from '../documents.dto';
 @ApiBearerAuth()
 @Controller('service-order')
 export class ServiceOrderController {
-    constructor(private readonly orderService: ServiceOrderService) { }
+  constructor(private readonly orderService: ServiceOrderService) {}
 
-    @UseGuards(JwtAuthGuard)
-    @Post()
-    @ApiOperation({ summary: 'REGISTRAR DADOS DE UM ORDEM DE SERVIÇO' })
-    @ApiBody({ type: ServiceOrderDto })
-    async create(
-        @Body() body: ServiceOrderDto,
-    ): Promise<any> {
-        return this.orderService.create(body);
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  @ApiOperation({ summary: 'REGISTRAR DADOS DE UM ORDEM DE SERVIÇO' })
+  @ApiBody({ type: ServiceOrderDto })
+  async create(@Body() body: ServiceOrderDto): Promise<any> {
+    return this.orderService.create(body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('filter/:property')
+  @ApiOperation({ summary: 'FILTRO PARA ORDEM DE SERVIÇO' })
+  @ApiBody({ type: FilterDocumentsDto })
+  async findFiltered(
+    @Param('property') property: string,
+    @Body() body: FilterDocumentsDto,
+  ): Promise<any[]> {
+    if (body.initialDate) {
+      const start = new Date(body.initialDate);
+      start.setUTCHours(0, 0, 0, 0);
+      body.initialDate = start;
     }
 
-    @UseGuards(JwtAuthGuard)
-    @Post('filter/:property')
-    @ApiOperation({ summary: 'FILTRO PARA ORDEM DE SERVIÇO' })
-    @ApiBody({ type: FilterDocumentsDto })
-    async findFiltered(
-        @Param('property') property: string,
-        @Body() body: FilterDocumentsDto,
-    ): Promise<any[]> {
-        return this.orderService.findFiltered(body, property);
+    if (body.lastDate) {
+      const end = new Date(body.lastDate);
+      end.setUTCHours(23, 59, 59, 999);
+      body.lastDate = end;
     }
 
-    @UseGuards(JwtAuthGuard)
-    @Get()
-    @ApiOperation({ summary: 'TODOS ORDEM DE SERVIÇOS REGISTRADOS' })
-    async findAll(): Promise<any> {
-        return this.orderService.findAll();
-    }
+    return this.orderService.findFiltered(body, property);
+  }
 
-    @UseGuards(JwtAuthGuard)
-    @Get(':order_number/number')
-    @ApiOperation({ summary: 'ORDEM DE SERVIÇO VIA NUMERO DE ORDEM DE SERVIÇO' })
-    async findByNumber(
-        @Param('order_number') order_number: string
-    ): Promise<any> {
-        return this.orderService.findByNumber(order_number);
-    }
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  @ApiOperation({ summary: 'TODOS ORDEM DE SERVIÇOS REGISTRADOS' })
+  async findAll(): Promise<any> {
+    return this.orderService.findAll();
+  }
 
-    @UseGuards(JwtAuthGuard)
-    @Get(':order_number/property')
-    @ApiOperation({ summary: 'ORDEM DE SERVIÇO VIA PROPRIEDADE' })
-    async findByProperty(
-        @Param('order_number') order_number: string
-    ): Promise<any> {
-        return this.orderService.findByProperty(order_number);
-    }
+  @UseGuards(JwtAuthGuard)
+  @Get(':order_number/number')
+  @ApiOperation({ summary: 'ORDEM DE SERVIÇO VIA NUMERO DE ORDEM DE SERVIÇO' })
+  async findByNumber(
+    @Param('order_number') order_number: string,
+  ): Promise<any> {
+    return this.orderService.findByNumber(order_number);
+  }
 
-    @UseGuards(JwtAuthGuard)
-    @Put(':order_number')
-    @ApiOperation({ summary: 'EDITAR ORDEM DE SERVIÇO' })
-    @ApiBody({ type: ServiceOrderEditDto })
-    async update(
-        @Param('order_number') order_number: string,
-        @Body() body: ServiceOrderEditDto
-    ): Promise<any> {
-        return this.orderService.update(order_number, body);
-    }
+  @UseGuards(JwtAuthGuard)
+  @Get(':order_number/property')
+  @ApiOperation({ summary: 'ORDEM DE SERVIÇO VIA PROPRIEDADE' })
+  async findByProperty(
+    @Param('order_number') order_number: string,
+  ): Promise<any> {
+    return this.orderService.findByProperty(order_number);
+  }
 
-    @UseGuards(JwtAuthGuard)
-    @Delete(':order_number')
-    @ApiOperation({ summary: 'DELETA UM ORDEM DE SERVIÇO' })
-    async delete(
-        @Param('order_number') order_number: string
-    ): Promise<void> {
-        return this.orderService.delete(order_number);
-    }
+  @UseGuards(JwtAuthGuard)
+  @Put(':order_number')
+  @ApiOperation({ summary: 'EDITAR ORDEM DE SERVIÇO' })
+  @ApiBody({ type: ServiceOrderEditDto })
+  async update(
+    @Param('order_number') order_number: string,
+    @Body() body: ServiceOrderEditDto,
+  ): Promise<any> {
+    return this.orderService.update(order_number, body);
+  }
 
+  @UseGuards(JwtAuthGuard)
+  @Delete(':order_number')
+  @ApiOperation({ summary: 'DELETA UM ORDEM DE SERVIÇO' })
+  async delete(@Param('order_number') order_number: string): Promise<void> {
+    return this.orderService.delete(order_number);
+  }
 }

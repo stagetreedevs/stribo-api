@@ -17,7 +17,6 @@ import { AnimalService } from '../animal/animal.service';
 import {
   FilterPeriodDate,
   QueryTransaction,
-  TOfxData,
   Transaction,
   TransactionType,
 } from './entity/transaction.entity';
@@ -31,6 +30,7 @@ import { S3Service } from '../s3/s3.service';
 import { CompetitionService } from '../competition/competition.service';
 // import { parse as parseOFX } from 'ofx-js';
 import { Ofx } from 'ofx-data-extractor';
+import { OneSignalService } from 'src/services/one-signal/one-signal.service';
 
 @Injectable()
 export class FinancialService {
@@ -46,7 +46,37 @@ export class FinancialService {
     private readonly competitionService: CompetitionService,
     private readonly animalService: AnimalService,
     private readonly s3Service: S3Service,
+    private readonly oneSignalService: OneSignalService,
   ) {}
+
+  private getSendAfterFromDueDate(
+    dueDateUTC: Date,
+    daysBefore = 1,
+  ): string | undefined {
+    const timeZoneOffset = -3;
+
+    const dueDateTime =
+      dueDateUTC instanceof Date ? dueDateUTC : new Date(dueDateUTC);
+
+    const sendDate = new Date(dueDateTime.getTime());
+    sendDate.setUTCDate(sendDate.getUTCDate() - daysBefore);
+
+    const now = new Date();
+    const nowLocal = new Date(now.getTime() + timeZoneOffset * 60 * 60 * 1000);
+
+    console.log(`dueDateUTC: ${dueDateTime.toISOString()}`);
+    console.log(`sendDate (calculada para envio): ${sendDate.toISOString()}`);
+    console.log(`nowLocal (ajustado para GMT-3): ${nowLocal.toISOString()}`);
+
+    if (sendDate > nowLocal) {
+      return new Date(sendDate.getTime() + 3 * 60 * 60 * 1000).toISOString();
+    } else {
+      console.warn(
+        `Lembrete para ${dueDateTime.toISOString()} com ${daysBefore} dias antes, resultaria em envio imediato (${sendDate.toISOString()}). Não será agendado.`,
+      );
+      return undefined;
+    }
+  }
 
   async getQuantityBankAccountAndCategory(
     property_id?: string,
@@ -242,6 +272,27 @@ export class FinancialService {
     }
 
     if (!data.is_installment && !data.is_periodically) {
+      const transactionDueDate = new Date(data.datetime);
+      console.log('data.datetime', data.datetime);
+      const sendAfter = this.getSendAfterFromDueDate(transactionDueDate);
+      console.log('sendAfter', sendAfter);
+
+      const formattedDate = transactionDueDate.toLocaleDateString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+      });
+
+      const message = `Uma transação do tipo ${
+        data.type === 'revenue'
+          ? `receita, deve ser recebida até dia ${formattedDate}.`
+          : `despesa, vence dia ${formattedDate}.`
+      } `;
+
+      await this.oneSignalService.sendNotification(
+        data.property_id,
+        'Alerta de Transação',
+        message,
+        sendAfter,
+      );
       const transaction = this.transactionRepository.create({
         bankAccount: { id: bank_account_id },
         category: { id: category_id },
@@ -552,6 +603,27 @@ export class FinancialService {
           console.error('Period not found');
           throw new NotFoundException('Period not found');
       }
+      const transactionDueDate = new Date(data.datetime);
+      console.log('data.datetime', data.datetime);
+      const sendAfter = this.getSendAfterFromDueDate(transactionDueDate); // 2 dias antes, 12:00h local
+      console.log('sendAfter', sendAfter);
+
+      const formattedDate = transactionDueDate.toLocaleDateString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+      });
+
+      const message = `Uma transação do tipo ${
+        data.type === 'revenue'
+          ? `receita, deve ser recebida até dia ${formattedDate}.`
+          : `despesa, vence dia ${formattedDate}.`
+      } `;
+
+      await this.oneSignalService.sendNotification(
+        data.property_id,
+        'Alerta de Transação',
+        message,
+        sendAfter,
+      );
 
       return transactionReturn;
     } else {
@@ -559,6 +631,28 @@ export class FinancialService {
         console.error('Installments not found');
         throw new NotFoundException('Installments not found');
       }
+
+      const transactionDueDate = new Date(data.datetime);
+      console.log('data.datetime', data.datetime);
+      const sendAfter = this.getSendAfterFromDueDate(transactionDueDate); // 2 dias antes, 12:00h local
+      console.log('sendAfter', sendAfter);
+
+      const formattedDate = transactionDueDate.toLocaleDateString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+      });
+
+      const message = `Uma transação do tipo ${
+        data.type === 'revenue'
+          ? `receita, deve ser recebida até dia ${formattedDate}.`
+          : `despesa, vence dia ${formattedDate}.`
+      } `;
+
+      await this.oneSignalService.sendNotification(
+        data.property_id,
+        'Alerta de Transação',
+        message,
+        sendAfter,
+      );
 
       const transaction = this.transactionRepository.create({
         bankAccount: { id: bank_account_id },
@@ -683,7 +777,6 @@ export class FinancialService {
         }
       }
     }
-
     return await this.transactionRepository.save(transaction);
   }
 

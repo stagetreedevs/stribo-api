@@ -9,6 +9,7 @@ import { Transaction } from './entity/transaction.entity';
 import { Installment } from './entity/installment.entity';
 import { S3Module } from '../s3/s3.module';
 import { CompetitionModule } from '../competition/competition.module';
+import { OneSignalModule } from 'src/services/one-signal/one-signal.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CompetitionModule } from '../competition/competition.module';
     CompetitionModule,
     AnimalModule,
     S3Module,
+    OneSignalModule,
   ],
   providers: [FinancialService],
   controllers: [FinancialController],

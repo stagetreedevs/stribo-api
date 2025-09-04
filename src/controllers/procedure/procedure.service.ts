@@ -5,16 +5,75 @@ import { Equal, LessThan, MoreThan, Repository } from 'typeorm';
 import { Procedure } from './procedure.entity';
 import { FilterProcedureDto } from './procedure.dto';
 import { AnimalService } from '../animal/animal.service';
+import { OneSignalService } from 'src/services/one-signal/one-signal.service';
 @Injectable()
 export class ProcedureService {
   constructor(
     @InjectRepository(Procedure)
     private readonly procedimento: Repository<Procedure>,
     private readonly animalService: AnimalService,
+    private readonly oneSignalService: OneSignalService,
   ) {}
 
   async create(body: Procedure): Promise<Procedure> {
-    return await this.procedimento.save(body);
+    const procedure = await this.procedimento.save(body);
+
+    if (!procedure) {
+      throw new HttpException(
+        'Erro ao criar procedimento',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const date = procedure.date;
+    const hour = procedure.hour;
+
+    const [hourPart, minutePart] = hour.split('h').map(Number);
+
+    const baseDateUTC = new Date(date);
+    const year = baseDateUTC.getUTCFullYear();
+    const month = baseDateUTC.getUTCMonth();
+    const day = baseDateUTC.getUTCDate();
+
+    const procedureTimestampUTC = Date.UTC(
+      year,
+      month,
+      day,
+      hourPart + 3,
+      minutePart,
+      0,
+      0,
+    );
+    const procedureDateTimeUTC = new Date(procedureTimestampUTC);
+
+    const notificationDateUTC = new Date(procedureDateTimeUTC);
+    notificationDateUTC.setDate(notificationDateUTC.getDate() - 1);
+
+    const nowUTC = new Date();
+    let sendAfterValue: string | null = null;
+
+    if (notificationDateUTC.getTime() >= nowUTC.getTime()) {
+      sendAfterValue = notificationDateUTC.toISOString();
+    } else {
+      sendAfterValue = null;
+    }
+
+    await this.oneSignalService.sendNotification(
+      procedure.property,
+      'Alerta de Procedimento',
+      `O procedimento de ${
+        procedure.procedure
+      } está agendado para ${procedureDateTimeUTC.toLocaleDateString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+      })} às ${procedureDateTimeUTC.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'America/Sao_Paulo',
+      })} para o animal ${procedure.animal_name}`,
+      sendAfterValue,
+    );
+
+    return procedure;
   }
 
   async findAll(): Promise<Procedure[]> {
@@ -34,7 +93,6 @@ export class ProcedureService {
     return await this.formattedDate(procedures);
   }
 
-  // Função que recebe um array de procedimentos e formata a resposta
   async formattedDate(procedures: Procedure[]): Promise<any[]> {
     const currentDate = new Date();
     const formattedCurrentDate = this.formatDate(currentDate);
@@ -43,7 +101,6 @@ export class ProcedureService {
       const formattedProcedureDate = this.formatStringDate(
         procedure.date.toString(),
       );
-      // Compara as datas para obter o dia atual
       const isToday = formattedProcedureDate === formattedCurrentDate;
       const dateLabel = isToday
         ? `${formattedCurrentDate} (HOJE)`

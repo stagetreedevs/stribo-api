@@ -6,97 +6,114 @@ import { BankSlip } from './bank-slip.entity';
 import { FilterDocumentsDto } from '../documents.dto';
 @Injectable()
 export class BankSlipService {
-    constructor(
-        @InjectRepository(BankSlip) private readonly ticketRepository: Repository<BankSlip>
-    ) { }
+  constructor(
+    @InjectRepository(BankSlip)
+    private readonly ticketRepository: Repository<BankSlip>,
+  ) {}
 
-    async create(body: any): Promise<any> {
-        const { payment, installments } = body;
+  async create(body: any): Promise<any> {
+    const { payment, installments } = body;
 
-        // Verifica se payment é true(a vista) e installments não é nulo
-        if (payment && installments !== null) {
-            body.installments = null;
-        }
-
-        // Verifica se payment é false(parcelado) e installments é nulo ou tem menos de 1 item
-        if (!payment && (installments === null || installments.length < 1)) {
-            throw new HttpException('Pagamento parcelado tem que ter no mínimo 2 itens.', HttpStatus.BAD_REQUEST);
-        }
-
-        return await this.ticketRepository.save(body);
+    // Verifica se payment é true(a vista) e installments não é nulo
+    if (payment && installments !== null) {
+      body.installments = null;
     }
 
-    async findByNumber(ticket_number: string): Promise<any> {
-        return await this.ticketRepository.findOne({ where: { ticket_number } });
+    // Verifica se payment é false(parcelado) e installments é nulo ou tem menos de 1 item
+    if (!payment && (installments === null || installments.length < 1)) {
+      throw new HttpException(
+        'Pagamento parcelado tem que ter no mínimo 2 itens.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
-    async findByProperty(property: string): Promise<any> {
-        return this.ticketRepository.find({ where: { property } });
+    return await this.ticketRepository.save(body);
+  }
+
+  async findByNumber(ticket_number: string): Promise<any> {
+    return await this.ticketRepository.findOne({ where: { ticket_number } });
+  }
+
+  async findByProperty(property: string): Promise<any> {
+    return this.ticketRepository.find({ where: { property } });
+  }
+
+  async findAll(): Promise<any> {
+    return this.ticketRepository.find();
+  }
+
+  async update(ticket_number: string, body: any): Promise<any> {
+    const verify = await this.findByNumber(ticket_number);
+
+    if (!verify) {
+      throw new HttpException('Boleto não encontrado', HttpStatus.BAD_REQUEST);
     }
 
-    async findAll(): Promise<any> {
-        return this.ticketRepository.find();
+    const { payment, installments } = body;
+
+    // Verifica se payment é true(a vista) e installments não é nulo
+    if (payment && installments !== null) {
+      body.installments = null;
     }
 
-    async update(ticket_number: string, body: any): Promise<any> {
-        const verify = await this.findByNumber(ticket_number);
-
-        if (!verify) {
-            throw new HttpException('Boleto não encontrado', HttpStatus.BAD_REQUEST);
-        }
-
-        const { payment, installments } = body;
-
-        // Verifica se payment é true(a vista) e installments não é nulo
-        if (payment && installments !== null) {
-            body.installments = null;
-        }
-
-        // Verifica se payment é false(parcelado) e installments é nulo ou tem menos de 1 item
-        if (!payment && (installments === null || installments.length < 1)) {
-            throw new HttpException('Pagamento parcelado tem que ter no mínimo 2 itens.', HttpStatus.BAD_REQUEST);
-        }
-
-        body.ticket_number = verify.ticket_number;
-        body.property = verify.property;
-
-        await this.ticketRepository.update(ticket_number, body);
-        return this.findByNumber(ticket_number);
+    // Verifica se payment é false(parcelado) e installments é nulo ou tem menos de 1 item
+    if (!payment && (installments === null || installments.length < 1)) {
+      throw new HttpException(
+        'Pagamento parcelado tem que ter no mínimo 2 itens.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
-    async findFiltered(body: FilterDocumentsDto, property: string): Promise<any[]> {
-        const queryBuilder = this.ticketRepository.createQueryBuilder('bank-slip');
+    body.ticket_number = verify.ticket_number;
+    body.property = verify.property;
 
-        if (body.initialDate) {
-            queryBuilder.andWhere('bank-slip.date >= :initialDate', {
-                initialDate: body.initialDate,
-            });
-        }
+    await this.ticketRepository.update(ticket_number, body);
+    return this.findByNumber(ticket_number);
+  }
 
-        if (body.lastDate) {
-            queryBuilder.andWhere('bank-slip.date <= :lastDate', {
-                lastDate: body.lastDate,
-            });
-        }
+  async findFiltered(
+    body: FilterDocumentsDto,
+    property: string,
+  ): Promise<any[]> {
+    const queryBuilder = this.ticketRepository.createQueryBuilder('bank-slip');
 
-        // FILTRA PELA PROPRIEDADE
-        if (property) {
-            queryBuilder.andWhere('bank-slip.property = :property', { property: property });
-        }
-
-        if (body.provider) {
-            queryBuilder.andWhere('bank-slip.provider = :provider', { provider: body.provider });
-        }
-
-        if (body.order && (body.order.toUpperCase() === 'ASC' || body.order.toUpperCase() === 'DESC')) {
-            queryBuilder.addOrderBy('bank-slip.date', body.order as 'ASC' | 'DESC');
-        }
-
-        return queryBuilder.getMany();
+    if (body.initialDate) {
+      queryBuilder.andWhere('bank-slip.date >= :initialDate', {
+        initialDate: body.initialDate,
+      });
     }
 
-    async delete(ticket_number: string): Promise<void> {
-        await this.ticketRepository.delete(ticket_number);
+    if (body.lastDate) {
+      queryBuilder.andWhere('bank-slip.date <= :lastDate', {
+        lastDate: body.lastDate,
+      });
     }
 
+    // FILTRA PELA PROPRIEDADE
+    if (property) {
+      queryBuilder.andWhere('bank-slip.property = :property', {
+        property: property,
+      });
+    }
+
+    if (body.provider) {
+      queryBuilder.andWhere('bank-slip.provider = :provider', {
+        provider: body.provider,
+      });
+    }
+
+    if (
+      body.order &&
+      (body.order.toUpperCase() === 'ASC' ||
+        body.order.toUpperCase() === 'DESC')
+    ) {
+      queryBuilder.addOrderBy('bank-slip.date', body.order as 'ASC' | 'DESC');
+    }
+
+    return queryBuilder.getMany();
+  }
+
+  async delete(ticket_number: string): Promise<void> {
+    await this.ticketRepository.delete(ticket_number);
+  }
 }

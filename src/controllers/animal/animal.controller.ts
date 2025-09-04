@@ -11,6 +11,7 @@ import {
   UploadedFile,
   UseGuards,
   Query,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -24,6 +25,7 @@ import { AnimalDto, FilterAnimalDto, UpdateAnimalDto } from './animal.dto';
 import { Animal } from './animal.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { plainToInstance } from 'class-transformer';
 @ApiTags('ANIMAL')
 @ApiBearerAuth()
 @Controller('animal')
@@ -38,15 +40,11 @@ export class AnimalController {
   @UseInterceptors(FileInterceptor('photo'))
   async create(
     @UploadedFile() photo: Express.Multer.File,
-    @Body() body: Animal,
+    @Body(new ValidationPipe({ transform: true })) body: AnimalDto,
   ): Promise<Animal> {
-    body.birthDate = new Date(body.birthDate);
-    if (body.castrationDate) {
-      body.castrationDate = new Date(body.castrationDate);
-    } else {
-      body.castrationDate = null;
-    }
-    return this.animalService.create(body, photo);
+    console.log('Animal recebido:', body);
+    const animalEntity = plainToInstance(Animal, body);
+    return this.animalService.create(animalEntity, photo);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -36,14 +36,13 @@ export class AnimalService {
     const dono = await this.userService.findOne(body.owner);
 
     // Pegar ID's do pai e mãe
-    let pai, mae;
     if (body.father !== '') {
-      pai = await this.findByNameInProperty(body.father, body.owner);
-      body.father_id = pai.id;
+      const pai = await this.findByNameInProperty(body.father, body.owner);
+      if (pai) body.father_id = pai.id;
     }
     if (body.mother !== '') {
-      mae = await this.findByNameInProperty(body.mother, body.owner);
-      body.mother_id = mae.id;
+      const mae = await this.findByNameInProperty(body.mother, body.owner);
+      if (mae) body.mother_id = mae.id;
     }
 
     body.owner_name = dono.name;
@@ -64,12 +63,13 @@ export class AnimalService {
     return verify;
   }
 
-  async findByNameInProperty(name: string, owner: string): Promise<Animal> {
-    const verify = await this.animal.findOne({ where: { name, owner } });
-    if (!verify) {
-      throw new HttpException('Animal não encontrado', HttpStatus.BAD_REQUEST);
-    }
-    return verify;
+  // pai/mãe opcionais se não forem informados
+  async findByNameInProperty(
+    name: string,
+    owner: string,
+  ): Promise<Animal | null> {
+    const animal = await this.animal.findOne({ where: { name, owner } });
+    return animal || null;
   }
 
   async findAncestors(animalId: string, generation: number): Promise<any[]> {
