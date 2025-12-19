@@ -360,11 +360,48 @@ export class ReproductiveService {
         date: query?.order || 'DESC',
       },
     });
+
     const result: any[] = [];
+
     for (const procedimento of procedimentos) {
-      const animal = await this.animalService.findOne(procedimento.animal_id);
-      const body = { ...procedimento, animal_photo: animal.photo };
-      result.push(body);
+      try {
+        const animal = await this.animalService.findOne(procedimento.animal_id);
+
+        if (!animal) {
+          console.warn(
+            `Animal ${procedimento.animal_id} não encontrado para procedimento reprodutivo ${procedimento.id}`,
+          );
+          const body = {
+            ...procedimento,
+            animal_photo: null,
+            animal_name: 'Animal não encontrado',
+            animal_registry: 'N/A',
+          };
+          result.push(body);
+          continue;
+        }
+
+        const body = {
+          ...procedimento,
+          animal_photo: animal.photo,
+          animal_name: animal.name,
+          animal_registry: animal.registerNumber,
+        };
+        result.push(body);
+      } catch (error) {
+        console.error(
+          `Erro ao processar procedimento reprodutivo ${procedimento.id}:`,
+          error,
+        );
+
+        const body = {
+          ...procedimento,
+          animal_photo: null,
+          animal_name: 'Erro ao carregar',
+          animal_registry: 'N/A',
+        };
+        result.push(body);
+      }
     }
 
     return await this.formattedDate(result);
@@ -401,11 +438,48 @@ export class ReproductiveService {
         date: query?.order || 'DESC',
       },
     });
+
     const result: any[] = [];
+
     for (const procedimento of procedimentos) {
-      const animal = await this.animalService.findOne(procedimento.animal_id);
-      const body = { ...procedimento, animal_photo: animal.photo };
-      result.push(body);
+      try {
+        const animal = await this.animalService.findOne(procedimento.animal_id);
+
+        if (!animal) {
+          console.warn(
+            `Animal ${procedimento.animal_id} não encontrado para procedimento reprodutivo ${procedimento.id}`,
+          );
+          const body = {
+            ...procedimento,
+            animal_photo: null,
+            animal_name: 'Animal não encontrado',
+            animal_registry: 'N/A',
+          };
+          result.push(body);
+          continue;
+        }
+
+        const body = {
+          ...procedimento,
+          animal_photo: animal.photo,
+          animal_name: animal.name,
+          animal_registry: animal.registerNumber,
+        };
+        result.push(body);
+      } catch (error) {
+        console.error(
+          `Erro ao processar procedimento reprodutivo ${procedimento.id}:`,
+          error,
+        );
+
+        const body = {
+          ...procedimento,
+          animal_photo: null,
+          animal_name: 'Erro ao carregar',
+          animal_registry: 'N/A',
+        };
+        result.push(body);
+      }
     }
 
     return await this.formattedDate(result);
@@ -442,11 +516,48 @@ export class ReproductiveService {
         date: query?.order || 'DESC',
       },
     });
+
     const result: any[] = [];
+
     for (const procedimento of procedimentos) {
-      const animal = await this.animalService.findOne(procedimento.animal_id);
-      const body = { ...procedimento, animal_photo: animal.photo };
-      result.push(body);
+      try {
+        const animal = await this.animalService.findOne(procedimento.animal_id);
+
+        if (!animal) {
+          console.warn(
+            `Animal ${procedimento.animal_id} não encontrado para procedimento reprodutivo ${procedimento.id}`,
+          );
+          const body = {
+            ...procedimento,
+            animal_photo: null,
+            animal_name: 'Animal não encontrado',
+            animal_registry: 'N/A',
+          };
+          result.push(body);
+          continue;
+        }
+
+        const body = {
+          ...procedimento,
+          animal_photo: animal.photo,
+          animal_name: animal.name,
+          animal_registry: animal.registerNumber,
+        };
+        result.push(body);
+      } catch (error) {
+        console.error(
+          `Erro ao processar procedimento reprodutivo ${procedimento.id}:`,
+          error,
+        );
+
+        const body = {
+          ...procedimento,
+          animal_photo: null,
+          animal_name: 'Erro ao carregar',
+          animal_registry: 'N/A',
+        };
+        result.push(body);
+      }
     }
 
     return await this.formattedDate(result);

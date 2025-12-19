@@ -108,11 +108,11 @@ export class SemenReceiptService {
   }
 
   async getQuantity(property: string): Promise<number> {
-    const semenReceipt = await this.semenReceipt.find({
-      where: { property },
+    const count = await this.semenReceipt.count({
+      where: { property: property },
     });
 
-    return semenReceipt.length;
+    return count;
   }
 
   async update(id: string, body: SemenReceiptDto): Promise<SemenReceipt> {

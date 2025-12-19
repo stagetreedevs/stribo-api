@@ -33,27 +33,19 @@ export class CylinderService {
   async findAll(property?: string) {
     const cylinders = await this.cylinder.find();
 
-    return cylinders.filter((cylinder) => {
-      if (property) {
-        return cylinder.property === property || !cylinder.property;
-      }
+    if (property) {
+      return cylinders.filter((cylinder) => cylinder.property === property);
+    }
 
-      return true;
-    });
+    return cylinders;
   }
 
   async getQuantity(property: string): Promise<number> {
-    let cylinders = await this.cylinder.find();
-
-    cylinders = cylinders.filter((cylinder) => {
-      if (property) {
-        return cylinder.property === property || !cylinder.property;
-      }
-
-      return true;
+    const count = await this.cylinder.count({
+      where: { property: property },
     });
 
-    return cylinders.length;
+    return count;
   }
 
   async findAllNames() {
@@ -61,6 +53,24 @@ export class CylinderService {
       select: {
         identifier: true,
         id: true,
+      },
+    });
+
+    return cylinders.map((cylinder) => ({
+      label: cylinder.identifier,
+      value: cylinder.id,
+    }));
+  }
+
+  async findAllNamesByProperty(property_id: string) {
+    const cylinders = await this.cylinder.find({
+      select: {
+        identifier: true,
+        id: true,
+        property: true,
+      },
+      where: {
+        property: property_id,
       },
     });
 

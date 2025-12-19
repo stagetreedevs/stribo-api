@@ -14,10 +14,14 @@ import { FilterAnimalDto } from './animal.dto';
 import { UserService } from '../user/user.service';
 import { NutritionalService } from '../nutritional/nutritional.service';
 import { AnimalDocumentService } from './documents/animal-document.service';
+import { Breed } from './breed.entity';
+import { Coat } from './coat.entity';
 @Injectable()
 export class AnimalService {
   constructor(
     @InjectRepository(Animal) private readonly animal: Repository<Animal>,
+    @InjectRepository(Breed) private readonly breed: Repository<Breed>,
+    @InjectRepository(Coat) private readonly coat: Repository<Coat>,
     @Inject(forwardRef(() => AnimalDocumentService))
     private readonly documentService: AnimalDocumentService,
     private readonly s3Service: S3Service,
@@ -28,6 +32,27 @@ export class AnimalService {
   async create(body: Animal, photo: Express.Multer.File): Promise<Animal> {
     let imageUrl: string | null = null;
 
+    if (body.breed_id) {
+      const breed = await this.breed.findOne({ where: { id: body.breed_id } });
+      if (!breed) {
+        throw new HttpException('Raça não encontrada', HttpStatus.BAD_REQUEST);
+      }
+      body.breed = breed;
+
+      if (body.coat_id) {
+        const coat = await this.coat.findOne({
+          where: { id: body.coat_id, breed_id: body.breed_id },
+        });
+        if (!coat) {
+          throw new HttpException(
+            'Pelagem não encontrada para esta raça',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        body.coat = coat;
+      }
+    }
+
     if (!!photo) {
       const url = await this.s3Service.upload(photo, 'animal');
       imageUrl = url;
@@ -35,35 +60,41 @@ export class AnimalService {
 
     const dono = await this.userService.findOne(body.owner);
 
-    // Pegar ID's do pai e mãe
-    if (body.father !== '') {
+    if (body.father && body.father !== '') {
       const pai = await this.findByNameInProperty(body.father, body.owner);
       if (pai) body.father_id = pai.id;
     }
-    if (body.mother !== '') {
+    if (body.mother && body.mother !== '') {
       const mae = await this.findByNameInProperty(body.mother, body.owner);
       if (mae) body.mother_id = mae.id;
     }
 
-    body.owner_name = dono.name;
+    if (body.property !== 'Terceiros') {
+      body.owner_name = dono.name;
+    }
+
     body.photo = imageUrl;
 
     return await this.animal.save(body);
   }
 
   async findAll(): Promise<Animal[]> {
-    return this.animal.find();
+    return this.animal.find({
+      relations: ['breed', 'coat'],
+    });
   }
 
   async findOne(id: string): Promise<Animal> {
-    const verify = await this.animal.findOne({ where: { id } });
+    const verify = await this.animal.findOne({
+      where: { id },
+      relations: ['breed', 'coat'],
+    });
     if (!verify) {
       throw new HttpException('Animal não encontrado', HttpStatus.BAD_REQUEST);
     }
     return verify;
   }
 
-  // pai/mãe opcionais se não forem informados
   async findByNameInProperty(
     name: string,
     owner: string,
@@ -128,7 +159,18 @@ export class AnimalService {
   }
 
   async findByOwner(id: string): Promise<Animal[]> {
-    return this.animal.find({ where: { owner: id } });
+    return this.animal.find({
+      where: { owner: id },
+      relations: ['breed', 'coat'],
+    });
+  }
+
+  async findByProperty(property_id: string): Promise<Animal[]> {
+    return this.animal.find({
+      where: { property: property_id },
+      relations: ['breed', 'coat'],
+      order: { name: 'ASC' },
+    });
   }
 
   async update(
@@ -149,28 +191,82 @@ export class AnimalService {
       }
     }
 
-    // Atualiza os campos que não podem ser nulos
+    if (body.breed_id && body.breed_id !== verify.breed_id) {
+      const breed = await this.breed.findOne({ where: { id: body.breed_id } });
+      if (!breed) {
+        throw new HttpException('Raça não encontrada', HttpStatus.BAD_REQUEST);
+      }
+      verify.breed = breed;
+      verify.breed_id = breed.id;
+
+      if (body.coat_id) {
+        const coat = await this.coat.findOne({
+          where: { id: body.coat_id, breed_id: body.breed_id },
+        });
+        if (!coat) {
+          throw new HttpException(
+            'Pelagem não encontrada para esta raça',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        verify.coat = coat;
+        verify.coat_id = coat.id;
+      } else {
+        verify.coat = null;
+        verify.coat_id = null;
+      }
+    } else if (body.coat_id && body.coat_id !== verify.coat_id) {
+      if (!verify.breed_id) {
+        throw new HttpException(
+          'Selecione uma raça antes de escolher a pelagem',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const coat = await this.coat.findOne({
+        where: { id: body.coat_id, breed_id: verify.breed_id },
+      });
+      if (!coat) {
+        throw new HttpException(
+          'Pelagem não encontrada para esta raça',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      verify.coat = coat;
+      verify.coat_id = coat.id;
+    }
+
     body.photo = imageUrl;
     body.name = body.name || verify.name;
-    body.race = body.race || verify.race;
-    body.coat = body.coat || verify.coat;
+    body.registerNumber = body.registerNumber || verify.registerNumber;
+    body.property = body.property || verify.property;
     body.sex = body.sex || verify.sex;
     body.birthDate = body.birthDate || verify.birthDate;
 
-    // Seta nulo quando vier vazio
+    if (body.property === 'Terceiros') {
+      body.owner_name = body.owner_name || verify.owner_name;
+    } else {
+      const dono = await this.userService.findOne(body.owner || verify.owner);
+      body.owner_name = dono.name;
+    }
+
     if (body.castrationDate === '') {
       body.castrationDate = null;
     } else {
       body.castrationDate = body.castrationDate || verify.castrationDate;
     }
 
-    // Seta nulo quando vier vazio
     if (body.castrated === '') {
       body.castrated = null;
     } else {
-      // Converte para booleano
       body.castrated = body.castrated === 'true';
     }
+
+    body.father = body.father || verify.father;
+    body.mother = body.mother || verify.mother;
+    body.occupation = body.occupation || verify.occupation;
+    body.sale = body.sale || verify.sale;
+    body.value = body.value || verify.value;
 
     await this.animal.update(id, body);
     return this.findOne(id);
@@ -196,12 +292,10 @@ export class AnimalService {
   async remove(id: string): Promise<void> {
     const verify = await this.findOne(id);
 
-    // Remove a imagem da AWS
     if (verify.photo) {
       await this.s3Service.deleteFileS3(verify.photo);
     }
 
-    // Deletar os documentos
     await this.documentService.removeAllDocuments(id);
 
     await this.nutriService.removeManagement(id);
@@ -214,6 +308,8 @@ export class AnimalService {
     return animals.map((animal) => ({
       id: animal.id,
       name: animal.name,
+      breed: animal.breed?.name,
+      coat: animal.coat?.name,
     }));
   }
 
@@ -254,37 +350,53 @@ export class AnimalService {
     return await this.animal.findOne({ where: { name, property } });
   }
 
-  async findAllNamesByProperty(property: string): Promise<string[]> {
-    const animals = await this.animal.find({ where: { property } });
-    const uniqueNames: any[] = [];
+  async findAllNamesByProperty(
+    property_id: string,
+    sex?: string,
+  ): Promise<any[]> {
+    const whereConditions: any = {
+      property: property_id,
+      alive: true,
+    };
 
-    animals.forEach((animal) => {
-      uniqueNames.push({ label: animal.name, value: animal.id });
+    if (sex) {
+      whereConditions.sex = sex;
+    }
+
+    const animals = await this.animal.find({
+      select: ['id', 'name', 'registerNumber', 'sex'],
+      where: whereConditions,
     });
+
+    const uniqueNames: any[] = animals.map((animal) => ({
+      label: animal.name,
+      value: animal.id,
+    }));
 
     return uniqueNames;
   }
 
-  async findAllBreeds(): Promise<string[]> {
-    const animals = await this.animal.find();
-    const uniqueRaces = new Set<string>();
+  async findByRegisterNumber(
+    registerNumber: string,
+    propertyId: string,
+  ): Promise<Animal | null> {
+    if (!registerNumber || !registerNumber.trim()) {
+      return null;
+    }
 
-    animals.forEach((animal) => {
-      uniqueRaces.add(animal.race);
-    });
+    try {
+      const animal = await this.animal.findOne({
+        where: {
+          registerNumber: registerNumber.trim(),
+          property: propertyId,
+        },
+      });
 
-    return Array.from(uniqueRaces);
-  }
-
-  async findAllCoats(): Promise<string[]> {
-    const animals = await this.animal.find();
-    const uniqueCoats = new Set<string>();
-
-    animals.forEach((animal) => {
-      uniqueCoats.add(animal.coat);
-    });
-
-    return Array.from(uniqueCoats);
+      return animal || null;
+    } catch (error) {
+      console.error('Erro ao buscar animal por número de registro:', error);
+      return null;
+    }
   }
 
   async findAllSexes(): Promise<string[]> {
@@ -310,7 +422,10 @@ export class AnimalService {
   }
 
   async findFiltered(filterDto: FilterAnimalDto): Promise<Animal[]> {
-    const queryBuilder = this.animal.createQueryBuilder('animal');
+    const queryBuilder = this.animal
+      .createQueryBuilder('animal')
+      .leftJoinAndSelect('animal.breed', 'breed')
+      .leftJoinAndSelect('animal.coat', 'coat');
 
     if (filterDto.initialDate) {
       queryBuilder.andWhere('animal.birthDate >= :initialDate', {
@@ -330,19 +445,22 @@ export class AnimalService {
       });
     }
 
-    if (filterDto.race) {
-      queryBuilder.andWhere('animal.race = :race', { race: filterDto.race });
+    if (filterDto.breed_id) {
+      queryBuilder.andWhere('animal.breed_id = :breed_id', {
+        breed_id: filterDto.breed_id,
+      });
     }
 
-    if (filterDto.coat) {
-      queryBuilder.andWhere('animal.coat = :coat', { coat: filterDto.coat });
+    if (filterDto.coat_id) {
+      queryBuilder.andWhere('animal.coat_id = :coat_id', {
+        coat_id: filterDto.coat_id,
+      });
     }
 
     if (filterDto.sex) {
       queryBuilder.andWhere('animal.sex = :sex', { sex: filterDto.sex });
     }
 
-    // Adiciona a ordenação com base no campo 'registerDate'
     if (
       filterDto.order &&
       (filterDto.order.toUpperCase() === 'ASC' ||
@@ -355,5 +473,213 @@ export class AnimalService {
     }
 
     return queryBuilder.getMany();
+  }
+
+  async createBreed(body: {
+    name: string;
+    description?: string;
+  }): Promise<Breed> {
+    const existingBreed = await this.breed.findOne({
+      where: { name: body.name },
+    });
+
+    if (existingBreed) {
+      throw new HttpException('Raça já cadastrada', HttpStatus.BAD_REQUEST);
+    }
+
+    const breed = new Breed();
+    breed.name = body.name;
+    breed.description = body.description || '';
+    breed.active = true;
+
+    return await this.breed.save(breed);
+  }
+
+  async findAllBreeds(): Promise<Breed[]> {
+    return this.breed.find({
+      where: { active: true },
+      order: { name: 'ASC' },
+    });
+  }
+
+  async findBreedWithCoats(id: string): Promise<Breed> {
+    const breed = await this.breed.findOne({
+      where: { id, active: true },
+      relations: ['coats'],
+    });
+
+    if (!breed) {
+      throw new HttpException('Raça não encontrada', HttpStatus.NOT_FOUND);
+    }
+
+    return breed;
+  }
+
+  async updateBreed(
+    id: string,
+    body: { name?: string; description?: string },
+  ): Promise<Breed> {
+    const breed = await this.breed.findOne({ where: { id } });
+
+    if (!breed) {
+      throw new HttpException('Raça não encontrada', HttpStatus.NOT_FOUND);
+    }
+
+    if (body.name && body.name !== breed.name) {
+      const existingBreed = await this.breed.findOne({
+        where: { name: body.name },
+      });
+      if (existingBreed) {
+        throw new HttpException(
+          'Nome de raça já existe',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      breed.name = body.name;
+    }
+
+    if (body.description !== undefined) {
+      breed.description = body.description;
+    }
+
+    return await this.breed.save(breed);
+  }
+
+  async deleteBreed(id: string): Promise<void> {
+    const breed = await this.breed.findOne({
+      where: { id },
+      relations: ['coats'],
+    });
+
+    if (!breed) {
+      throw new HttpException('Raça não encontrada', HttpStatus.NOT_FOUND);
+    }
+
+    const animalsWithBreed = await this.animal.count({
+      where: { breed_id: id },
+    });
+
+    if (animalsWithBreed > 0) {
+      throw new HttpException(
+        'Não é possível excluir esta raça pois existem animais cadastrados com ela',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (breed.coats && breed.coats.length > 0) {
+      await this.coat.remove(breed.coats);
+    }
+
+    await this.breed.delete(id);
+  }
+
+  async createCoat(body: {
+    name: string;
+    breed_id: string;
+    description?: string;
+  }): Promise<Coat> {
+    const breed = await this.breed.findOne({
+      where: { id: body.breed_id, active: true },
+    });
+
+    if (!breed) {
+      throw new HttpException('Raça não encontrada', HttpStatus.NOT_FOUND);
+    }
+
+    const existingCoat = await this.coat.findOne({
+      where: { name: body.name, breed_id: body.breed_id },
+    });
+
+    if (existingCoat) {
+      throw new HttpException(
+        'Pelagem já cadastrada para esta raça',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const coat = new Coat();
+    coat.name = body.name;
+    coat.breed = breed;
+    coat.breed_id = breed.id;
+    coat.description = body.description || '';
+    coat.active = true;
+
+    return await this.coat.save(coat);
+  }
+
+  async findAllCoats(): Promise<Coat[]> {
+    return this.coat.find({
+      where: { active: true },
+      relations: ['breed'],
+      order: { name: 'ASC' },
+    });
+  }
+
+  async findCoatsByBreed(breed_id: string): Promise<Coat[]> {
+    const breed = await this.breed.findOne({
+      where: { id: breed_id, active: true },
+    });
+
+    if (!breed) {
+      throw new HttpException('Raça não encontrada', HttpStatus.NOT_FOUND);
+    }
+
+    return this.coat.find({
+      where: { breed_id, active: true },
+      order: { name: 'ASC' },
+    });
+  }
+
+  async updateCoat(
+    id: string,
+    body: { name?: string; description?: string },
+  ): Promise<Coat> {
+    const coat = await this.coat.findOne({
+      where: { id },
+      relations: ['breed'],
+    });
+
+    if (!coat) {
+      throw new HttpException('Pelagem não encontrada', HttpStatus.NOT_FOUND);
+    }
+
+    if (body.name && body.name !== coat.name) {
+      const existingCoat = await this.coat.findOne({
+        where: { name: body.name, breed_id: coat.breed_id },
+      });
+
+      if (existingCoat) {
+        throw new HttpException(
+          'Nome de pelagem já existe para esta raça',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      coat.name = body.name;
+    }
+
+    if (body.description !== undefined) {
+      coat.description = body.description;
+    }
+
+    return await this.coat.save(coat);
+  }
+
+  async deleteCoat(id: string): Promise<void> {
+    const coat = await this.coat.findOne({ where: { id } });
+
+    if (!coat) {
+      throw new HttpException('Pelagem não encontrada', HttpStatus.NOT_FOUND);
+    }
+
+    const animalsWithCoat = await this.animal.count({ where: { coat_id: id } });
+
+    if (animalsWithCoat > 0) {
+      throw new HttpException(
+        'Não é possível excluir esta pelagem pois existem animais cadastrados com ela',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.coat.delete(id);
   }
 }

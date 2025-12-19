@@ -42,6 +42,15 @@ export class CylinderController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('names/:property_id')
+  @ApiOperation({ summary: 'NOMES BOTIJÕES POR PROPRIEDADE' })
+  async findAllNamesByProperty(
+    @Param('property_id') property_id: string,
+  ): Promise<any> {
+    return this.cylinderService.findAllNamesByProperty(property_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('property/:property_id')
   @ApiOperation({ summary: 'TODOS BOTIJÕES POR PROPRIEDADE' })
   async findByProperty(@Param('property_id') property: string): Promise<any> {

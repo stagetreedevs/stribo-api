@@ -44,6 +44,15 @@ export class PropertiesController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('products/:property_id')
+  @ApiOperation({
+    summary: 'Get products filtered by property_id',
+  })
+  async getProductsByPropertyId(@Param('property_id') property_id: string) {
+    return await this.propertiesService.getProductsByPropertyId(property_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('products/details/:id')
   @ApiOperation({ summary: 'Get a product by ID' })
   async getProductById(@Param('id') id: string) {
@@ -55,6 +64,17 @@ export class PropertiesController {
   @ApiOperation({ summary: 'Get all product names' })
   async getAllProductNames() {
     return await this.propertiesService.getAllProductsNames();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('products/names/:property_id')
+  @ApiOperation({
+    summary: 'Get product names filtered by property_id',
+  })
+  async getProductNamesByPropertyId(@Param('property_id') property_id: string) {
+    return await this.propertiesService.getProductNamesByPropertyId(
+      property_id,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
@@ -100,6 +120,15 @@ export class PropertiesController {
     }
 
     return await this.propertiesService.getAllMovements(query);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('movements/:property_id')
+  @ApiOperation({
+    summary: 'Get movements filtered by property_id',
+  })
+  async getMovementsByPropertyId(@Param('property_id') property_id: string) {
+    return await this.propertiesService.getMovementsByPropertyId(property_id);
   }
 
   @UseGuards(JwtAuthGuard)

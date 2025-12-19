@@ -354,4 +354,105 @@ export class FinancialController {
   ) {
     return this.financialService.importTransactionsByOfx(file, property_id);
   }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Get('transaction/sales/:property_id')
+  @ApiOperation({
+    summary: 'OBTEM VENDAS DE ANIMAIS (ANIMAIS, COBERTURAS, EMBRIÕES, VENTRES)',
+  })
+  async getAnimalSales(
+    @Param('property_id') property_id: string,
+  ): Promise<Transaction[]> {
+    return this.financialService.getAnimalSalesTransactions(property_id);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Post('transaction/sales-by-categories/:property_id')
+  @ApiOperation({ summary: 'OBTEM VENDAS POR CATEGORIAS ESPECÍFICAS' })
+  @ApiBody({
+    description: 'Array de IDs das categorias',
+    schema: {
+      type: 'object',
+      properties: {
+        category_ids: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+      },
+    },
+  })
+  async getAnimalSalesByCategories(
+    @Param('property_id') property_id: string,
+    @Body() body: { category_ids: string[] },
+  ): Promise<Transaction[]> {
+    return this.financialService.getAnimalSalesTransactionsById(
+      property_id,
+      body.category_ids,
+    );
+  }
+
+  @ApiTags('CATEGORIA')
+  @UseGuards(JwtAuthGuard)
+  @Get('category/animal-sales')
+  @ApiOperation({ summary: 'OBTEM CATEGORIAS DE VENDAS DE ANIMAIS' })
+  async getAnimalSalesCategories(
+    @Query('property_id') property_id?: string,
+  ): Promise<Category[]> {
+    return this.financialService.getAnimalSalesCategories(property_id);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Get('transaction/purchases/:property_id')
+  @ApiOperation({
+    summary:
+      'OBTEM COMPRAS DE ANIMAIS (ANIMAIS, COBERTURAS, EMBRIÕES, VENTRES)',
+  })
+  async getAnimalPurchases(
+    @Param('property_id') property_id: string,
+  ): Promise<Transaction[]> {
+    return this.financialService.getAnimalPurchaseTransactions(property_id);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Get('transaction/purchases-filtered')
+  @ApiOperation({ summary: 'OBTEM COMPRAS DE ANIMAIS COM FILTROS AVANÇADOS' })
+  async getAnimalPurchasesFiltered(
+    @Query() filters: any,
+  ): Promise<Transaction[]> {
+    return this.financialService.getAnimalPurchasesWithFilters(filters);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Get('transaction/purchases-analytics/:property_id')
+  @ApiOperation({ summary: 'ANÁLISE DE COMPRAS DE ANIMAIS' })
+  async getPurchaseAnalytics(
+    @Param('property_id') property_id: string,
+  ): Promise<any> {
+    return this.financialService.getPurchaseAnalytics(property_id);
+  }
+
+  @ApiTags('CATEGORIA')
+  @UseGuards(JwtAuthGuard)
+  @Get('category/animal-purchases')
+  @ApiOperation({ summary: 'OBTEM CATEGORIAS DE COMPRAS DE ANIMAIS' })
+  async getAnimalPurchaseCategories(
+    @Query('property_id') property_id?: string,
+  ): Promise<Category[]> {
+    return this.financialService.getAnimalPurchaseCategories(property_id);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Get('transaction/weekly-totals/:property_id')
+  @ApiOperation({ summary: 'OBTEM TOTAIS DE VENDAS E COMPRAS DA SEMANA' })
+  async getWeeklyTotals(
+    @Param('property_id') property_id: string,
+  ): Promise<any> {
+    return this.financialService.getWeeklyTotals(property_id);
+  }
 }

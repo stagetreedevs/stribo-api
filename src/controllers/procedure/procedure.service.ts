@@ -271,11 +271,48 @@ export class ProcedureService {
         date: Equal(currentDate),
       },
     });
+
     const result: any[] = [];
+
     for (const procedimento of procedimentos) {
-      const animal = await this.animalService.findOne(procedimento.animal_id);
-      const body = { ...procedimento, animal_photo: animal.photo };
-      result.push(body);
+      try {
+        const animal = await this.animalService.findOne(procedimento.animal_id);
+
+        if (!animal) {
+          console.warn(
+            `Animal ${procedimento.animal_id} não encontrado para procedimento ${procedimento.id}`,
+          );
+          const body = {
+            ...procedimento,
+            animal_photo: null,
+            animal_name: 'Animal não encontrado',
+            animal_registry: 'N/A',
+          };
+          result.push(body);
+          continue;
+        }
+
+        const body = {
+          ...procedimento,
+          animal_photo: animal.photo,
+          animal_name: animal.name,
+          animal_registry: animal.registerNumber,
+        };
+        result.push(body);
+      } catch (error) {
+        console.error(
+          `Erro ao processar procedimento ${procedimento.id}:`,
+          error,
+        );
+
+        const body = {
+          ...procedimento,
+          animal_photo: null,
+          animal_name: 'Erro ao carregar',
+          animal_registry: 'N/A',
+        };
+        result.push(body);
+      }
     }
 
     return await this.formattedDate(result);
@@ -291,11 +328,48 @@ export class ProcedureService {
         date: LessThan(currentDate),
       },
     });
+
     const result: any[] = [];
+
     for (const procedimento of procedimentos) {
-      const animal = await this.animalService.findOne(procedimento.animal_id);
-      const body = { ...procedimento, animal_photo: animal.photo };
-      result.push(body);
+      try {
+        const animal = await this.animalService.findOne(procedimento.animal_id);
+
+        if (!animal) {
+          console.warn(
+            `Animal ${procedimento.animal_id} não encontrado para procedimento ${procedimento.id}`,
+          );
+          const body = {
+            ...procedimento,
+            animal_photo: null,
+            animal_name: 'Animal não encontrado',
+            animal_registry: 'N/A',
+          };
+          result.push(body);
+          continue;
+        }
+
+        const body = {
+          ...procedimento,
+          animal_photo: animal.photo,
+          animal_name: animal.name,
+          animal_registry: animal.registerNumber,
+        };
+        result.push(body);
+      } catch (error) {
+        console.error(
+          `Erro ao processar procedimento ${procedimento.id}:`,
+          error,
+        );
+
+        const body = {
+          ...procedimento,
+          animal_photo: null,
+          animal_name: 'Erro ao carregar',
+          animal_registry: 'N/A',
+        };
+        result.push(body);
+      }
     }
 
     return await this.formattedDate(result);
@@ -311,11 +385,48 @@ export class ProcedureService {
         date: MoreThan(currentDate),
       },
     });
+
     const result: any[] = [];
+
     for (const procedimento of procedimentos) {
-      const animal = await this.animalService.findOne(procedimento.animal_id);
-      const body = { ...procedimento, animal_photo: animal.photo };
-      result.push(body);
+      try {
+        const animal = await this.animalService.findOne(procedimento.animal_id);
+
+        if (!animal) {
+          console.warn(
+            `Animal ${procedimento.animal_id} não encontrado para procedimento ${procedimento.id}`,
+          );
+          const body = {
+            ...procedimento,
+            animal_photo: null,
+            animal_name: 'Animal não encontrado',
+            animal_registry: 'N/A',
+          };
+          result.push(body);
+          continue;
+        }
+
+        const body = {
+          ...procedimento,
+          animal_photo: animal.photo,
+          animal_name: animal.name,
+          animal_registry: animal.registerNumber,
+        };
+        result.push(body);
+      } catch (error) {
+        console.error(
+          `Erro ao processar procedimento ${procedimento.id}:`,
+          error,
+        );
+
+        const body = {
+          ...procedimento,
+          animal_photo: null,
+          animal_name: 'Erro ao carregar',
+          animal_registry: 'N/A',
+        };
+        result.push(body);
+      }
     }
 
     return await this.formattedDate(result);

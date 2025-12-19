@@ -5,9 +5,14 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   OneToMany,
+  JoinColumn,
+  AfterLoad,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { MovementsEntity } from '../properties/entity/movements.entity';
+import { Breed } from './breed.entity';
+import { Coat } from './coat.entity';
+
 @Entity()
 export class Animal {
   @PrimaryGeneratedColumn('uuid')
@@ -22,11 +27,19 @@ export class Animal {
   @Column()
   name: string;
 
-  @Column()
-  race: string;
+  @ManyToOne(() => Breed, { nullable: true, eager: true })
+  @JoinColumn({ name: 'breed_id' })
+  breed: Breed | null;
 
-  @Column()
-  coat: string;
+  @Column({ nullable: true })
+  breed_id: string | null;
+
+  @ManyToOne(() => Coat, { nullable: true, eager: true })
+  @JoinColumn({ name: 'coat_id' })
+  coat: Coat | null;
+
+  @Column({ nullable: true })
+  coat_id: string | null;
 
   @Column()
   registerNumber: string;
@@ -81,12 +94,15 @@ export class Animal {
   })
   movements: MovementsEntity[];
 
+  race?: string;
+  coat_old?: string;
+
   constructor(
     owner: string,
     owner_name: string,
     name: string,
-    race: string,
-    coat: string,
+    breed: Breed | null,
+    coat: Coat | null,
     registerNumber: string,
     property: string,
     sex: string,
@@ -108,7 +124,7 @@ export class Animal {
     this.owner = owner;
     this.owner_name = owner_name;
     this.name = name;
-    this.race = race;
+    this.breed = breed;
     this.coat = coat;
     this.registerNumber = registerNumber;
     this.property = property;
@@ -126,5 +142,32 @@ export class Animal {
     this.father_id = father_id;
     this.mother = mother;
     this.mother_id = mother_id;
+
+    if (breed) {
+      this.breed_id = breed.id;
+      this.race = breed.name;
+    }
+    if (coat) {
+      this.coat_id = coat.id;
+      this.coat_old = coat.name;
+    }
+  }
+
+  @AfterLoad()
+  loadCompatibilityFields() {
+    if (this.breed) {
+      this.race = this.breed.name;
+    }
+    if (this.coat) {
+      this.coat_old = this.coat.name;
+    }
+  }
+
+  get raceName(): string {
+    return this.breed?.name || '';
+  }
+
+  get coatName(): string {
+    return this.coat?.name || '';
   }
 }

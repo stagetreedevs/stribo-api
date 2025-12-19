@@ -4,6 +4,7 @@ import { BankAccount } from './entity/bank-account.entity';
 import {
   Between,
   Equal,
+  In,
   IsNull,
   LessThan,
   MoreThanOrEqual,
@@ -11,7 +12,12 @@ import {
   Repository,
 } from 'typeorm';
 import { BankAccountDTO } from './dto/bank-account.dto';
-import { Category, FieldEntity, FieldType } from './entity/category.entity';
+import {
+  Category,
+  CategoryType,
+  FieldEntity,
+  FieldType,
+} from './entity/category.entity';
 import { CategoryDTO, FilterCategoryDTO } from './dto/category.dto';
 import { AnimalService } from '../animal/animal.service';
 import {
@@ -848,153 +854,80 @@ export class FinancialService {
 
   async getAnalyticsTransactions(property_id: string) {
     const now = new Date();
-    const sevenDaysAgo = new Date(now);
-    sevenDaysAgo.setDate(now.getDate() - 6);
-    sevenDaysAgo.setHours(0, 0, 0, 0);
 
-    const endOfToday = new Date(now);
-    endOfToday.setHours(23, 59, 59, 999);
+    const currentDay = now.getDay();
+    const lastSunday = new Date(now);
+    lastSunday.setDate(now.getDate() - currentDay);
+    lastSunday.setHours(0, 0, 0, 0);
+
+    const nextSaturday = new Date(lastSunday);
+    nextSaturday.setDate(lastSunday.getDate() + 6);
+    nextSaturday.setHours(23, 59, 59, 999);
 
     const transactions = await this.transactionRepository.find({
       where: {
         property_id: property_id ? Or(Equal(property_id), IsNull()) : undefined,
-        datetime: Between(sevenDaysAgo, endOfToday),
+        datetime: Between(lastSunday, nextSaturday),
       },
-      relations: {
-        bankAccount: true,
-        category: true,
-        installments: true,
-      },
-      order: {
-        datetime: 'ASC',
-      },
+      relations: ['installments'],
+      order: { datetime: 'ASC' },
     });
 
-    const analytics: Array<{
-      date: string;
-      total: number;
-    }> = [];
+    const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+    const analytics = Array(7).fill(0);
 
-    await Promise.all(
-      transactions.map((transaction) => {
-        const transactionDate = new Date(transaction.datetime);
-        const date = transactionDate.toLocaleDateString('pt-BR', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-        });
+    transactions.forEach((transaction) => {
+      const transactionDate = new Date(transaction.datetime);
+      const dayOfWeek = transactionDate.getDay();
 
-        const existingDate = analytics.find((item) => item.date === date);
-        if (existingDate) {
-          transaction.installments.forEach((installment) => {
-            // if (installment.status === InstallmentStatus.PAID) {
-            if (transaction.type === TransactionType.EXPENSE) {
-              existingDate.total -= Number(installment.value);
-            } else if (transaction.type === TransactionType.REVENUE) {
-              existingDate.total += Number(installment.value);
-            }
-            // }
-          });
-        } else {
-          const total = transaction.installments.reduce((acc, installment) => {
-            // if (installment.status === InstallmentStatus.PAID) {
-            if (transaction.type === TransactionType.EXPENSE) {
-              return acc - Number(installment.value);
-            } else if (transaction.type === TransactionType.REVENUE) {
-              return acc + Number(installment.value);
-            }
-            // }
-            return acc;
-          }, 0);
+      transaction.installments.forEach((installment) => {
+        const value = Number(installment.value);
 
-          analytics.push({
-            date,
-            total,
-          });
+        if (transaction.type === TransactionType.EXPENSE) {
+          analytics[dayOfWeek] -= value;
+        } else if (transaction.type === TransactionType.REVENUE) {
+          analytics[dayOfWeek] += value;
         }
-      }),
-    );
+      });
+    });
 
-    const transactionsAll = await this.transactionRepository.find({
+    const allTransactions = await this.transactionRepository.find({
       where: {
         property_id: property_id ? Or(Equal(property_id), IsNull()) : undefined,
       },
-      relations: {
-        bankAccount: true,
-        category: true,
-        installments: true,
-      },
-      order: {
-        datetime: 'ASC',
-      },
+      relations: ['installments'],
     });
 
-    const balance = transactionsAll.reduce((acc, transaction) => {
-      if (transaction.type === TransactionType.EXPENSE) {
-        transaction.installments.forEach((installment) => {
-          if (installment.status === InstallmentStatus.PAID) {
-            acc -= Number(installment.value);
-          }
-        });
-      } else if (transaction.type === TransactionType.REVENUE) {
-        transaction.installments.forEach((installment) => {
-          if (installment.status === InstallmentStatus.PAID) {
-            acc += Number(installment.value);
-          }
-        });
-      }
-      return acc;
-    }, 0);
+    let balance = 0;
+    let payableValue = 0;
+    let receivableValue = 0;
 
-    const payableValue = transactionsAll.reduce((acc, transaction) => {
-      if (transaction.type === TransactionType.EXPENSE) {
-        transaction.installments.forEach((installment) => {
-          if (installment.status !== InstallmentStatus.PAID) {
-            acc += Number(installment.value);
-          }
-        });
-      }
-      return acc;
-    }, 0);
+    allTransactions.forEach((transaction) => {
+      transaction.installments.forEach((installment) => {
+        const value = Number(installment.value);
 
-    const receivableValue = transactionsAll.reduce((acc, transaction) => {
-      if (transaction.type === TransactionType.REVENUE) {
-        transaction.installments.forEach((installment) => {
-          if (installment.status !== InstallmentStatus.PAID) {
-            acc += Number(installment.value);
+        if (installment.status === InstallmentStatus.PAID) {
+          if (transaction.type === TransactionType.EXPENSE) {
+            balance -= value;
+          } else if (transaction.type === TransactionType.REVENUE) {
+            balance += value;
           }
-        });
-      }
-      return acc;
-    }, 0);
+        } else {
+          if (transaction.type === TransactionType.EXPENSE) {
+            payableValue += value;
+          } else if (transaction.type === TransactionType.REVENUE) {
+            receivableValue += value;
+          }
+        }
+      });
+    });
 
     return {
-      balance: balance,
-      payableValue: payableValue,
-      receivableValue: receivableValue,
-      labels: analytics.map((item) => {
-        const [day, month] = item.date.split('/'); // Extrai o dia e o mês
-        const monthNames = [
-          'Jan',
-          'Fev',
-          'Mar',
-          'Abr',
-          'Mai',
-          'Jun',
-          'Jul',
-          'Ago',
-          'Set',
-          'Out',
-          'Nov',
-          'Dez',
-        ];
-        return `${day} ${monthNames[parseInt(month, 10) - 1]}`;
-      }),
-      datasets: [
-        {
-          data: analytics.map((item) => item.total / 100),
-        },
-      ],
+      balance,
+      payableValue,
+      receivableValue,
+      labels: weekDays,
+      datasets: [{ data: analytics }],
     };
   }
 
@@ -1223,6 +1156,353 @@ export class FinancialService {
     return {
       message: 'Transactions imported successfully',
       transactions,
+    };
+  }
+
+  async getAnimalSalesTransactions(property_id: string) {
+    const salesCategories = [
+      'Venda de Animal',
+      'Venda de Cobertura',
+      'Venda de Embriões',
+      'Venda de Ventres',
+    ];
+
+    const transactions = await this.transactionRepository.find({
+      where: {
+        property_id,
+        type: TransactionType.REVENUE,
+        category: {
+          name: In(salesCategories),
+        },
+      },
+      relations: {
+        bankAccount: true,
+        category: true,
+        installments: true,
+      },
+      order: {
+        datetime: 'DESC',
+      },
+    });
+
+    return transactions;
+  }
+
+  async getAnimalSalesTransactionsById(
+    property_id: string,
+    category_ids: string[],
+  ) {
+    return await this.transactionRepository.find({
+      where: {
+        property_id,
+        type: TransactionType.REVENUE,
+        category: {
+          id: In(category_ids),
+        },
+      },
+      relations: {
+        bankAccount: true,
+        category: true,
+        installments: true,
+      },
+      order: {
+        datetime: 'DESC',
+      },
+    });
+  }
+
+  async getAnimalSalesCategories(property_id?: string) {
+    const salesCategoriesNames = [
+      'Venda de Animal',
+      'Venda de Cobertura',
+      'Venda de Embriões',
+      'Venda de Ventres',
+    ];
+
+    return await this.categoryRepository.find({
+      where: {
+        name: In(salesCategoriesNames),
+        type: CategoryType.REVENUE,
+        property_id: property_id ? Or(Equal(property_id), IsNull()) : undefined,
+      },
+    });
+  }
+
+  async getAnimalPurchaseTransactions(property_id: string) {
+    const purchaseCategories = [
+      'Compra de Animal',
+      'Compra de Cobertura',
+      'Compra de Embriões',
+      'Compra de Ventres',
+    ];
+
+    const transactions = await this.transactionRepository.find({
+      where: {
+        property_id,
+        type: TransactionType.EXPENSE,
+        category: {
+          name: In(purchaseCategories),
+        },
+      },
+      relations: {
+        bankAccount: true,
+        category: true,
+        installments: true,
+      },
+      order: {
+        datetime: 'DESC',
+      },
+    });
+
+    return transactions;
+  }
+
+  async getAnimalPurchaseCategories(property_id?: string) {
+    const purchaseCategoriesNames = [
+      'Compra de Animal',
+      'Compra de Cobertura',
+      'Compra de Embriões',
+      'Compra de Ventres',
+    ];
+
+    return await this.categoryRepository.find({
+      where: {
+        name: In(purchaseCategoriesNames),
+        type: CategoryType.EXPENSE,
+        property_id: property_id ? Or(Equal(property_id), IsNull()) : undefined,
+      },
+    });
+  }
+
+  async getAnimalPurchasesWithFilters(filters: any) {
+    const { property_id, purchase_type, start_date, end_date, animal_id } =
+      filters;
+
+    const purchaseCategoriesMap = {
+      animal: 'Compra de Animal',
+      cobertura: 'Compra de Cobertura',
+      embriao: 'Compra de Embriões',
+      ventre: 'Compra de Ventres',
+    };
+
+    const whereConditions: any = {
+      property_id,
+      type: TransactionType.EXPENSE,
+    };
+
+    if (
+      purchase_type &&
+      purchase_type !== 'all' &&
+      purchaseCategoriesMap[purchase_type]
+    ) {
+      whereConditions.category = {
+        name: purchaseCategoriesMap[purchase_type],
+      };
+    } else if (purchase_type === 'all' || !purchase_type) {
+      whereConditions.category = {
+        name: In(Object.values(purchaseCategoriesMap)),
+      };
+    }
+
+    if (start_date && end_date) {
+      whereConditions.datetime = Between(
+        new Date(start_date),
+        new Date(end_date),
+      );
+    } else if (start_date) {
+      whereConditions.datetime = MoreThanOrEqual(new Date(start_date));
+    } else if (end_date) {
+      whereConditions.datetime = LessThan(new Date(end_date));
+    }
+
+    const transactions = await this.transactionRepository.find({
+      where: whereConditions,
+      relations: {
+        bankAccount: true,
+        category: true,
+        installments: true,
+      },
+      order: {
+        datetime: 'DESC',
+      },
+    });
+
+    if (animal_id) {
+      return transactions.filter((transaction) =>
+        transaction.extra_fields.some(
+          (field) =>
+            field.id === animal_id &&
+            field.label.toLowerCase().includes('animal'),
+        ),
+      );
+    }
+
+    return transactions;
+  }
+
+  async getPurchaseAnalytics(property_id: string) {
+    const now = new Date();
+
+    const lastWeek = new Date(now);
+    lastWeek.setDate(now.getDate() - 7);
+
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    const firstDayOfYear = new Date(now.getFullYear(), 0, 1);
+    const lastDayOfYear = new Date(now.getFullYear(), 11, 31);
+
+    const allPurchases = await this.transactionRepository.find({
+      where: {
+        property_id,
+        type: TransactionType.EXPENSE,
+        category: {
+          name: In([
+            'Compra de Animal',
+            'Compra de Cobertura',
+            'Compra de Embriões',
+            'Compra de Ventres',
+          ]),
+        },
+      },
+      relations: ['installments'],
+    });
+
+    const calculateTotal = (transactions: Transaction[]) => {
+      return (
+        transactions.reduce((total, transaction) => {
+          const installmentTotal = transaction.installments.reduce(
+            (sum, installment) => {
+              return sum + (installment.value || 0);
+            },
+            0,
+          );
+          return total + installmentTotal;
+        }, 0) / 100
+      );
+    };
+
+    const purchasesLastWeek = allPurchases.filter(
+      (p) => new Date(p.datetime) >= lastWeek,
+    );
+
+    const purchasesThisMonth = allPurchases.filter(
+      (p) =>
+        new Date(p.datetime) >= firstDayOfMonth &&
+        new Date(p.datetime) <= lastDayOfMonth,
+    );
+
+    const purchasesThisYear = allPurchases.filter(
+      (p) =>
+        new Date(p.datetime) >= firstDayOfYear &&
+        new Date(p.datetime) <= lastDayOfYear,
+    );
+
+    const purchasesByCategory = allPurchases.reduce((acc, purchase) => {
+      const categoryName = purchase.category.name;
+      if (!acc[categoryName]) {
+        acc[categoryName] = 0;
+      }
+
+      const total =
+        purchase.installments.reduce(
+          (sum, installment) => sum + (installment.value || 0),
+          0,
+        ) / 100;
+
+      acc[categoryName] += total;
+      return acc;
+    }, {});
+
+    return {
+      totalPurchases: allPurchases.length,
+      totalValue: calculateTotal(allPurchases),
+      lastWeek: {
+        count: purchasesLastWeek.length,
+        value: calculateTotal(purchasesLastWeek),
+      },
+      thisMonth: {
+        count: purchasesThisMonth.length,
+        value: calculateTotal(purchasesThisMonth),
+      },
+      thisYear: {
+        count: purchasesThisYear.length,
+        value: calculateTotal(purchasesThisYear),
+      },
+      byCategory: purchasesByCategory,
+    };
+  }
+
+  async getWeeklyTotals(property_id: string) {
+    const now = new Date();
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(now.getDate() - 7);
+
+    const salesCategories = [
+      'Venda de Animal',
+      'Venda de Cobertura',
+      'Venda de Embriões',
+      'Venda de Ventres',
+    ];
+
+    const purchaseCategories = [
+      'Compra de Animal',
+      'Compra de Cobertura',
+      'Compra de Embriões',
+      'Compra de Ventres',
+    ];
+
+    const weeklySales = await this.transactionRepository.find({
+      where: {
+        property_id,
+        type: TransactionType.REVENUE,
+        datetime: Between(oneWeekAgo, now),
+        category: {
+          name: In(salesCategories),
+        },
+      },
+      relations: ['installments'],
+    });
+
+    const weeklyPurchases = await this.transactionRepository.find({
+      where: {
+        property_id,
+        type: TransactionType.EXPENSE,
+        datetime: Between(oneWeekAgo, now),
+        category: {
+          name: In(purchaseCategories),
+        },
+      },
+      relations: ['installments'],
+    });
+
+    const salesTotal =
+      weeklySales.reduce((total, transaction) => {
+        const installmentTotal = transaction.installments.reduce(
+          (sum, installment) => {
+            return sum + (installment.value || 0);
+          },
+          0,
+        );
+        return total + installmentTotal;
+      }, 0) / 100;
+
+    const purchasesTotal =
+      weeklyPurchases.reduce((total, transaction) => {
+        const installmentTotal = transaction.installments.reduce(
+          (sum, installment) => {
+            return sum + (installment.value || 0);
+          },
+          0,
+        );
+        return total + installmentTotal;
+      }, 0) / 100;
+
+    return {
+      weeklySales: salesTotal,
+      weeklyPurchases: purchasesTotal,
+      salesCount: weeklySales.length,
+      purchasesCount: weeklyPurchases.length,
     };
   }
 

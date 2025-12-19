@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductsEntity } from './entity/products.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, LessThan, MoreThan, Repository } from 'typeorm';
@@ -63,6 +63,25 @@ export class PropertiesService {
     });
   }
 
+  async getProductsByPropertyId(property_id: string) {
+    console.log(`Buscando produtos para property_id: ${property_id}`);
+
+    const products = await this.productsRepository.find({
+      where: { property_id },
+      relations: ['movements'],
+      order: { created_at: 'DESC' },
+    });
+
+    if (!products || products.length === 0) {
+      throw new NotFoundException(
+        `Nenhum produto encontrado para a propriedade com ID: ${property_id}`,
+      );
+    }
+
+    console.log(`Encontrados ${products.length} produtos`);
+    return products;
+  }
+
   async getProductById(id: string) {
     const product = await this.productsRepository.findOne({
       where: { id },
@@ -113,6 +132,31 @@ export class PropertiesService {
     }));
   }
 
+  async getProductNamesByPropertyId(property_id: string) {
+    console.log(`Buscando nomes de produtos para property_id: ${property_id}`);
+
+    const products = await this.productsRepository.find({
+      where: { property_id },
+      select: ['id', 'name', 'category', 'measurement_unit'],
+      order: { name: 'ASC' },
+    });
+
+    if (!products || products.length === 0) {
+      throw new NotFoundException(
+        `Nenhum produto encontrado para a propriedade com ID: ${property_id}`,
+      );
+    }
+
+    console.log(`Encontrados ${products.length} produtos`);
+
+    return products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      measurement_unit: product.measurement_unit,
+    }));
+  }
+
   async updateProduct(id: string, data: ProductsDTO) {
     return await this.productsRepository.save({
       id,
@@ -125,12 +169,17 @@ export class PropertiesService {
   }
 
   async createMovement(data: MovementsDTO) {
-    const movement = this.movementsRepository.create({
+    const movementData: any = {
       ...data,
       datetime: new Date(data.datetime),
       product: { id: data.product_id },
-      animal: { id: data.animal_id },
-    });
+    };
+
+    if (data.animal_id && data.animal_id.trim() !== '') {
+      movementData.animal = { id: data.animal_id };
+    }
+
+    const movement = this.movementsRepository.create(movementData);
     return await this.movementsRepository.save(movement);
   }
 
@@ -167,6 +216,25 @@ export class PropertiesService {
     });
   }
 
+  async getMovementsByPropertyId(property_id: string) {
+    console.log(`Buscando movimentações para property_id: ${property_id}`);
+
+    const movements = await this.movementsRepository.find({
+      where: { property_id },
+      order: { datetime: 'DESC' },
+      relations: ['product', 'animal'],
+    });
+
+    if (!movements || movements.length === 0) {
+      throw new NotFoundException(
+        `Nenhuma movimentação encontrada para a propriedade com ID: ${property_id}`,
+      );
+    }
+
+    console.log(`Encontradas ${movements.length} movimentações`);
+    return movements;
+  }
+
   async getMovementById(id: string) {
     return await this.movementsRepository.findOne({
       where: { id },
@@ -178,13 +246,20 @@ export class PropertiesService {
   }
 
   async updateMovement(id: string, data: MovementsDTO) {
-    return await this.movementsRepository.save({
+    const movementData: any = {
       id,
       ...data,
       product: { id: data.product_id },
-      animal: { id: data.animal_id },
       datetime: new Date(data.datetime),
-    });
+    };
+
+    if (data.animal_id && data.animal_id.trim() !== '') {
+      movementData.animal = { id: data.animal_id };
+    } else {
+      movementData.animal = null;
+    }
+
+    return await this.movementsRepository.save(movementData);
   }
 
   async deleteMovement(id: string) {

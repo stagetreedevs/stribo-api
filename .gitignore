@@ -36,3 +36,5 @@ lerna-debug.log*
 
 # Ignorar o arquivo .env
 .env
+
+stribo.http

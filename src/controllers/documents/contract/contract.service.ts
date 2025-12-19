@@ -237,9 +237,17 @@ export class ContractService {
       // Animal
       doc.font('Helvetica-Bold').fontSize(12).text('Detalhes do Animal:');
       doc.font('Helvetica').fontSize(12).text(`Nome do Animal: ${animal.name}`);
-      doc.font('Helvetica').fontSize(12).text(`Raça: ${animal.race}`);
+      doc
+        .font('Helvetica')
+        .fontSize(12)
+        .text(`Raça: ${animal.breed?.name || animal.race || 'Não informado'}`);
       doc.font('Helvetica').fontSize(12).text(`Sexo: ${animal.sex}`);
-      doc.font('Helvetica').fontSize(12).text(`Pelagem: ${animal.coat}`);
+      doc
+        .font('Helvetica')
+        .fontSize(12)
+        .text(
+          `Pelagem: ${animal.coat?.name || animal.coat_old || 'Não informado'}`,
+        );
       doc.moveDown();
 
       // Pagamento

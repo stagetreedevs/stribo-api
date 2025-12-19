@@ -32,11 +32,15 @@ export class Cylinder {
     capacity: number,
     animal_id: string,
     animal_name: string,
+    property = '',
+    property_name = '',
   ) {
     this.id = uuidv4();
     this.identifier = identifier;
     this.capacity = capacity;
     this.animal_id = animal_id;
     this.animal_name = animal_name;
+    this.property = property;
+    this.property_name = property_name;
   }
 }
