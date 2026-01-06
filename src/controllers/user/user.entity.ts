@@ -18,7 +18,7 @@ export class User {
   @Column()
   password: string;
 
-  @Column()
+  @Column({ default: 'user' })
   type: string;
 
   @Column()
@@ -39,6 +39,9 @@ export class User {
   @Column({ default: true })
   first_login: boolean;
 
+  @Column({ default: true })
+  active: boolean;
+
   constructor(
     name: string,
     last_name: string,
@@ -57,12 +60,13 @@ export class User {
     this.last_name = last_name;
     this.username = username;
     this.password = password;
-    this.type = type;
+    this.type = type || 'user';
     this.cpf = cpf;
     this.phone = phone;
     this.photo = photo;
     this.recieve_notifications = recieve_notifications;
     this.token = token;
     this.first_login = first_login;
+    this.active = true;
   }
 }

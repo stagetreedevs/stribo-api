@@ -1,6 +1,12 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { HttpException, HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -13,21 +19,25 @@ import { JwtService } from '@nestjs/jwt';
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @Inject(forwardRef(() => AdminService)) private readonly adminService: AdminService,
+    @Inject(forwardRef(() => AdminService))
+    private readonly adminService: AdminService,
     private readonly s3Service: S3Service,
     private readonly jwtService: JwtService,
-    private readonly mailService: MailerService
-  ) { }
+    private readonly mailService: MailerService,
+  ) {}
 
   async authDatabase(body: UserGoogleDto) {
     //Verifica se esse cara já é um admin
-    const verifyAdm = await this.adminService.findEmail(body.email)
+    const verifyAdm = await this.adminService.findEmail(body.email);
     if (verifyAdm) {
-      throw new HttpException('O Usuario é um Administrador', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'O Usuario é um Administrador',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     //Verifica se ele já está cadastrado no sistema
-    const user = await this.findEmail(body.email)
+    const user = await this.findEmail(body.email);
 
     //Se estiver cadastro ele loga
     if (user) {
@@ -49,7 +59,7 @@ export class UserService {
         body.lastName,
         body.email,
         this.generateStrongPassword(),
-        '',
+        'user',
         '',
         '',
         body.picture,
@@ -79,6 +89,8 @@ export class UserService {
       throw new HttpException('Usuario ja cadastrado', HttpStatus.BAD_REQUEST);
     }
 
+    user.type = user.type || 'user';
+
     let imageUrl: string | null = null;
 
     if (!!photo) {
@@ -105,7 +117,7 @@ export class UserService {
       to: user.username,
       from: 'apistagetree@gmail.com',
       subject: titleContent,
-      html: htmlContent
+      html: htmlContent,
     });
 
     return await this.userRepository.save(user);
@@ -129,7 +141,7 @@ export class UserService {
     const verifyUser = await this.userRepository.findOne({
       where: {
         id: id,
-      }
+      },
     });
 
     if (!verifyUser) {
@@ -140,14 +152,23 @@ export class UserService {
   }
 
   async findEmail(username: string): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { username } });
+    const user = await this.userRepository.findOne({
+      where: { username },
+    });
+
+    if (user && (!user.type || user.type.trim() === '')) {
+      user.type = 'user';
+      await this.userRepository.save(user);
+    }
+
     return user;
   }
 
   generateStrongPassword(): string {
     const length = 8;
-    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let password = "";
+    const charset =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let password = '';
 
     for (let i = 0; i < length; i++) {
       const randomIndex = Math.floor(Math.random() * charset.length);
@@ -178,7 +199,7 @@ export class UserService {
         to: user.username,
         from: 'apistagetree@gmail.com',
         subject: titleContent,
-        html: htmlContent
+        html: htmlContent,
       });
 
       // Gera o token de acesso
@@ -194,7 +215,11 @@ export class UserService {
     }
   }
 
-  async update(id: string, user: any, photo: Express.Multer.File): Promise<User> {
+  async update(
+    id: string,
+    user: any,
+    photo: Express.Multer.File,
+  ): Promise<User> {
     const verifyUser = await this.findOne(id);
 
     if (!verifyUser) {
@@ -212,13 +237,18 @@ export class UserService {
       }
     }
 
-    // Atualiza os campos do usuário apenas se eles não forem nulos
+    const activeValue =
+      user.active !== undefined
+        ? user.active === 'true' || user.active === true
+        : verifyUser.active;
+
     verifyUser.photo = imageUrl;
     verifyUser.name = user.name || verifyUser.name;
     verifyUser.last_name = user.last_name || verifyUser.last_name;
     verifyUser.type = user.type || verifyUser.type;
     verifyUser.cpf = user.cpf || verifyUser.cpf;
     verifyUser.phone = user.phone || verifyUser.phone;
+    verifyUser.active = activeValue;
 
     await this.userRepository.update(id, verifyUser);
     return this.findOne(id);
@@ -235,7 +265,7 @@ export class UserService {
       .createQueryBuilder()
       .update(User)
       .set({ password: newPassword })
-      .where("id = :id", { id })
+      .where('id = :id', { id })
       .execute();
 
     const upUser = await this.findOne(id);
@@ -252,7 +282,11 @@ export class UserService {
     return json;
   }
 
-  async fistLogin(id: string, newPassword: string, newName: string): Promise<any> {
+  async fistLogin(
+    id: string,
+    newPassword: string,
+    newName: string,
+  ): Promise<any> {
     const verifyUser = await this.findOne(id);
 
     if (!verifyUser) {
@@ -263,7 +297,7 @@ export class UserService {
       .createQueryBuilder()
       .update(User)
       .set({ first_login: false, password: newPassword, name: newName })
-      .where("id = :id", { id })
+      .where('id = :id', { id })
       .execute();
 
     const upUser = await this.findOne(id);
@@ -293,5 +327,4 @@ export class UserService {
 
     await this.userRepository.delete(id);
   }
-
 }
