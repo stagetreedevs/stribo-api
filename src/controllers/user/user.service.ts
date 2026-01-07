@@ -100,25 +100,42 @@ export class UserService {
 
     user.photo = imageUrl;
 
-    //Atribui uma senha aleatória
-    const senha = this.generateStrongPassword();
-    user.password = senha;
+    if (!user.password || user.password.trim() === '') {
+      const senha = this.generateStrongPassword();
+      user.password = senha;
 
-    //Manda um email com sua nova senha
-    const titleContent = `Sua Senha Temporária Stribo`;
-    const htmlContent = `
-                           <p>Utilize a senha abaixo para acessar o sistema:</p><br>
-                           <b>${senha}</b>
-                           <p>Por favor, faça login imediatamente usando essas credenciais. Recomendamos que você altere sua senha assim que possível por razões de segurança.</p>
-                           <p>Se precisar de assistência adicional ou tiver alguma dúvida, não hesite em nos contatar respondendo a este e-mail.</p><br>
-                           <p>Atenciosamente</p>
-                           <p>Equipe Stribo</p>`;
-    await this.mailService.sendMail({
-      to: user.username,
-      from: 'apistagetree@gmail.com',
-      subject: titleContent,
-      html: htmlContent,
-    });
+      const titleContent = `Sua Senha Temporária Stribo`;
+      const htmlContent = `
+      <p>Utilize a senha abaixo para acessar o sistema:</p><br>
+      <b>${senha}</b>
+      <p>Por favor, faça login imediatamente usando essas credenciais. Recomendamos que você altere sua senha assim que possível por razões de segurança.</p>
+      <p>Se precisar de assistência adicional ou tiver alguma dúvida, não hesite em nos contatar respondendo a este e-mail.</p><br>
+      <p>Atenciosamente</p>
+      <p>Equipe Stribo</p>`;
+      await this.mailService.sendMail({
+        to: user.username,
+        from: 'apistagetree@gmail.com',
+        subject: titleContent,
+        html: htmlContent,
+      });
+    } else {
+      const titleContent = `Sua Conta Stribo`;
+      const htmlContent = `
+      <p>Sua conta foi criada com sucesso!</p>
+      <p>Utilize as credenciais abaixo para acessar o sistema:</p><br>
+      <p><strong>Email:</strong> ${user.username}</p>
+      <p><strong>Senha:</strong> ${user.password}</p><br>
+      <p>Por favor, faça login imediatamente usando essas credenciais. Recomendamos que você altere sua senha assim que possível por razões de segurança.</p>
+      <p>Se precisar de assistência adicional ou tiver alguma dúvida, não hesite em nos contatar respondendo a este e-mail.</p><br>
+      <p>Atenciosamente</p>
+      <p>Equipe Stribo</p>`;
+      await this.mailService.sendMail({
+        to: user.username,
+        from: 'apistagetree@gmail.com',
+        subject: titleContent,
+        html: htmlContent,
+      });
+    }
 
     return await this.userRepository.save(user);
   }
