@@ -3,14 +3,57 @@ import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards } from '@nes
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ProviderService } from './provider.service';
-import { FilterProviderDto, ProviderDto, ProviderEditDto } from './provider.dto';
+import { FilterProviderDto, ProviderDto, ProviderEditDto, SupplierTypeDto, SupplierTypeEditDto } from './provider.dto';
 import { Provider } from './provider.entity';
+import { SupplierType } from './supplier-type.entity';
 @ApiTags('CLIENTES/FORNECEDORES')
 @ApiBearerAuth()
 @Controller('provider')
 export class ProviderController {
 
     constructor(private readonly providerService: ProviderService) { }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('supplier-type')
+    @ApiOperation({ summary: 'CRIAR TIPO DE FORNECEDOR' })
+    @ApiBody({ type: SupplierTypeDto })
+    async createSupplierType(
+        @Body() body: SupplierTypeDto,
+    ): Promise<SupplierType> {
+        return this.providerService.createSupplierType(body);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('supplier-type')
+    @ApiOperation({ summary: 'TODOS OS TIPOS DE FORNECEDOR' })
+    async findAllSupplierTypes(): Promise<SupplierType[]> {
+        return this.providerService.findAllSupplierTypes();
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('supplier-type/active')
+    @ApiOperation({ summary: 'TIPOS DE FORNECEDOR ATIVOS' })
+    async findAllActiveSupplierTypes(): Promise<SupplierType[]> {
+        return this.providerService.findAllActiveSupplierTypes();
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Put('supplier-type/:id')
+    @ApiOperation({ summary: 'EDITAR TIPO DE FORNECEDOR' })
+    @ApiBody({ type: SupplierTypeEditDto })
+    async updateSupplierType(
+        @Param('id') id: string,
+        @Body() body: SupplierTypeEditDto,
+    ): Promise<SupplierType> {
+        return this.providerService.updateSupplierType(id, body);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete('supplier-type/:id')
+    @ApiOperation({ summary: 'DELETAR TIPO DE FORNECEDOR' })
+    async deleteSupplierType(@Param('id') id: string): Promise<void> {
+        return this.providerService.deleteSupplierType(id);
+    }
 
     @UseGuards(JwtAuthGuard)
     @Post('customer/:property_id')

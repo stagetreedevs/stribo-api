@@ -3,12 +3,95 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Provider } from './provider.entity';
-import { FilterProviderDto } from './provider.dto';
+import { FilterProviderDto, SupplierTypeDto, SupplierTypeEditDto } from './provider.dto';
+import { SupplierType } from './supplier-type.entity';
 @Injectable()
 export class ProviderService {
     constructor(
-        @InjectRepository(Provider) private readonly provideRepository: Repository<Provider>
+        @InjectRepository(Provider) private readonly provideRepository: Repository<Provider>,
+        @InjectRepository(SupplierType) private readonly supplierTypeRepository: Repository<SupplierType>,
     ) { }
+
+    async createSupplierType(body: SupplierTypeDto): Promise<SupplierType> {
+        const normalizedName = body.name?.trim();
+        if (!normalizedName) {
+            throw new HttpException('Nome do tipo de fornecedor é obrigatório', HttpStatus.BAD_REQUEST);
+        }
+
+        const existing = await this.supplierTypeRepository
+            .createQueryBuilder('supplierType')
+            .where('LOWER(supplierType.name) = LOWER(:name)', { name: normalizedName })
+            .getOne();
+
+        if (existing) {
+            throw new HttpException('Tipo de fornecedor já cadastrado', HttpStatus.BAD_REQUEST);
+        }
+
+        const supplierType = this.supplierTypeRepository.create({
+            name: normalizedName,
+            description: body.description?.trim() || '',
+            active: true,
+        });
+
+        return this.supplierTypeRepository.save(supplierType);
+    }
+
+    async findAllSupplierTypes(): Promise<SupplierType[]> {
+        return this.supplierTypeRepository.find({
+            order: { active: 'DESC', name: 'ASC' },
+        });
+    }
+
+    async findAllActiveSupplierTypes(): Promise<SupplierType[]> {
+        return this.supplierTypeRepository.find({
+            where: { active: true },
+            order: { name: 'ASC' },
+        });
+    }
+
+    async updateSupplierType(id: string, body: SupplierTypeEditDto): Promise<SupplierType> {
+        const supplierType = await this.supplierTypeRepository.findOne({ where: { id } });
+
+        if (!supplierType) {
+            throw new HttpException('Tipo de fornecedor não encontrado', HttpStatus.BAD_REQUEST);
+        }
+
+        if (body.name && body.name.trim() !== supplierType.name) {
+            const existing = await this.supplierTypeRepository
+                .createQueryBuilder('supplierType')
+                .where('LOWER(supplierType.name) = LOWER(:name)', { name: body.name.trim() })
+                .andWhere('supplierType.id != :id', { id })
+                .getOne();
+
+            if (existing) {
+                throw new HttpException('Tipo de fornecedor já cadastrado', HttpStatus.BAD_REQUEST);
+            }
+
+            supplierType.name = body.name.trim();
+        }
+
+        if (body.description !== undefined) {
+            supplierType.description = body.description?.trim() || '';
+        }
+
+        if (body.active !== undefined) {
+            supplierType.active = body.active;
+        }
+
+        supplierType.updated_at = new Date();
+
+        return this.supplierTypeRepository.save(supplierType);
+    }
+
+    async deleteSupplierType(id: string): Promise<void> {
+        const supplierType = await this.supplierTypeRepository.findOne({ where: { id } });
+
+        if (!supplierType) {
+            throw new HttpException('Tipo de fornecedor não encontrado', HttpStatus.BAD_REQUEST);
+        }
+
+        await this.supplierTypeRepository.delete(id);
+    }
 
     async createProvider(body: Provider, property_id: string): Promise<Provider> {
         body.type = "Fornecedor";

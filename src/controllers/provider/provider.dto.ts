@@ -152,3 +152,22 @@ export class FilterProviderDto {
     @ApiProperty({ required: false })
     lastDate?: Date;
 }
+
+export class SupplierTypeDto {
+    @ApiProperty()
+    name: string;
+
+    @ApiProperty({ required: false, default: '' })
+    description?: string;
+}
+
+export class SupplierTypeEditDto {
+    @ApiProperty({ required: false })
+    name?: string;
+
+    @ApiProperty({ required: false })
+    description?: string;
+
+    @ApiProperty({ required: false })
+    active?: boolean;
+}
