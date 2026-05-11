@@ -66,6 +66,7 @@ import { PropertiesModule } from './controllers/properties/properties.module';
 import { ProductsEntity } from './controllers/properties/entity/products.entity';
 import { MovementsEntity } from './controllers/properties/entity/movements.entity';
 import { OneSignalModule } from './services/one-signal/one-signal.module';
+import { UploadsModule } from './controllers/uploads/uploads.module';
 dotenv.config();
 @Module({
   imports: [
@@ -156,6 +157,7 @@ dotenv.config();
     FinancialModule,
     PropertiesModule,
     OneSignalModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService],

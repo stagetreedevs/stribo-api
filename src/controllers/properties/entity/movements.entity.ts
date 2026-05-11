@@ -37,4 +37,10 @@ export class MovementsEntity {
 
   @Column({ default: '' })
   description: string;
+
+  @Column({ type: 'numeric', precision: 14, scale: 2, nullable: true })
+  value: number;
+
+  @Column({ default: '' })
+  invoice_attachment: string;
 }

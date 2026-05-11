@@ -22,6 +22,12 @@ export class MovementsDTO {
 
   @ApiProperty()
   description: string;
+
+  @ApiProperty({ required: false })
+  value?: number;
+
+  @ApiProperty({ required: false })
+  invoice_attachment?: string;
 }
 
 export class MovementsQueryDTO {
