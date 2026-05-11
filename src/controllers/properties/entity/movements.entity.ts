@@ -38,7 +38,16 @@ export class MovementsEntity {
   @Column({ default: '' })
   description: string;
 
-  @Column({ type: 'numeric', precision: 14, scale: 2, nullable: true })
+  @Column({
+    type: 'numeric',
+    precision: 14,
+    scale: 2,
+    nullable: true,
+    transformer: {
+      to: (v: number | null | undefined) => (v === undefined ? null : v),
+      from: (v: string | null) => (v === null ? null : parseFloat(v)),
+    },
+  })
   value: number;
 
   @Column({ default: '' })
