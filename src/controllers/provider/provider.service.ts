@@ -1,15 +1,20 @@
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Provider } from './provider.entity';
 import { FilterProviderDto, SupplierTypeDto, SupplierTypeEditDto } from './provider.dto';
 import { SupplierType } from './supplier-type.entity';
+import { AsaasService } from 'src/services/asaas/asaas.service';
+import { CreateCostumerDto } from 'src/services/asaas/dto/customers.dto';
 @Injectable()
 export class ProviderService {
+    private readonly logger = new Logger(ProviderService.name);
+
     constructor(
         @InjectRepository(Provider) private readonly provideRepository: Repository<Provider>,
         @InjectRepository(SupplierType) private readonly supplierTypeRepository: Repository<SupplierType>,
+        private readonly asaasService: AsaasService,
     ) { }
 
     async createSupplierType(body: SupplierTypeDto): Promise<SupplierType> {
@@ -258,6 +263,62 @@ export class ProviderService {
                     throw new HttpException('Banco inválido. Campos extras.', HttpStatus.BAD_REQUEST);
                 }
             }
+        }
+
+        const cpfCnpj = String(body.cpf || '').replace(/\D/g, '');
+        if (!cpfCnpj) {
+            throw new HttpException(
+                'CPF/CNPJ é obrigatório para criar cliente no Asaas',
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+
+        const address =
+            body.adress?.find((item) => item.mainAdress || item.billingAddress) ||
+            body.adress?.[0];
+
+        const phone = String(body.personalPhone || body.comercialPhone || '').replace(
+            /\D/g,
+            '',
+        );
+
+        const customerData = {
+            cpfCnpj,
+            name: body.name,
+            ...(body.email ? { email: body.email } : {}),
+            phone: phone || undefined,
+            mobilePhone: phone || undefined,
+            postalCode: address?.cep
+                ? String(address.cep).replace(/\D/g, '')
+                : undefined,
+            address: address?.streetAddress || undefined,
+            addressNumber:
+                address?.numberAddress != null
+                    ? String(address.numberAddress)
+                    : undefined,
+            complement: address?.complement || undefined,
+            province: address?.district || undefined,
+            externalReference: property_id,
+        } as CreateCostumerDto;
+
+        try {
+            const asaasCustomer = await this.asaasService.createCostumer(customerData);
+            body.asaas_id = asaasCustomer.id;
+        } catch (error) {
+            this.logger.error(
+                'Erro ao criar cliente no Asaas',
+                JSON.stringify(error?.response?.data || error?.message || error),
+            );
+
+            const asaasErrors = error?.response?.data?.errors;
+            const asaasMessage = Array.isArray(asaasErrors)
+                ? asaasErrors.map((item) => item.description).join('; ')
+                : null;
+
+            throw new HttpException(
+                asaasMessage || 'Não foi possível criar o cliente no Asaas',
+                HttpStatus.BAD_REQUEST,
+            );
         }
 
         return await this.provideRepository.save(body);

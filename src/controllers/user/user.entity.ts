@@ -42,6 +42,9 @@ export class User {
   @Column({ default: true })
   active: boolean;
 
+  @Column({ default: null })
+  asaas_id: string;
+
   constructor(
     name: string,
     last_name: string,

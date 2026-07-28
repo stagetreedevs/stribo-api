@@ -53,7 +53,7 @@ export class FinancialService {
     private readonly animalService: AnimalService,
     private readonly s3Service: S3Service,
     private readonly oneSignalService: OneSignalService,
-  ) {}
+  ) { }
 
   private getSendAfterFromDueDate(
     dueDateUTC: Date,
@@ -287,18 +287,17 @@ export class FinancialService {
         timeZone: 'America/Sao_Paulo',
       });
 
-      const message = `Uma transação do tipo ${
-        data.type === 'revenue'
+      const message = `Uma transação do tipo ${data.type === 'revenue'
           ? `receita, deve ser recebida até dia ${formattedDate}.`
           : `despesa, vence dia ${formattedDate}.`
-      } `;
+        } `;
 
-      await this.oneSignalService.sendNotification(
-        data.property_id,
-        'Alerta de Transação',
-        message,
-        sendAfter,
-      );
+      // await this.oneSignalService.sendNotification(
+      //   data.property_id,
+      //   'Alerta de Transação',
+      //   message,
+      //   sendAfter,
+      // );
       const transaction = this.transactionRepository.create({
         bankAccount: { id: bank_account_id },
         category: { id: category_id },
@@ -618,18 +617,17 @@ export class FinancialService {
         timeZone: 'America/Sao_Paulo',
       });
 
-      const message = `Uma transação do tipo ${
-        data.type === 'revenue'
+      const message = `Uma transação do tipo ${data.type === 'revenue'
           ? `receita, deve ser recebida até dia ${formattedDate}.`
           : `despesa, vence dia ${formattedDate}.`
-      } `;
+        } `;
 
-      await this.oneSignalService.sendNotification(
-        data.property_id,
-        'Alerta de Transação',
-        message,
-        sendAfter,
-      );
+      // await this.oneSignalService.sendNotification(
+      //   data.property_id,
+      //   'Alerta de Transação',
+      //   message,
+      //   sendAfter,
+      // );
 
       return transactionReturn;
     } else {
@@ -647,18 +645,17 @@ export class FinancialService {
         timeZone: 'America/Sao_Paulo',
       });
 
-      const message = `Uma transação do tipo ${
-        data.type === 'revenue'
+      const message = `Uma transação do tipo ${data.type === 'revenue'
           ? `receita, deve ser recebida até dia ${formattedDate}.`
           : `despesa, vence dia ${formattedDate}.`
-      } `;
+        } `;
 
-      await this.oneSignalService.sendNotification(
-        data.property_id,
-        'Alerta de Transação',
-        message,
-        sendAfter,
-      );
+      // await this.oneSignalService.sendNotification(
+      //   data.property_id,
+      //   'Alerta de Transação',
+      //   message,
+      //   sendAfter,
+      // );
 
       const transaction = this.transactionRepository.create({
         bankAccount: { id: bank_account_id },
@@ -955,27 +952,27 @@ export class FinancialService {
         datetime: period_date
           ? period_date === FilterPeriodDate.TODAY
             ? Between(
-                new Date(new Date().setHours(0, 0, 0, 0)),
-                new Date(new Date().setHours(23, 59, 59, 999)),
-              )
+              new Date(new Date().setHours(0, 0, 0, 0)),
+              new Date(new Date().setHours(23, 59, 59, 999)),
+            )
             : period_date === FilterPeriodDate.SEVEN_DAYS
-            ? Between(
+              ? Between(
                 new Date(new Date().setDate(new Date().getDate() - 7)),
                 new Date(),
               )
-            : period_date === FilterPeriodDate.THIRTY_DAYS
-            ? Between(
-                new Date(new Date().setDate(new Date().getDate() - 30)),
-                new Date(),
-              )
-            : undefined
+              : period_date === FilterPeriodDate.THIRTY_DAYS
+                ? Between(
+                  new Date(new Date().setDate(new Date().getDate() - 30)),
+                  new Date(),
+                )
+                : undefined
           : start_date && end_date
-          ? Between(new Date(start_date), new Date(end_date))
-          : start_date
-          ? MoreThanOrEqual(new Date(start_date))
-          : end_date
-          ? LessThan(new Date(end_date))
-          : undefined,
+            ? Between(new Date(start_date), new Date(end_date))
+            : start_date
+              ? MoreThanOrEqual(new Date(start_date))
+              : end_date
+                ? LessThan(new Date(end_date))
+                : undefined,
       },
       relations: {
         bankAccount: true,

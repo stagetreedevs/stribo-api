@@ -32,7 +32,7 @@ export class CompetitionService {
     private competitor: Repository<Competitor>,
     private animalService: AnimalService,
     private readonly oneSignalService: OneSignalService,
-  ) {}
+  ) { }
 
   private getNotificationDateTimeUTC(
     eventDate: Date,
@@ -92,12 +92,12 @@ export class CompetitionService {
       timeZone: 'America/Sao_Paulo',
     });
 
-    await this.oneSignalService.sendNotification(
-      competition.property,
-      'Alerta de Competição',
-      `A competição "${competition.name}" está agendada para ${formattedDate} às ${formattedTime}. Prepare-se!`,
-      sendDateUTC?.toISOString(),
-    );
+    // await this.oneSignalService.sendNotification(
+    //   competition.property,
+    //   'Alerta de Competição',
+    //   `A competição "${competition.name}" está agendada para ${formattedDate} às ${formattedTime}. Prepare-se!`,
+    //   sendDateUTC?.toISOString(),
+    // );
 
     return competition;
   }
@@ -302,14 +302,14 @@ export class CompetitionService {
         date:
           filter.initialDate && filter.lastDate
             ? Between(
-                new Date(filter.initialDate.setHours(0, 0, 0, 0)),
-                new Date(filter.lastDate.setHours(23, 59, 59, 999)),
-              )
+              new Date(filter.initialDate.setHours(0, 0, 0, 0)),
+              new Date(filter.lastDate.setHours(23, 59, 59, 999)),
+            )
             : filter.initialDate && !filter.lastDate
-            ? MoreThanOrEqual(new Date(filter.initialDate.setHours(0, 0, 0, 0)))
-            : filter.lastDate && !filter.initialDate
-            ? MoreThan(new Date(filter.lastDate.setHours(23, 59, 59, 999)))
-            : undefined,
+              ? MoreThanOrEqual(new Date(filter.initialDate.setHours(0, 0, 0, 0)))
+              : filter.lastDate && !filter.initialDate
+                ? MoreThan(new Date(filter.lastDate.setHours(23, 59, 59, 999)))
+                : undefined,
         animal_id: filter.animal_id || undefined,
         modality: filter.modality || undefined,
         competitor: filter.competitor || undefined,

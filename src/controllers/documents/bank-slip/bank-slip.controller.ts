@@ -14,6 +14,9 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { BankSlipService } from './bank-slip.service';
 import { BankSlipDto, BankSlipEditDto } from './bank-slip.dto';
 import { FilterDocumentsDto } from '../documents.dto';
+import { AsaasWebhookGuard } from 'src/controllers/asaas/guards/asaas-webhook.guard';
+import { AsaasWebhookPayload } from 'src/controllers/asaas/interfaces/checkout.interfaces';
+
 @ApiTags('DOCUMENTO - BOLETO')
 @ApiBearerAuth()
 @Controller('bank-slip')
@@ -22,10 +25,26 @@ export class BankSlipController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  @ApiOperation({ summary: 'REGISTRAR DADOS DE UM BOLETO' })
+  @ApiOperation({
+    summary: 'REGISTRAR BOLETO E GERAR NO ASAAS',
+    description:
+      'Cria o boleto local, sincroniza cliente no Asaas (asaas_id) e gera cobrança BOLETO. Suporta à vista e parcelado com entrada.',
+  })
   @ApiBody({ type: BankSlipDto })
   async create(@Body() body: BankSlipDto): Promise<any> {
     return this.ticketService.create(body);
+  }
+
+  @UseGuards(AsaasWebhookGuard)
+  @Post('webhook')
+  @ApiOperation({
+    summary: 'Webhook Asaas para atualizar status do boleto',
+    description:
+      'Recebe eventos de pagamento e atualiza status do bank-slip (e parcelas). Header: asaas-access-token.',
+  })
+  async webhook(@Body() body: AsaasWebhookPayload) {
+    await this.ticketService.handleWebhook(body);
+    return { received: true };
   }
 
   @UseGuards(JwtAuthGuard)

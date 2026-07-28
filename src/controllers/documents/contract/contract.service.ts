@@ -25,7 +25,7 @@ export class ContractService {
     private readonly animalService: AnimalService,
     private readonly s3Service: S3Service,
     private readonly oneSignalService: OneSignalService,
-  ) {}
+  ) { }
 
   private getNotificationDateTimeUTC(
     eventDate: Date,
@@ -75,12 +75,12 @@ export class ContractService {
       timeZone: 'America/Sao_Paulo',
     });
 
-    await this.oneSignalService.sendNotification(
-      newContract.property,
-      'Alerta de Contrato',
-      `Um contrato de ${newContract.title} se encerrará em ${formattedDate}`,
-      sendDateUTC ? sendDateUTC?.toISOString() : undefined,
-    );
+    // await this.oneSignalService.sendNotification(
+    //   newContract.property,
+    //   'Alerta de Contrato',
+    //   `Um contrato de ${newContract.title} se encerrará em ${formattedDate}`,
+    //   sendDateUTC ? sendDateUTC?.toISOString() : undefined,
+    // );
 
     return newContract;
   }
