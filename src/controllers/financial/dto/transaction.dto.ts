@@ -66,6 +66,21 @@ export class TransactionDTO {
 
   @ApiProperty({ required: false })
   max_date_period?: Date;
+
+  @ApiProperty({ required: false, description: 'CPF/CNPJ do pagador (obrigatório para receitas com boleto)' })
+  CPF?: string;
+
+  @ApiProperty({ required: false })
+  email?: string;
+
+  @ApiProperty({ required: false })
+  phone?: string;
+
+  @ApiProperty({ required: false })
+  address?: string;
+
+  @ApiProperty({ required: false, description: 'Valor de entrada para receita parcelada' })
+  entry_value?: number;
 }
 
 export class TransactionUpdateDTO {

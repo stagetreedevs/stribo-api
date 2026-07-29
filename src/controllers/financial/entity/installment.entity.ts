@@ -25,4 +25,22 @@ export class Installment {
 
   @Column({ enum: InstallmentStatus, default: InstallmentStatus.PENDING })
   status: InstallmentStatus;
+
+  @Column({ nullable: true })
+  parcel: number;
+
+  @Column({ nullable: true })
+  asaas_payment_id: string;
+
+  @Column({ nullable: true })
+  bank_slip_url: string;
+
+  @Column({ nullable: true })
+  bar_code: string;
+
+  @Column({ nullable: true })
+  identification_field: string;
+
+  @Column({ nullable: true })
+  asaas_status: string;
 }

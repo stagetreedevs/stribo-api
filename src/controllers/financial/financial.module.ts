@@ -10,6 +10,7 @@ import { Installment } from './entity/installment.entity';
 import { S3Module } from '../s3/s3.module';
 import { CompetitionModule } from '../competition/competition.module';
 import { OneSignalModule } from 'src/services/one-signal/one-signal.module';
+import { AsaasModule } from 'src/services/asaas/asaas.module';
 
 @Module({
   imports: [
@@ -18,8 +19,10 @@ import { OneSignalModule } from 'src/services/one-signal/one-signal.module';
     AnimalModule,
     S3Module,
     OneSignalModule,
+    AsaasModule,
   ],
   providers: [FinancialService],
   controllers: [FinancialController],
+  exports: [FinancialService],
 })
 export class FinancialModule {}

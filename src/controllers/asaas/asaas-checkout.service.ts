@@ -23,6 +23,7 @@ import {
 import { AsaasCheckout } from './entity/asaas-checkout.entity';
 import { AsaasWebhookPayload } from './interfaces/checkout.interfaces';
 import { BankSlipService } from 'src/controllers/documents/bank-slip/bank-slip.service';
+import { FinancialService } from 'src/controllers/financial/financial.service';
 
 @Injectable()
 export class AsaasCheckoutService {
@@ -36,6 +37,8 @@ export class AsaasCheckoutService {
     private readonly asaasService: AsaasService,
     @Inject(forwardRef(() => BankSlipService))
     private readonly bankSlipService: BankSlipService,
+    @Inject(forwardRef(() => FinancialService))
+    private readonly financialService: FinancialService,
   ) {}
 
   async syncCustomer(
@@ -334,6 +337,7 @@ export class AsaasCheckoutService {
     }
 
     await this.bankSlipService.handleWebhook(payload);
+    await this.financialService.handleRevenueWebhook(payload);
   }
 
   private async findCheckoutOrFail(
