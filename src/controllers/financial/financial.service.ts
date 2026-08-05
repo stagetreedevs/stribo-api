@@ -82,6 +82,20 @@ export class FinancialService {
     return Number((Number(cents || 0) / 100).toFixed(2));
   }
 
+  private buildPayerFields(data: TransactionDTO): Partial<Transaction> {
+    if (data.type !== TransactionType.REVENUE) {
+      return {};
+    }
+
+    return {
+      payer_cpf: data.CPF || null,
+      payer_email: data.email || null,
+      payer_phone: data.phone || null,
+      payer_address: data.address || null,
+      entry_value: this.parseMoney(data.entry_value || 0),
+    };
+  }
+
   private cleanDocument(value: string): string {
     return String(value || '').replace(/\D/g, '');
   }
@@ -105,41 +119,89 @@ export class FinancialService {
     }
   }
 
-  private async tryRegisterRevenueOnAsaas(
+  async generateRevenueBankSlip(
     transactionId: string,
-    data: TransactionDTO,
-  ): Promise<void> {
+    data: {
+      CPF?: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+      beneficiary_name?: string;
+      entry_value?: number;
+    } = {},
+  ): Promise<Transaction> {
+    const transaction = await this.transactionRepository.findOne({
+      where: { id: transactionId },
+      relations: { installments: true, bankAccount: true, category: true },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    if (transaction.type !== TransactionType.REVENUE) {
+      throw new BadRequestException(
+        'Boleto Asaas só pode ser gerado para transações do tipo revenue',
+      );
+    }
+
+    if (transaction.asaas_payment_id || transaction.checkout_id) {
+      throw new BadRequestException(
+        'Esta transação já possui boleto Asaas gerado',
+      );
+    }
+
     try {
-      const transaction = await this.transactionRepository.findOne({
-        where: { id: transactionId },
-        relations: { installments: true },
+      await this.registerRevenueOnAsaas(transaction, {
+        CPF: data.CPF || transaction.payer_cpf,
+        email: data.email || transaction.payer_email,
+        phone: data.phone || transaction.payer_phone,
+        address: data.address || transaction.payer_address,
+        beneficiary_name:
+          data.beneficiary_name || transaction.beneficiary_name,
+        entry_value:
+          data.entry_value ??
+          (transaction.entry_value != null
+            ? Number(transaction.entry_value)
+            : undefined),
+        description: transaction.description,
       });
-
-      if (!transaction) {
-        return;
-      }
-
-      await this.registerRevenueOnAsaas(transaction, data);
     } catch (error) {
       this.logger.error(
-        'Erro ao registrar receita no Asaas',
+        'Erro ao gerar boleto Asaas para transação',
         error?.response?.data || error.message,
       );
-      await this.installmentRepository.delete({
-        transaction: { id: transactionId },
-      });
-      await this.transactionRepository.delete(transactionId);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       throw new BadRequestException(
         error?.response?.data?.errors?.[0]?.description ||
           error.message ||
           'Erro ao gerar boleto no Asaas',
       );
     }
+
+    return this.transactionRepository.findOne({
+      where: { id: transactionId },
+      relations: {
+        bankAccount: true,
+        category: true,
+        installments: true,
+      },
+    });
   }
 
   private async registerRevenueOnAsaas(
     transaction: Transaction,
-    data: TransactionDTO,
+    data: {
+      CPF?: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+      beneficiary_name?: string;
+      entry_value?: number;
+      description?: string;
+    },
   ): Promise<void> {
     const installments = [...(transaction.installments || [])].sort(
       (a, b) =>
@@ -147,7 +209,9 @@ export class FinancialService {
     );
 
     if (installments.length === 0) {
-      return;
+      throw new BadRequestException(
+        'Transação sem parcelas para gerar boleto',
+      );
     }
 
     const cpfCnpj = this.cleanDocument(data.CPF);
@@ -158,7 +222,11 @@ export class FinancialService {
     }
 
     const payerName =
-      data.beneficiary_name || data.description || 'Cliente Stribo';
+      data.beneficiary_name ||
+      transaction.beneficiary_name ||
+      data.description ||
+      transaction.description ||
+      'Cliente Stribo';
     const customer = await this.asaasService.getOrCreateCostumer({
       cpfCnpj,
       name: payerName,
@@ -170,7 +238,9 @@ export class FinancialService {
 
     const description =
       transaction.description || `Receita Stribo - ${payerName}`;
-    const entryValueCents = this.parseMoney(data.entry_value || 0);
+    const entryValueCents = this.parseMoney(
+      data.entry_value ?? transaction.entry_value ?? 0,
+    );
     const totalValueCents = Number(transaction.original_value);
 
     if (entryValueCents < 0) {
@@ -675,6 +745,7 @@ export class FinancialService {
         original_value: data.original_value,
         property_id: data.property_id,
         type: data.type,
+        ...this.buildPayerFields(data),
       });
 
       const newTransaction = await this.transactionRepository.save(transaction);
@@ -686,10 +757,6 @@ export class FinancialService {
       });
 
       await this.installmentRepository.save(installment);
-
-      if (data.type === TransactionType.REVENUE) {
-        await this.tryRegisterRevenueOnAsaas(newTransaction.id, data);
-      }
 
       return await this.transactionRepository.findOne({
         where: { id: newTransaction.id },
@@ -726,6 +793,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -739,10 +807,6 @@ export class FinancialService {
             });
 
             await this.installmentRepository.save(installment);
-
-            if (data.type === TransactionType.REVENUE) {
-              await this.tryRegisterRevenueOnAsaas(newTransaction.id, data);
-            }
 
             if (!transactionReturn) {
               transactionReturn = transaction;
@@ -768,6 +832,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -781,10 +846,6 @@ export class FinancialService {
             });
 
             await this.installmentRepository.save(installment);
-
-            if (data.type === TransactionType.REVENUE) {
-              await this.tryRegisterRevenueOnAsaas(newTransaction.id, data);
-            }
 
             if (!transactionReturn) {
               transactionReturn = transaction;
@@ -810,6 +871,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -823,10 +885,6 @@ export class FinancialService {
             });
 
             await this.installmentRepository.save(installment);
-
-            if (data.type === TransactionType.REVENUE) {
-              await this.tryRegisterRevenueOnAsaas(newTransaction.id, data);
-            }
 
             if (!transactionReturn) {
               transactionReturn = transaction;
@@ -852,6 +910,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -865,10 +924,6 @@ export class FinancialService {
             });
 
             await this.installmentRepository.save(installment);
-
-            if (data.type === TransactionType.REVENUE) {
-              await this.tryRegisterRevenueOnAsaas(newTransaction.id, data);
-            }
 
             if (!transactionReturn) {
               transactionReturn = transaction;
@@ -894,6 +949,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -907,10 +963,6 @@ export class FinancialService {
             });
 
             await this.installmentRepository.save(installment);
-
-            if (data.type === TransactionType.REVENUE) {
-              await this.tryRegisterRevenueOnAsaas(newTransaction.id, data);
-            }
 
             if (!transactionReturn) {
               transactionReturn = transaction;
@@ -936,6 +988,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -949,10 +1002,6 @@ export class FinancialService {
             });
 
             await this.installmentRepository.save(installment);
-
-            if (data.type === TransactionType.REVENUE) {
-              await this.tryRegisterRevenueOnAsaas(newTransaction.id, data);
-            }
 
             if (!transactionReturn) {
               transactionReturn = transaction;
@@ -978,6 +1027,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -991,10 +1041,6 @@ export class FinancialService {
             });
 
             await this.installmentRepository.save(installment);
-
-            if (data.type === TransactionType.REVENUE) {
-              await this.tryRegisterRevenueOnAsaas(newTransaction.id, data);
-            }
 
             if (!transactionReturn) {
               transactionReturn = transaction;
@@ -1066,6 +1112,7 @@ export class FinancialService {
         original_value: data.original_value,
         property_id: data.property_id,
         type: data.type,
+        ...this.buildPayerFields(data),
       });
 
       const newTransaction = await this.transactionRepository.save(transaction);
@@ -1080,10 +1127,6 @@ export class FinancialService {
           transaction: { id: newTransaction.id },
         });
         await this.installmentRepository.save(newInstallment);
-      }
-
-      if (data.type === TransactionType.REVENUE) {
-        await this.tryRegisterRevenueOnAsaas(newTransaction.id, data);
       }
 
       return await this.transactionRepository.findOne({
