@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BankAccount } from './entity/bank-account.entity';
 import {
@@ -157,8 +162,7 @@ export class FinancialService {
         email: data.email || transaction.payer_email,
         phone: data.phone || transaction.payer_phone,
         address: data.address || transaction.payer_address,
-        beneficiary_name:
-          data.beneficiary_name || transaction.beneficiary_name,
+        beneficiary_name: data.beneficiary_name || transaction.beneficiary_name,
         entry_value:
           data.entry_value ??
           (transaction.entry_value != null
@@ -176,8 +180,8 @@ export class FinancialService {
       }
       throw new BadRequestException(
         error?.response?.data?.errors?.[0]?.description ||
-          error.message ||
-          'Erro ao gerar boleto no Asaas',
+        error.message ||
+        'Erro ao gerar boleto no Asaas',
       );
     }
 
@@ -204,14 +208,11 @@ export class FinancialService {
     },
   ): Promise<void> {
     const installments = [...(transaction.installments || [])].sort(
-      (a, b) =>
-        new Date(a.due_date).getTime() - new Date(b.due_date).getTime(),
+      (a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime(),
     );
 
     if (installments.length === 0) {
-      throw new BadRequestException(
-        'Transação sem parcelas para gerar boleto',
-      );
+      throw new BadRequestException('Transação sem parcelas para gerar boleto');
     }
 
     const cpfCnpj = this.cleanDocument(data.CPF);
@@ -341,8 +342,7 @@ export class FinancialService {
     const bankSlipUrl =
       installmentPayment.billing_info?.bankSlip?.bankSlipUrl ||
       installmentPayment.payment.bankSlipUrl;
-    const barCode =
-      installmentPayment.billing_info?.bankSlip?.barCode || null;
+    const barCode = installmentPayment.billing_info?.bankSlip?.barCode || null;
     const identificationField =
       installmentPayment.billing_info?.bankSlip?.identificationField || null;
 
@@ -377,8 +377,7 @@ export class FinancialService {
           const billing = await this.asaasService.getBillingInfoByPayment(
             remote.id,
           );
-          instBankSlipUrl =
-            billing?.bankSlip?.bankSlipUrl || instBankSlipUrl;
+          instBankSlipUrl = billing?.bankSlip?.bankSlipUrl || instBankSlipUrl;
           instBarCode = billing?.bankSlip?.barCode || null;
           instIdentificationField =
             billing?.bankSlip?.identificationField || null;
@@ -727,12 +726,12 @@ export class FinancialService {
           : `despesa, vence dia ${formattedDate}.`
         } `;
 
-      // await this.oneSignalService.sendNotification(
-      //   data.property_id,
-      //   'Alerta de Transação',
-      //   message,
-      //   sendAfter,
-      // );
+      await this.oneSignalService.sendNotification(
+        data.property_id,
+        'Alerta de Transação',
+        message,
+        sendAfter,
+      );
       const transaction = this.transactionRepository.create({
         bankAccount: { id: bank_account_id },
         category: { id: category_id },
@@ -1065,12 +1064,12 @@ export class FinancialService {
           : `despesa, vence dia ${formattedDate}.`
         } `;
 
-      // await this.oneSignalService.sendNotification(
-      //   data.property_id,
-      //   'Alerta de Transação',
-      //   message,
-      //   sendAfter,
-      // );
+      await this.oneSignalService.sendNotification(
+        data.property_id,
+        'Alerta de Transação',
+        message,
+        sendAfter,
+      );
 
       return transactionReturn;
     } else {
@@ -1093,12 +1092,12 @@ export class FinancialService {
           : `despesa, vence dia ${formattedDate}.`
         } `;
 
-      // await this.oneSignalService.sendNotification(
-      //   data.property_id,
-      //   'Alerta de Transação',
-      //   message,
-      //   sendAfter,
-      // );
+      await this.oneSignalService.sendNotification(
+        data.property_id,
+        'Alerta de Transação',
+        message,
+        sendAfter,
+      );
 
       const transaction = this.transactionRepository.create({
         bankAccount: { id: bank_account_id },
