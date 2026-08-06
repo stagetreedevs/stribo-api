@@ -97,6 +97,48 @@ export class Transaction {
   @Column({ nullable: true, type: 'simple-array' })
   attachments_files: string[];
 
+  @Column({ nullable: true })
+  asaas_customer_id: string;
+
+  @Column({ nullable: true })
+  checkout_id: string;
+
+  @Column({ nullable: true })
+  asaas_payment_id: string;
+
+  @Column({ nullable: true })
+  asaas_installment_id: string;
+
+  @Column({ nullable: true })
+  asaas_entry_payment_id: string;
+
+  @Column('decimal', { precision: 12, scale: 2, default: 0 })
+  entry_value: number;
+
+  @Column({ nullable: true })
+  bank_slip_url: string;
+
+  @Column({ nullable: true })
+  bar_code: string;
+
+  @Column({ nullable: true })
+  identification_field: string;
+
+  @Column({ nullable: true })
+  asaas_status: string;
+
+  @Column({ nullable: true })
+  payer_cpf: string;
+
+  @Column({ nullable: true })
+  payer_email: string;
+
+  @Column({ nullable: true })
+  payer_phone: string;
+
+  @Column({ nullable: true })
+  payer_address: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

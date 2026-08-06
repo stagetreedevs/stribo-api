@@ -25,7 +25,7 @@ export class ContractService {
     private readonly animalService: AnimalService,
     private readonly s3Service: S3Service,
     private readonly oneSignalService: OneSignalService,
-  ) {}
+  ) { }
 
   private getNotificationDateTimeUTC(
     eventDate: Date,

@@ -33,7 +33,7 @@ export class ReproductiveService {
     private readonly semenReceiptService: SemenReceiptService,
     private readonly cylinderService: CylinderService,
     private readonly oneSignalService: OneSignalService,
-  ) {}
+  ) { }
 
   async create(body: Reproductive): Promise<Reproductive> {
     const procedure = await this.reproductive.save(body);
@@ -81,8 +81,7 @@ export class ReproductiveService {
     await this.oneSignalService.sendNotification(
       procedure.property,
       'Alerta de Procedimento',
-      `O procedimento de ${
-        procedure.procedure
+      `O procedimento de ${procedure.procedure
       } está agendado para ${procedureDateTimeUTC.toLocaleDateString('pt-BR', {
         timeZone: 'America/Sao_Paulo',
       })} às ${procedureDateTimeUTC.toLocaleTimeString('pt-BR', {
@@ -339,12 +338,12 @@ export class ReproductiveService {
     const dateCondition: FindOperator<Date> =
       query?.initialDate && query?.lastDate
         ? And(
-            Between(
-              new Date(query?.initialDate.setHours(0, 0, 0, 0)),
-              new Date(query?.lastDate.setHours(23, 59, 59, 999)),
-            ),
-            Equal(currentDate),
-          )
+          Between(
+            new Date(query?.initialDate.setHours(0, 0, 0, 0)),
+            new Date(query?.lastDate.setHours(23, 59, 59, 999)),
+          ),
+          Equal(currentDate),
+        )
         : Equal(currentDate);
 
     const procedimentos = await this.reproductive.find({
@@ -417,12 +416,12 @@ export class ReproductiveService {
     const dateCondition: FindOperator<Date> =
       query?.initialDate && query?.lastDate
         ? And(
-            Between(
-              new Date(query.initialDate.setHours(0, 0, 0, 0)),
-              new Date(query.lastDate.setHours(23, 59, 59, 999)),
-            ),
-            LessThan(currentDate),
-          )
+          Between(
+            new Date(query.initialDate.setHours(0, 0, 0, 0)),
+            new Date(query.lastDate.setHours(23, 59, 59, 999)),
+          ),
+          LessThan(currentDate),
+        )
         : LessThan(currentDate);
 
     const procedimentos = await this.reproductive.find({
@@ -495,12 +494,12 @@ export class ReproductiveService {
     const dateCondition: FindOperator<Date> =
       query?.initialDate && query?.lastDate
         ? And(
-            Between(
-              new Date(query?.initialDate.setHours(0, 0, 0, 0)),
-              new Date(query?.lastDate.setHours(23, 59, 59, 999)),
-            ),
-            MoreThan(currentDate),
-          )
+          Between(
+            new Date(query?.initialDate.setHours(0, 0, 0, 0)),
+            new Date(query?.lastDate.setHours(23, 59, 59, 999)),
+          ),
+          MoreThan(currentDate),
+        )
         : MoreThan(currentDate);
 
     const procedimentos = await this.reproductive.find({

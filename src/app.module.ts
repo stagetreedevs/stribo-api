@@ -67,6 +67,7 @@ import { ProductsEntity } from './controllers/properties/entity/products.entity'
 import { MovementsEntity } from './controllers/properties/entity/movements.entity';
 import { OneSignalModule } from './services/one-signal/one-signal.module';
 import { UploadsModule } from './controllers/uploads/uploads.module';
+import { AsaasCheckoutModule } from './controllers/asaas/asaas-checkout.module';
 dotenv.config();
 @Module({
   imports: [
@@ -158,6 +159,7 @@ dotenv.config();
     PropertiesModule,
     OneSignalModule,
     UploadsModule,
+    AsaasCheckoutModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService],

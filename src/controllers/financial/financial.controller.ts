@@ -29,6 +29,7 @@ import { CategoryDTO, FilterCategoryDTO } from './dto/category.dto';
 import { Category } from './entity/category.entity';
 import {
   DocumentsDTO,
+  GenerateRevenueBankSlipDTO,
   ImportTransactionDTO,
   TransactionDTO,
   TransactionUpdateDTO,
@@ -181,6 +182,20 @@ export class FinancialController {
   @ApiBody({ type: TransactionDTO })
   async createTransaction(@Body() body: TransactionDTO): Promise<Transaction> {
     return this.financialService.createTransaction(body);
+  }
+
+  @ApiTags('TRANSAÇÃO')
+  @UseGuards(JwtAuthGuard)
+  @Post('transaction/:id/asaas-boleto')
+  @ApiOperation({
+    summary: 'GERA BOLETO ASAAS PARA UMA TRANSAÇÃO DE RECEITA JÁ CADASTRADA',
+  })
+  @ApiBody({ type: GenerateRevenueBankSlipDTO })
+  async generateRevenueBankSlip(
+    @Param('id') id: string,
+    @Body() body: GenerateRevenueBankSlipDTO,
+  ): Promise<Transaction> {
+    return this.financialService.generateRevenueBankSlip(id, body);
   }
 
   @ApiTags('TRANSAÇÃO')

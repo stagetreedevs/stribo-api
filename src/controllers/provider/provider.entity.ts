@@ -94,6 +94,9 @@ export class Provider {
     @Column({ type: 'date', default: () => 'now()' })
     createdAt: Date;
 
+    @Column({ default: null, nullable: true })
+    asaas_id: string;
+
     constructor(
         type: string,
         property: string,

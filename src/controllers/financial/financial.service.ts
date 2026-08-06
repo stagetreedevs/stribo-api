@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BankAccount } from './entity/bank-account.entity';
 import {
@@ -37,9 +42,18 @@ import { CompetitionService } from '../competition/competition.service';
 // import { parse as parseOFX } from 'ofx-js';
 import { Ofx } from 'ofx-data-extractor';
 import { OneSignalService } from 'src/services/one-signal/one-signal.service';
+import { AsaasService } from 'src/services/asaas/asaas.service';
+import {
+  BillingType,
+  PaymentStatus,
+} from 'src/services/asaas/dto/payments.dto';
+import { AsaasWebhookPayload } from 'src/controllers/asaas/interfaces/checkout.interfaces';
+import { format } from 'date-fns';
 
 @Injectable()
 export class FinancialService {
+  private readonly logger = new Logger(FinancialService.name);
+
   constructor(
     @InjectRepository(BankAccount)
     private bankAccountRepository: Repository<BankAccount>,
@@ -53,7 +67,427 @@ export class FinancialService {
     private readonly animalService: AnimalService,
     private readonly s3Service: S3Service,
     private readonly oneSignalService: OneSignalService,
-  ) {}
+    private readonly asaasService: AsaasService,
+  ) { }
+
+  private parseMoney(value: any): number {
+    if (typeof value === 'number') {
+      return value;
+    }
+    const normalized = String(value || '0')
+      .replace(/\./g, '')
+      .replace(',', '.')
+      .replace(/[^\d.-]/g, '');
+    const parsed = parseFloat(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  /** Financeiro guarda centavos; Asaas espera reais. */
+  private centsToReais(cents: number): number {
+    return Number((Number(cents || 0) / 100).toFixed(2));
+  }
+
+  private buildPayerFields(data: TransactionDTO): Partial<Transaction> {
+    if (data.type !== TransactionType.REVENUE) {
+      return {};
+    }
+
+    return {
+      payer_cpf: data.CPF || null,
+      payer_email: data.email || null,
+      payer_phone: data.phone || null,
+      payer_address: data.address || null,
+      entry_value: this.parseMoney(data.entry_value || 0),
+    };
+  }
+
+  private cleanDocument(value: string): string {
+    return String(value || '').replace(/\D/g, '');
+  }
+
+  private cleanPhone(value: string): string {
+    return String(value || '').replace(/\D/g, '');
+  }
+
+  private mapAsaasToInstallmentStatus(
+    status: PaymentStatus | string,
+  ): InstallmentStatus {
+    switch (status) {
+      case PaymentStatus.RECEIVED:
+      case PaymentStatus.CONFIRMED:
+      case PaymentStatus.RECEIVED_IN_CASH:
+        return InstallmentStatus.PAID;
+      case PaymentStatus.OVERDUE:
+        return InstallmentStatus.OVERDUE;
+      default:
+        return InstallmentStatus.PENDING;
+    }
+  }
+
+  async generateRevenueBankSlip(
+    transactionId: string,
+    data: {
+      CPF?: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+      beneficiary_name?: string;
+      entry_value?: number;
+    } = {},
+  ): Promise<Transaction> {
+    const transaction = await this.transactionRepository.findOne({
+      where: { id: transactionId },
+      relations: { installments: true, bankAccount: true, category: true },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    if (transaction.type !== TransactionType.REVENUE) {
+      throw new BadRequestException(
+        'Boleto Asaas só pode ser gerado para transações do tipo revenue',
+      );
+    }
+
+    if (transaction.asaas_payment_id || transaction.checkout_id) {
+      throw new BadRequestException(
+        'Esta transação já possui boleto Asaas gerado',
+      );
+    }
+
+    try {
+      await this.registerRevenueOnAsaas(transaction, {
+        CPF: data.CPF || transaction.payer_cpf,
+        email: data.email || transaction.payer_email,
+        phone: data.phone || transaction.payer_phone,
+        address: data.address || transaction.payer_address,
+        beneficiary_name: data.beneficiary_name || transaction.beneficiary_name,
+        entry_value:
+          data.entry_value ??
+          (transaction.entry_value != null
+            ? Number(transaction.entry_value)
+            : undefined),
+        description: transaction.description,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Erro ao gerar boleto Asaas para transação',
+        error?.response?.data || error.message,
+      );
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(
+        error?.response?.data?.errors?.[0]?.description ||
+        error.message ||
+        'Erro ao gerar boleto no Asaas',
+      );
+    }
+
+    return this.transactionRepository.findOne({
+      where: { id: transactionId },
+      relations: {
+        bankAccount: true,
+        category: true,
+        installments: true,
+      },
+    });
+  }
+
+  private async registerRevenueOnAsaas(
+    transaction: Transaction,
+    data: {
+      CPF?: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+      beneficiary_name?: string;
+      entry_value?: number;
+      description?: string;
+    },
+  ): Promise<void> {
+    const installments = [...(transaction.installments || [])].sort(
+      (a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime(),
+    );
+
+    if (installments.length === 0) {
+      throw new BadRequestException('Transação sem parcelas para gerar boleto');
+    }
+
+    const cpfCnpj = this.cleanDocument(data.CPF);
+    if (!cpfCnpj) {
+      throw new BadRequestException(
+        'CPF/CNPJ é obrigatório para receitas com boleto',
+      );
+    }
+
+    const payerName =
+      data.beneficiary_name ||
+      transaction.beneficiary_name ||
+      data.description ||
+      transaction.description ||
+      'Cliente Stribo';
+    const customer = await this.asaasService.getOrCreateCostumer({
+      cpfCnpj,
+      name: payerName,
+      email: data.email,
+      phone: this.cleanPhone(data.phone),
+      mobilePhone: this.cleanPhone(data.phone),
+      address: data.address,
+    });
+
+    const description =
+      transaction.description || `Receita Stribo - ${payerName}`;
+    const entryValueCents = this.parseMoney(
+      data.entry_value ?? transaction.entry_value ?? 0,
+    );
+    const totalValueCents = Number(transaction.original_value);
+
+    if (entryValueCents < 0) {
+      throw new BadRequestException('Valor de entrada não pode ser negativo');
+    }
+
+    if (entryValueCents > totalValueCents) {
+      throw new BadRequestException(
+        'Valor de entrada não pode ser maior que o valor total',
+      );
+    }
+
+    const totalValueReais = this.centsToReais(totalValueCents);
+    const entryValueReais = this.centsToReais(entryValueCents);
+
+    const baseUpdate: Partial<Transaction> = {
+      checkout_id: transaction.id,
+      asaas_customer_id: customer.id,
+      payer_cpf: data.CPF,
+      payer_email: data.email,
+      payer_phone: data.phone,
+      payer_address: data.address,
+      entry_value: entryValueCents,
+    };
+
+    const isSinglePayment = installments.length === 1 && entryValueCents === 0;
+
+    if (isSinglePayment) {
+      const dueDate = format(new Date(installments[0].due_date), 'yyyy-MM-dd');
+      const paymentAsaas = await this.asaasService.createPayment({
+        customer: customer.id,
+        billingType: BillingType.BOLETO,
+        value: totalValueReais,
+        externalReference: transaction.id,
+        description,
+        dueDate,
+      });
+
+      const bankSlipUrl =
+        paymentAsaas.billing_info?.bankSlip?.bankSlipUrl ||
+        paymentAsaas.payment.bankSlipUrl;
+      const barCode = paymentAsaas.billing_info?.bankSlip?.barCode || null;
+      const identificationField =
+        paymentAsaas.billing_info?.bankSlip?.identificationField || null;
+
+      await this.transactionRepository.update(transaction.id, {
+        ...baseUpdate,
+        asaas_payment_id: paymentAsaas.payment.id,
+        asaas_status: paymentAsaas.payment.status,
+        bank_slip_url: bankSlipUrl,
+        bar_code: barCode,
+        identification_field: identificationField,
+      });
+
+      await this.installmentRepository.update(installments[0].id, {
+        parcel: 1,
+        asaas_payment_id: paymentAsaas.payment.id,
+        asaas_status: paymentAsaas.payment.status,
+        bank_slip_url: bankSlipUrl,
+        bar_code: barCode,
+        identification_field: identificationField,
+        status: this.mapAsaasToInstallmentStatus(paymentAsaas.payment.status),
+      });
+
+      return;
+    }
+
+    let asaasEntryPaymentId: string = null;
+
+    if (entryValueCents > 0) {
+      const entryPayment = await this.asaasService.createPayment({
+        customer: customer.id,
+        billingType: BillingType.BOLETO,
+        value: entryValueReais,
+        externalReference: `${transaction.id}:entry`,
+        description: `${description} - Entrada`,
+        dueDate: format(new Date(), 'yyyy-MM-dd'),
+      });
+      asaasEntryPaymentId = entryPayment.payment.id;
+    }
+
+    const parcelTotalReais = this.centsToReais(
+      Math.max(totalValueCents - entryValueCents, 0),
+    );
+    const firstDue = format(new Date(installments[0].due_date), 'yyyy-MM-dd');
+
+    const installmentPayment = await this.asaasService.createPayment({
+      customer: customer.id,
+      billingType: BillingType.BOLETO,
+      value: parcelTotalReais,
+      totalValue: parcelTotalReais,
+      installmentCount: installments.length,
+      externalReference: transaction.id,
+      description: `${description} - Parcelado`,
+      dueDate: firstDue,
+    });
+
+    const bankSlipUrl =
+      installmentPayment.billing_info?.bankSlip?.bankSlipUrl ||
+      installmentPayment.payment.bankSlipUrl;
+    const barCode = installmentPayment.billing_info?.bankSlip?.barCode || null;
+    const identificationField =
+      installmentPayment.billing_info?.bankSlip?.identificationField || null;
+
+    await this.transactionRepository.update(transaction.id, {
+      ...baseUpdate,
+      asaas_installment_id: installmentPayment.payment.installment,
+      asaas_payment_id: installmentPayment.payment.id,
+      asaas_entry_payment_id: asaasEntryPaymentId,
+      asaas_status: installmentPayment.payment.status,
+      bank_slip_url: bankSlipUrl,
+      bar_code: barCode,
+      identification_field: identificationField,
+    });
+
+    if (installmentPayment.payment.installment) {
+      const asaasInstallments =
+        await this.asaasService.getPaymentsByInstallment(
+          installmentPayment.payment.installment,
+        );
+
+      for (let i = 0; i < installments.length; i++) {
+        const local = installments[i];
+        const remote = asaasInstallments.find(
+          (item) => item.installmentNumber === i + 1,
+        );
+
+        let instBankSlipUrl = remote?.bankSlipUrl;
+        let instBarCode: string = null;
+        let instIdentificationField: string = null;
+
+        if (remote?.id) {
+          const billing = await this.asaasService.getBillingInfoByPayment(
+            remote.id,
+          );
+          instBankSlipUrl = billing?.bankSlip?.bankSlipUrl || instBankSlipUrl;
+          instBarCode = billing?.bankSlip?.barCode || null;
+          instIdentificationField =
+            billing?.bankSlip?.identificationField || null;
+        }
+
+        await this.installmentRepository.update(local.id, {
+          parcel: i + 1,
+          asaas_payment_id: remote?.id,
+          asaas_status: remote?.status,
+          bank_slip_url: instBankSlipUrl,
+          bar_code: instBarCode,
+          identification_field: instIdentificationField,
+          status: this.mapAsaasToInstallmentStatus(
+            remote?.status || PaymentStatus.PENDING,
+          ),
+        });
+      }
+    }
+  }
+
+  async handleRevenueWebhook(payload: AsaasWebhookPayload): Promise<void> {
+    const payment = payload.payment;
+    if (!payment?.externalReference) {
+      return;
+    }
+
+    const externalReference = payment.externalReference;
+    const isEntry = externalReference.endsWith(':entry');
+    const transactionId = isEntry
+      ? externalReference.replace(/:entry$/, '')
+      : externalReference;
+
+    const transaction = await this.transactionRepository.findOne({
+      where: { id: transactionId },
+      relations: { installments: true },
+    });
+
+    if (!transaction) {
+      return;
+    }
+
+    const installmentStatus = this.mapAsaasToInstallmentStatus(payment.status);
+    const update: Partial<Transaction> = {
+      asaas_status: payment.status,
+    };
+
+    if (isEntry) {
+      update.asaas_entry_payment_id = payment.id;
+      await this.transactionRepository.update(transactionId, update);
+      this.logger.log(
+        `Entrada da transação ${transactionId} atualizada via webhook: ${payload.event} -> ${payment.status}`,
+      );
+      return;
+    }
+
+    const installments = [...(transaction.installments || [])].sort(
+      (a, b) => (a.parcel || 0) - (b.parcel || 0),
+    );
+    const isSingle =
+      installments.length === 1 && !transaction.asaas_installment_id;
+
+    if (isSingle) {
+      update.asaas_payment_id = payment.id;
+      if (payment.bankSlipUrl) {
+        update.bank_slip_url = payment.bankSlipUrl;
+      }
+
+      await this.transactionRepository.update(transactionId, update);
+
+      if (installments[0]) {
+        await this.installmentRepository.update(installments[0].id, {
+          asaas_payment_id: payment.id,
+          asaas_status: payment.status,
+          bank_slip_url: payment.bankSlipUrl || installments[0].bank_slip_url,
+          status: installmentStatus,
+        });
+      }
+
+      this.logger.log(
+        `Transação ${transactionId} atualizada via webhook: ${payload.event} -> ${payment.status}`,
+      );
+      return;
+    }
+
+    const index = installments.findIndex(
+      (item) =>
+        item.asaas_payment_id === payment.id ||
+        item.parcel === payment.installmentNumber,
+    );
+
+    if (index >= 0) {
+      const inst = installments[index];
+      await this.installmentRepository.update(inst.id, {
+        asaas_payment_id: payment.id,
+        asaas_status: payment.status,
+        bank_slip_url: payment.bankSlipUrl || inst.bank_slip_url,
+        status: installmentStatus,
+      });
+    }
+
+    update.asaas_payment_id = payment.id;
+    if (payment.bankSlipUrl) {
+      update.bank_slip_url = payment.bankSlipUrl;
+    }
+
+    await this.transactionRepository.update(transactionId, update);
+    this.logger.log(
+      `Parcela da transação ${transactionId} atualizada via webhook: ${payload.event} -> ${payment.status}`,
+    );
+  }
 
   private getSendAfterFromDueDate(
     dueDateUTC: Date,
@@ -287,11 +721,10 @@ export class FinancialService {
         timeZone: 'America/Sao_Paulo',
       });
 
-      const message = `Uma transação do tipo ${
-        data.type === 'revenue'
+      const message = `Uma transação do tipo ${data.type === 'revenue'
           ? `receita, deve ser recebida até dia ${formattedDate}.`
           : `despesa, vence dia ${formattedDate}.`
-      } `;
+        } `;
 
       await this.oneSignalService.sendNotification(
         data.property_id,
@@ -311,6 +744,7 @@ export class FinancialService {
         original_value: data.original_value,
         property_id: data.property_id,
         type: data.type,
+        ...this.buildPayerFields(data),
       });
 
       const newTransaction = await this.transactionRepository.save(transaction);
@@ -358,6 +792,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -396,6 +831,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -434,6 +870,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -472,6 +909,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -510,6 +948,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -548,6 +987,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -586,6 +1026,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              ...this.buildPayerFields(data),
             });
 
             const transaction = await this.transactionRepository.save(
@@ -618,11 +1059,10 @@ export class FinancialService {
         timeZone: 'America/Sao_Paulo',
       });
 
-      const message = `Uma transação do tipo ${
-        data.type === 'revenue'
+      const message = `Uma transação do tipo ${data.type === 'revenue'
           ? `receita, deve ser recebida até dia ${formattedDate}.`
           : `despesa, vence dia ${formattedDate}.`
-      } `;
+        } `;
 
       await this.oneSignalService.sendNotification(
         data.property_id,
@@ -647,11 +1087,10 @@ export class FinancialService {
         timeZone: 'America/Sao_Paulo',
       });
 
-      const message = `Uma transação do tipo ${
-        data.type === 'revenue'
+      const message = `Uma transação do tipo ${data.type === 'revenue'
           ? `receita, deve ser recebida até dia ${formattedDate}.`
           : `despesa, vence dia ${formattedDate}.`
-      } `;
+        } `;
 
       await this.oneSignalService.sendNotification(
         data.property_id,
@@ -672,27 +1111,22 @@ export class FinancialService {
         original_value: data.original_value,
         property_id: data.property_id,
         type: data.type,
+        ...this.buildPayerFields(data),
       });
 
       const newTransaction = await this.transactionRepository.save(transaction);
-
-      const installments = [];
 
       for (let i = 0; i < data.installments; i++) {
         const dueDate = new Date(data.due_date);
         dueDate.setMonth(dueDate.getMonth() + i);
 
-        installments.push({
+        const newInstallment = this.installmentRepository.create({
           due_date: dueDate,
           value: data.original_value / data.installments,
           transaction: { id: newTransaction.id },
         });
-      }
-
-      installments.map(async (installment) => {
-        const newInstallment = this.installmentRepository.create(installment);
         await this.installmentRepository.save(newInstallment);
-      });
+      }
 
       return await this.transactionRepository.findOne({
         where: { id: newTransaction.id },
@@ -955,27 +1389,27 @@ export class FinancialService {
         datetime: period_date
           ? period_date === FilterPeriodDate.TODAY
             ? Between(
-                new Date(new Date().setHours(0, 0, 0, 0)),
-                new Date(new Date().setHours(23, 59, 59, 999)),
-              )
+              new Date(new Date().setHours(0, 0, 0, 0)),
+              new Date(new Date().setHours(23, 59, 59, 999)),
+            )
             : period_date === FilterPeriodDate.SEVEN_DAYS
-            ? Between(
+              ? Between(
                 new Date(new Date().setDate(new Date().getDate() - 7)),
                 new Date(),
               )
-            : period_date === FilterPeriodDate.THIRTY_DAYS
-            ? Between(
-                new Date(new Date().setDate(new Date().getDate() - 30)),
-                new Date(),
-              )
-            : undefined
+              : period_date === FilterPeriodDate.THIRTY_DAYS
+                ? Between(
+                  new Date(new Date().setDate(new Date().getDate() - 30)),
+                  new Date(),
+                )
+                : undefined
           : start_date && end_date
-          ? Between(new Date(start_date), new Date(end_date))
-          : start_date
-          ? MoreThanOrEqual(new Date(start_date))
-          : end_date
-          ? LessThan(new Date(end_date))
-          : undefined,
+            ? Between(new Date(start_date), new Date(end_date))
+            : start_date
+              ? MoreThanOrEqual(new Date(start_date))
+              : end_date
+                ? LessThan(new Date(end_date))
+                : undefined,
       },
       relations: {
         bankAccount: true,

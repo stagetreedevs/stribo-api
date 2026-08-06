@@ -66,6 +66,44 @@ export class TransactionDTO {
 
   @ApiProperty({ required: false })
   max_date_period?: Date;
+
+  @ApiProperty({ required: false, description: 'CPF/CNPJ do pagador (usado na geração manual do boleto)' })
+  CPF?: string;
+
+  @ApiProperty({ required: false })
+  email?: string;
+
+  @ApiProperty({ required: false })
+  phone?: string;
+
+  @ApiProperty({ required: false })
+  address?: string;
+
+  @ApiProperty({ required: false, description: 'Valor de entrada para receita parcelada (centavos)' })
+  entry_value?: number;
+}
+
+export class GenerateRevenueBankSlipDTO {
+  @ApiProperty({
+    required: false,
+    description: 'CPF/CNPJ do pagador (usa o salvo na transação se omitido)',
+  })
+  CPF?: string;
+
+  @ApiProperty({ required: false })
+  email?: string;
+
+  @ApiProperty({ required: false })
+  phone?: string;
+
+  @ApiProperty({ required: false })
+  address?: string;
+
+  @ApiProperty({ required: false })
+  beneficiary_name?: string;
+
+  @ApiProperty({ required: false, description: 'Valor de entrada em centavos' })
+  entry_value?: number;
 }
 
 export class TransactionUpdateDTO {

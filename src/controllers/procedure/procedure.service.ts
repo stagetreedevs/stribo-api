@@ -13,7 +13,7 @@ export class ProcedureService {
     private readonly procedimento: Repository<Procedure>,
     private readonly animalService: AnimalService,
     private readonly oneSignalService: OneSignalService,
-  ) {}
+  ) { }
 
   async create(body: Procedure): Promise<Procedure> {
     const procedure = await this.procedimento.save(body);
@@ -61,8 +61,7 @@ export class ProcedureService {
     await this.oneSignalService.sendNotification(
       procedure.property,
       'Alerta de Procedimento',
-      `O procedimento de ${
-        procedure.procedure
+      `O procedimento de ${procedure.procedure
       } está agendado para ${procedureDateTimeUTC.toLocaleDateString('pt-BR', {
         timeZone: 'America/Sao_Paulo',
       })} às ${procedureDateTimeUTC.toLocaleTimeString('pt-BR', {
