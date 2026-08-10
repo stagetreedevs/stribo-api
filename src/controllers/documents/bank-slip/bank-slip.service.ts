@@ -16,6 +16,8 @@ import {
   PaymentStatus,
 } from 'src/services/asaas/dto/payments.dto';
 import { AsaasWebhookPayload } from 'src/controllers/asaas/interfaces/checkout.interfaces';
+import { Transaction } from 'src/controllers/financial/entity/transaction.entity';
+import { InstallmentStatus } from 'src/controllers/financial/entity/installment.entity';
 
 @Injectable()
 export class BankSlipService {
@@ -337,6 +339,86 @@ export class BankSlipService {
     };
   }
 
+  async createFromTransaction(transaction: Transaction): Promise<BankSlip> {
+    const existing = await this.ticketRepository.findOne({
+      where: { checkout_id: transaction.id },
+    });
+
+    if (existing) {
+      return existing;
+    }
+
+    const valueReais = Number(
+      (Number(transaction.original_value || 0) / 100).toFixed(2),
+    );
+    const entryValueReais = Number(
+      (Number(transaction.entry_value || 0) / 100).toFixed(2),
+    );
+
+    const installments = [...(transaction.installments || [])].sort(
+      (a, b) => (a.parcel || 0) - (b.parcel || 0),
+    );
+
+    const isSinglePayment =
+      installments.length <= 1 && entryValueReais === 0 && !transaction.asaas_installment_id;
+
+    const bankSlipInstallments: BankSlipInstallment[] | null = isSinglePayment
+      ? null
+      : installments.map((item, index) => ({
+          parcel: item.parcel || index + 1,
+          value: Number((Number(item.value || 0) / 100).toFixed(2)),
+          due_date: item.due_date,
+          status:
+            item.status === InstallmentStatus.PAID
+              ? 'Pago'
+              : item.status === InstallmentStatus.OVERDUE
+                ? 'Atrasado'
+                : this.mapAsaasStatusToBankSlip(
+                    item.asaas_status || PaymentStatus.PENDING,
+                  ),
+          asaas_payment_id: item.asaas_payment_id || undefined,
+          bank_slip_url: item.bank_slip_url || undefined,
+          bar_code: item.bar_code || undefined,
+          identification_field: item.identification_field || undefined,
+        }));
+
+    const bankSlip = await this.ticketRepository.save({
+      property: transaction.property_id,
+      provider:
+        transaction.beneficiary_name ||
+        transaction.description ||
+        'Cliente Stribo',
+      value: valueReais,
+      entry_value: entryValueReais,
+      payment: isSinglePayment,
+      installments: bankSlipInstallments,
+      status: this.mapAsaasStatusToBankSlip(
+        transaction.asaas_status || PaymentStatus.PENDING,
+      ),
+      CPF: transaction.payer_cpf || '',
+      address: transaction.payer_address || '',
+      email: transaction.payer_email || '',
+      phone: transaction.payer_phone || '',
+      description: transaction.description || null,
+      asaas_customer_id: transaction.asaas_customer_id,
+      asaas_payment_id: transaction.asaas_payment_id,
+      asaas_installment_id: transaction.asaas_installment_id,
+      asaas_entry_payment_id: transaction.asaas_entry_payment_id,
+      checkout_id: transaction.id,
+      bank_slip_url: transaction.bank_slip_url,
+      bar_code: transaction.bar_code,
+      identification_field: transaction.identification_field,
+      asaas_status: transaction.asaas_status,
+      date: transaction.datetime ? new Date(transaction.datetime) : new Date(),
+    });
+
+    this.logger.log(
+      `Bank slip ${bankSlip.ticket_number} criado a partir da transação ${transaction.id}`,
+    );
+
+    return bankSlip;
+  }
+
   async handleWebhook(payload: AsaasWebhookPayload): Promise<void> {
     const payment = payload.payment;
     if (!payment?.externalReference) {
@@ -346,13 +428,27 @@ export class BankSlipService {
 
     const externalReference = payment.externalReference;
     const isEntry = externalReference.endsWith(':entry');
-    const ticketNumber = isEntry
+    const referenceId = isEntry
       ? externalReference.replace(/:entry$/, '')
       : externalReference;
 
-    const bankSlip = await this.findByNumber(ticketNumber);
+    let bankSlip =
+      (await this.findByNumber(referenceId)) ||
+      (await this.ticketRepository.findOne({
+        where: { checkout_id: referenceId },
+      }));
+
+    if (!bankSlip && payment.id) {
+      bankSlip = await this.ticketRepository.findOne({
+        where: [
+          { asaas_payment_id: payment.id },
+          { asaas_entry_payment_id: payment.id },
+        ],
+      });
+    }
+
     if (!bankSlip) {
-      this.logger.warn(`Bank slip não encontrado: ${ticketNumber}`);
+      this.logger.warn(`Bank slip não encontrado: ${referenceId}`);
       return;
     }
 
@@ -405,11 +501,15 @@ export class BankSlipService {
       } else {
         update.status = 'Vigente';
       }
+
+      if (payment.bankSlipUrl && !update.bank_slip_url) {
+        update.bank_slip_url = payment.bankSlipUrl;
+      }
     }
 
-    await this.ticketRepository.update(ticketNumber, update);
+    await this.ticketRepository.update(bankSlip.ticket_number, update);
     this.logger.log(
-      `Bank slip ${ticketNumber} atualizado via webhook: ${payload.event} -> ${payment.status}`,
+      `Bank slip ${bankSlip.ticket_number} atualizado via webhook: ${payload.event} -> ${payment.status}`,
     );
   }
 

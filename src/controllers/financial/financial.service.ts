@@ -49,6 +49,7 @@ import {
 } from 'src/services/asaas/dto/payments.dto';
 import { AsaasWebhookPayload } from 'src/controllers/asaas/interfaces/checkout.interfaces';
 import { format } from 'date-fns';
+import { BankSlipService } from 'src/controllers/documents/bank-slip/bank-slip.service';
 
 @Injectable()
 export class FinancialService {
@@ -68,6 +69,7 @@ export class FinancialService {
     private readonly s3Service: S3Service,
     private readonly oneSignalService: OneSignalService,
     private readonly asaasService: AsaasService,
+    private readonly bankSlipService: BankSlipService,
   ) { }
 
   private parseMoney(value: any): number {
@@ -185,7 +187,7 @@ export class FinancialService {
       );
     }
 
-    return this.transactionRepository.findOne({
+    const updated = await this.transactionRepository.findOne({
       where: { id: transactionId },
       relations: {
         bankAccount: true,
@@ -193,6 +195,19 @@ export class FinancialService {
         installments: true,
       },
     });
+
+    if (updated) {
+      try {
+        await this.bankSlipService.createFromTransaction(updated);
+      } catch (error) {
+        this.logger.error(
+          `Boleto Asaas gerado, mas falhou ao criar bank-slip espelho da transação ${transactionId}`,
+          error?.message || error,
+        );
+      }
+    }
+
+    return updated;
   }
 
   private async registerRevenueOnAsaas(
@@ -726,12 +741,12 @@ export class FinancialService {
           : `despesa, vence dia ${formattedDate}.`
         } `;
 
-      await this.oneSignalService.sendNotification(
-        data.property_id,
-        'Alerta de Transação',
-        message,
-        sendAfter,
-      );
+      // await this.oneSignalService.sendNotification(
+      //   data.property_id,
+      //   'Alerta de Transação',
+      //   message,
+      //   sendAfter,
+      // );
       const transaction = this.transactionRepository.create({
         bankAccount: { id: bank_account_id },
         category: { id: category_id },
@@ -1064,12 +1079,12 @@ export class FinancialService {
           : `despesa, vence dia ${formattedDate}.`
         } `;
 
-      await this.oneSignalService.sendNotification(
-        data.property_id,
-        'Alerta de Transação',
-        message,
-        sendAfter,
-      );
+      // await this.oneSignalService.sendNotification(
+      //   data.property_id,
+      //   'Alerta de Transação',
+      //   message,
+      //   sendAfter,
+      // );
 
       return transactionReturn;
     } else {
@@ -1092,12 +1107,12 @@ export class FinancialService {
           : `despesa, vence dia ${formattedDate}.`
         } `;
 
-      await this.oneSignalService.sendNotification(
-        data.property_id,
-        'Alerta de Transação',
-        message,
-        sendAfter,
-      );
+      // await this.oneSignalService.sendNotification(
+      //   data.property_id,
+      //   'Alerta de Transação',
+      //   message,
+      //   sendAfter,
+      // );
 
       const transaction = this.transactionRepository.create({
         bankAccount: { id: bank_account_id },
