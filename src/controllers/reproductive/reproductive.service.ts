@@ -78,19 +78,19 @@ export class ReproductiveService {
       sendAfterValue = null;
     }
 
-    await this.oneSignalService.sendNotification(
-      procedure.property,
-      'Alerta de Procedimento',
-      `O procedimento de ${procedure.procedure
-      } está agendado para ${procedureDateTimeUTC.toLocaleDateString('pt-BR', {
-        timeZone: 'America/Sao_Paulo',
-      })} às ${procedureDateTimeUTC.toLocaleTimeString('pt-BR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'America/Sao_Paulo',
-      })} para o animal ${procedure.animal_name}.`,
-      sendAfterValue,
-    );
+    // await this.oneSignalService.sendNotification(
+    //   procedure.property,
+    //   'Alerta de Procedimento',
+    //   `O procedimento de ${procedure.procedure
+    //   } está agendado para ${procedureDateTimeUTC.toLocaleDateString('pt-BR', {
+    //     timeZone: 'America/Sao_Paulo',
+    //   })} às ${procedureDateTimeUTC.toLocaleTimeString('pt-BR', {
+    //     hour: '2-digit',
+    //     minute: '2-digit',
+    //     timeZone: 'America/Sao_Paulo',
+    //   })} para o animal ${procedure.animal_name}.`,
+    //   sendAfterValue,
+    // );
 
     return procedure;
   }

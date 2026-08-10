@@ -11,6 +11,7 @@ import { S3Module } from '../s3/s3.module';
 import { CompetitionModule } from '../competition/competition.module';
 import { OneSignalModule } from 'src/services/one-signal/one-signal.module';
 import { AsaasModule } from 'src/services/asaas/asaas.module';
+import { BankSlipModule } from '../documents/bank-slip/bank-slip.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AsaasModule } from 'src/services/asaas/asaas.module';
     S3Module,
     OneSignalModule,
     AsaasModule,
+    BankSlipModule,
   ],
   providers: [FinancialService],
   controllers: [FinancialController],
