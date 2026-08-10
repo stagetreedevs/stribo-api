@@ -92,12 +92,12 @@ export class CompetitionService {
       timeZone: 'America/Sao_Paulo',
     });
 
-    // await this.oneSignalService.sendNotification(
-    //   competition.property,
-    //   'Alerta de Competição',
-    //   `A competição "${competition.name}" está agendada para ${formattedDate} às ${formattedTime}. Prepare-se!`,
-    //   sendDateUTC?.toISOString(),
-    // );
+    await this.oneSignalService.sendNotification(
+      competition.property,
+      'Alerta de Competição',
+      `A competição "${competition.name}" está agendada para ${formattedDate} às ${formattedTime}. Prepare-se!`,
+      sendDateUTC?.toISOString(),
+    );
 
     return competition;
   }

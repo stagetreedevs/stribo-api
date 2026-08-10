@@ -741,12 +741,12 @@ export class FinancialService {
           : `despesa, vence dia ${formattedDate}.`
         } `;
 
-      // await this.oneSignalService.sendNotification(
-      //   data.property_id,
-      //   'Alerta de Transação',
-      //   message,
-      //   sendAfter,
-      // );
+      await this.oneSignalService.sendNotification(
+        data.property_id,
+        'Alerta de Transação',
+        message,
+        sendAfter,
+      );
       const transaction = this.transactionRepository.create({
         bankAccount: { id: bank_account_id },
         category: { id: category_id },
@@ -1079,12 +1079,12 @@ export class FinancialService {
           : `despesa, vence dia ${formattedDate}.`
         } `;
 
-      // await this.oneSignalService.sendNotification(
-      //   data.property_id,
-      //   'Alerta de Transação',
-      //   message,
-      //   sendAfter,
-      // );
+      await this.oneSignalService.sendNotification(
+        data.property_id,
+        'Alerta de Transação',
+        message,
+        sendAfter,
+      );
 
       return transactionReturn;
     } else {
@@ -1107,12 +1107,12 @@ export class FinancialService {
           : `despesa, vence dia ${formattedDate}.`
         } `;
 
-      // await this.oneSignalService.sendNotification(
-      //   data.property_id,
-      //   'Alerta de Transação',
-      //   message,
-      //   sendAfter,
-      // );
+      await this.oneSignalService.sendNotification(
+        data.property_id,
+        'Alerta de Transação',
+        message,
+        sendAfter,
+      );
 
       const transaction = this.transactionRepository.create({
         bankAccount: { id: bank_account_id },

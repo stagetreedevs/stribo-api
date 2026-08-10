@@ -75,12 +75,12 @@ export class ContractService {
       timeZone: 'America/Sao_Paulo',
     });
 
-    // await this.oneSignalService.sendNotification(
-    //   newContract.property,
-    //   'Alerta de Contrato',
-    //   `Um contrato de ${newContract.title} se encerrará em ${formattedDate}`,
-    //   sendDateUTC ? sendDateUTC?.toISOString() : undefined,
-    // );
+    await this.oneSignalService.sendNotification(
+      newContract.property,
+      'Alerta de Contrato',
+      `Um contrato de ${newContract.title} se encerrará em ${formattedDate}`,
+      sendDateUTC ? sendDateUTC?.toISOString() : undefined,
+    );
 
     return newContract;
   }
