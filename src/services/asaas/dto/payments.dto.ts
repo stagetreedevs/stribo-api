@@ -158,6 +158,13 @@ export class CreatePaymentDto {
   creditCard?: CreditCardCreatePayment;
 }
 
+export class UpdatePaymentDto {
+  externalReference?: string;
+  description?: string;
+  dueDate?: string;
+  value?: number;
+}
+
 export class Pix {
   encodedImage: string;
   payload: string;

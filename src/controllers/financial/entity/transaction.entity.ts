@@ -34,6 +34,12 @@ export enum TransactionType {
   EXPENSE = 'expense',
 }
 
+/** Origem do lançamento — OFX = movimentação bancária (caixa), não participa do fluxo Asaas. */
+export enum TransactionImportSource {
+  OFX = 'ofx',
+  ASAAS = 'asaas',
+}
+
 @Entity()
 export class Transaction {
   @PrimaryGeneratedColumn('uuid')
@@ -44,6 +50,9 @@ export class Transaction {
 
   @Column({ enum: TransactionType })
   type: TransactionType;
+
+  @Column({ enum: TransactionImportSource, nullable: true, default: null })
+  import_source: TransactionImportSource;
 
   @Column()
   property_id: string;

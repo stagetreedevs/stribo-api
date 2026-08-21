@@ -12,10 +12,18 @@ import { CompetitionModule } from '../competition/competition.module';
 import { OneSignalModule } from 'src/services/one-signal/one-signal.module';
 import { AsaasModule } from 'src/services/asaas/asaas.module';
 import { BankSlipModule } from '../documents/bank-slip/bank-slip.module';
+import { Provider } from '../provider/provider.entity';
+import { AsaasRevenueSyncService } from './asaas-revenue-sync.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([BankAccount, Category, Transaction, Installment]),
+    TypeOrmModule.forFeature([
+      BankAccount,
+      Category,
+      Transaction,
+      Installment,
+      Provider,
+    ]),
     CompetitionModule,
     AnimalModule,
     S3Module,
@@ -23,8 +31,8 @@ import { BankSlipModule } from '../documents/bank-slip/bank-slip.module';
     AsaasModule,
     BankSlipModule,
   ],
-  providers: [FinancialService],
+  providers: [FinancialService, AsaasRevenueSyncService],
   controllers: [FinancialController],
-  exports: [FinancialService],
+  exports: [FinancialService, AsaasRevenueSyncService],
 })
 export class FinancialModule {}

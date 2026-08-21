@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   CommissionType,
   ExtraField,
+  TransactionImportSource,
   TransactionType,
 } from '../entity/transaction.entity';
 
@@ -81,6 +82,13 @@ export class TransactionDTO {
 
   @ApiProperty({ required: false, description: 'Valor de entrada para receita parcelada (centavos)' })
   entry_value?: number;
+
+  @ApiProperty({
+    required: false,
+    enum: TransactionImportSource,
+    description: 'Origem do lançamento (ex.: ofx para importação de extrato)',
+  })
+  import_source?: TransactionImportSource;
 }
 
 export class GenerateRevenueBankSlipDTO {

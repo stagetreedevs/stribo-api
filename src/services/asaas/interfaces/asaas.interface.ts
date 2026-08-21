@@ -7,6 +7,7 @@ import {
   BillingInfo,
   CreatePaymentDto,
   CreatePaymentResponse,
+  UpdatePaymentDto,
   CreditCard,
   CreditCardCreatePayment,
   CreditCardHolderInfo,
@@ -21,6 +22,7 @@ export interface IAsaasService {
   updateCostumer(id: string, data: UpdateCostumerDto): Promise<Costumer>;
 
   createPayment(data: CreatePaymentDto): Promise<CreatePaymentResponse>;
+  updatePayment(id: string, data: UpdatePaymentDto): Promise<Payment>;
   getPaymentsByExternalReference(
     external_reference: string,
     installmentNumber?: number,

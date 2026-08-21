@@ -18,6 +18,7 @@ import {
   BillingType,
   CreatePaymentDto,
   CreatePaymentResponse,
+  UpdatePaymentDto,
   CreditCardCreatePayment,
   CreditCardHolderInfo,
   Payment,
@@ -452,6 +453,14 @@ export class AsaasService implements IAsaasService, OnModuleInit {
         }))
         .reverse(),
     };
+  }
+
+  async updatePayment(id: string, data: UpdatePaymentDto): Promise<Payment> {
+    const response = await this.httpService.axiosRef.put<Payment>(
+      `/payments/${id}`,
+      data,
+    );
+    return response.data;
   }
 
   async getPaymentsByCustomer(customer: string, page = 0): Promise<Payment[]> {

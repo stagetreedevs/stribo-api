@@ -29,6 +29,7 @@ import {
   FilterPeriodDate,
   QueryTransaction,
   Transaction,
+  TransactionImportSource,
   TransactionType,
 } from './entity/transaction.entity';
 import {
@@ -50,6 +51,7 @@ import {
 import { AsaasWebhookPayload } from 'src/controllers/asaas/interfaces/checkout.interfaces';
 import { format } from 'date-fns';
 import { BankSlipService } from 'src/controllers/documents/bank-slip/bank-slip.service';
+import { AsaasRevenueSyncService } from './asaas-revenue-sync.service';
 
 @Injectable()
 export class FinancialService {
@@ -70,6 +72,7 @@ export class FinancialService {
     private readonly oneSignalService: OneSignalService,
     private readonly asaasService: AsaasService,
     private readonly bankSlipService: BankSlipService,
+    private readonly asaasRevenueSyncService: AsaasRevenueSyncService,
   ) { }
 
   private parseMoney(value: any): number {
@@ -282,6 +285,56 @@ export class FinancialService {
       entry_value: entryValueCents,
     };
 
+    const existingRemote =
+      await this.asaasRevenueSyncService.findExistingAsaasPaymentsForTransaction(
+        transaction,
+        customer.id,
+        installments,
+        entryValueCents,
+      );
+
+    if (existingRemote.single) {
+      await this.asaasRevenueSyncService.linkTransactionToAsaasPayment(
+        transaction,
+        existingRemote.single,
+        { payerFields: baseUpdate },
+      );
+      return;
+    }
+
+    if (existingRemote.installment) {
+      if (existingRemote.entry) {
+        await this.asaasRevenueSyncService.linkTransactionToAsaasPayment(
+          transaction,
+          existingRemote.entry,
+          { isEntry: true, payerFields: baseUpdate },
+        );
+      }
+
+      await this.asaasRevenueSyncService.linkTransactionToAsaasPayment(
+        transaction,
+        existingRemote.installment,
+        { payerFields: baseUpdate },
+      );
+
+      if (entryValueCents > 0 && !existingRemote.entry) {
+        const entryPayment = await this.asaasService.createPayment({
+          customer: customer.id,
+          billingType: BillingType.BOLETO,
+          value: entryValueReais,
+          externalReference: `${transaction.id}:entry`,
+          description: `${description} - Entrada`,
+          dueDate: format(new Date(), 'yyyy-MM-dd'),
+        });
+
+        await this.transactionRepository.update(transaction.id, {
+          asaas_entry_payment_id: entryPayment.payment.id,
+        });
+      }
+
+      return;
+    }
+
     const isSinglePayment = installments.length === 1 && entryValueCents === 0;
 
     if (isSinglePayment) {
@@ -414,94 +467,7 @@ export class FinancialService {
   }
 
   async handleRevenueWebhook(payload: AsaasWebhookPayload): Promise<void> {
-    const payment = payload.payment;
-    if (!payment?.externalReference) {
-      return;
-    }
-
-    const externalReference = payment.externalReference;
-    const isEntry = externalReference.endsWith(':entry');
-    const transactionId = isEntry
-      ? externalReference.replace(/:entry$/, '')
-      : externalReference;
-
-    const transaction = await this.transactionRepository.findOne({
-      where: { id: transactionId },
-      relations: { installments: true },
-    });
-
-    if (!transaction) {
-      return;
-    }
-
-    const installmentStatus = this.mapAsaasToInstallmentStatus(payment.status);
-    const update: Partial<Transaction> = {
-      asaas_status: payment.status,
-    };
-
-    if (isEntry) {
-      update.asaas_entry_payment_id = payment.id;
-      await this.transactionRepository.update(transactionId, update);
-      this.logger.log(
-        `Entrada da transação ${transactionId} atualizada via webhook: ${payload.event} -> ${payment.status}`,
-      );
-      return;
-    }
-
-    const installments = [...(transaction.installments || [])].sort(
-      (a, b) => (a.parcel || 0) - (b.parcel || 0),
-    );
-    const isSingle =
-      installments.length === 1 && !transaction.asaas_installment_id;
-
-    if (isSingle) {
-      update.asaas_payment_id = payment.id;
-      if (payment.bankSlipUrl) {
-        update.bank_slip_url = payment.bankSlipUrl;
-      }
-
-      await this.transactionRepository.update(transactionId, update);
-
-      if (installments[0]) {
-        await this.installmentRepository.update(installments[0].id, {
-          asaas_payment_id: payment.id,
-          asaas_status: payment.status,
-          bank_slip_url: payment.bankSlipUrl || installments[0].bank_slip_url,
-          status: installmentStatus,
-        });
-      }
-
-      this.logger.log(
-        `Transação ${transactionId} atualizada via webhook: ${payload.event} -> ${payment.status}`,
-      );
-      return;
-    }
-
-    const index = installments.findIndex(
-      (item) =>
-        item.asaas_payment_id === payment.id ||
-        item.parcel === payment.installmentNumber,
-    );
-
-    if (index >= 0) {
-      const inst = installments[index];
-      await this.installmentRepository.update(inst.id, {
-        asaas_payment_id: payment.id,
-        asaas_status: payment.status,
-        bank_slip_url: payment.bankSlipUrl || inst.bank_slip_url,
-        status: installmentStatus,
-      });
-    }
-
-    update.asaas_payment_id = payment.id;
-    if (payment.bankSlipUrl) {
-      update.bank_slip_url = payment.bankSlipUrl;
-    }
-
-    await this.transactionRepository.update(transactionId, update);
-    this.logger.log(
-      `Parcela da transação ${transactionId} atualizada via webhook: ${payload.event} -> ${payment.status}`,
-    );
+    await this.asaasRevenueSyncService.handleRevenueWebhook(payload);
   }
 
   private getSendAfterFromDueDate(
@@ -759,6 +725,7 @@ export class FinancialService {
         original_value: data.original_value,
         property_id: data.property_id,
         type: data.type,
+        import_source: data.import_source ?? null,
         ...this.buildPayerFields(data),
       });
 
@@ -807,6 +774,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              import_source: data.import_source ?? null,
               ...this.buildPayerFields(data),
             });
 
@@ -846,6 +814,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              import_source: data.import_source ?? null,
               ...this.buildPayerFields(data),
             });
 
@@ -885,6 +854,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              import_source: data.import_source ?? null,
               ...this.buildPayerFields(data),
             });
 
@@ -924,6 +894,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              import_source: data.import_source ?? null,
               ...this.buildPayerFields(data),
             });
 
@@ -963,6 +934,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              import_source: data.import_source ?? null,
               ...this.buildPayerFields(data),
             });
 
@@ -1002,6 +974,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              import_source: data.import_source ?? null,
               ...this.buildPayerFields(data),
             });
 
@@ -1041,6 +1014,7 @@ export class FinancialService {
               property_id: data.property_id,
               period: data.period,
               type: data.type,
+              import_source: data.import_source ?? null,
               ...this.buildPayerFields(data),
             });
 
@@ -1126,6 +1100,7 @@ export class FinancialService {
         original_value: data.original_value,
         property_id: data.property_id,
         type: data.type,
+        import_source: data.import_source ?? null,
         ...this.buildPayerFields(data),
       });
 
@@ -1560,9 +1535,14 @@ export class FinancialService {
       ofxContent.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKACCTFROM;
     const bankTranList = ofxData.getBankTransferList();
 
+    // Asaas e outras IPs muitas vezes não enviam BRANCHID; usa BANKID como fallback.
+    const agency = bankAccFrom.BRANCHID || bankAccFrom.BANKID || '0000';
+    const account = bankAccFrom.ACCTID || '0000';
+
     let bank = await this.findBankByAgencyAndAccount(
-      bankAccFrom.ACCTID,
-      bankAccFrom.BRANCHID,
+      agency,
+      account,
+      property_id,
     );
 
     if (!bank) {
@@ -1570,8 +1550,8 @@ export class FinancialService {
         description: orgInfo,
         property_id,
         bank: orgInfo,
-        agency: bankAccFrom.BRANCHID,
-        account: bankAccFrom.ACCTID,
+        agency,
+        account,
         keyJ: '',
       });
     }
@@ -1596,6 +1576,7 @@ export class FinancialService {
           is_installment: false,
           installments: 0,
           extra_fields: [],
+          import_source: TransactionImportSource.OFX,
         });
 
         transactions.push(newTransaction);
